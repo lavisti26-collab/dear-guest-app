@@ -8,6 +8,7 @@ import FloatingDaisies from '@/components/wedding/FloatingDaisies';
 import SparkleEffect from '@/components/wedding/SparkleEffect';
 import CuteEmojiRain from '@/components/wedding/CuteEmojiRain';
 import EmojiTrail from '@/components/wedding/EmojiTrail';
+import ThemeAnimations from '@/components/wedding/ThemeAnimations';
 import LanguageSwitcher from '@/components/wedding/LanguageSwitcher';
 import MusicToggle from '@/components/wedding/MusicToggle';
 import HeroSection from '@/components/wedding/HeroSection';
@@ -44,6 +45,7 @@ export default function InvitationPage() {
             <SparkleEffect />
             <CuteEmojiRain />
             <EmojiTrail />
+            <ThemeAnimations />
             <LanguageSwitcher />
             <MusicToggle />
 

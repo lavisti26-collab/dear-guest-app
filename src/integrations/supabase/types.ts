@@ -14,64 +14,43 @@ export type Database = {
   }
   public: {
     Tables: {
-      admin: {
-        Row: {
-          created_at: string | null
-          id: string
-          password_hash: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          password_hash?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          password_hash?: string | null
-        }
-        Relationships: []
-      }
       guests: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
           name: string
-          number_of_guests: number | null
-          rsvp_status: string | null
+          number_of_guests: number
+          rsvp_status: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           name: string
-          number_of_guests?: number | null
-          rsvp_status?: string | null
+          number_of_guests?: number
+          rsvp_status?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           name?: string
-          number_of_guests?: number | null
-          rsvp_status?: string | null
+          number_of_guests?: number
+          rsvp_status?: string
         }
         Relationships: []
       }
       photos: {
         Row: {
-          caption: string | null
-          created_at: string | null
+          created_at: string
           id: string
           url: string
         }
         Insert: {
-          caption?: string | null
-          created_at?: string | null
+          created_at?: string
           id?: string
           url: string
         }
         Update: {
-          caption?: string | null
-          created_at?: string | null
+          created_at?: string
           id?: string
           url?: string
         }
@@ -116,24 +95,20 @@ export type Database = {
           contact_telegram: string | null
           couple_names: string | null
           couple_names_km: string | null
-          created_at: string | null
-          dress_code: string | null
+          created_at: string
           gift_bank_account: string | null
           gift_bank_name: string | null
           gift_qr_code: string | null
           hero_image: string | null
-          hero_subtitle: string | null
-          hero_title: string | null
           id: string
           map_embed_url: string | null
           map_lat: string | null
           map_lng: string | null
           music_file: string | null
           music_url: string | null
-          updated_at: string | null
+          updated_at: string
           venue: string | null
           venue_km: string | null
-          venue_maps: string | null
           wedding_date: string | null
           wedding_date_km: string | null
           wedding_date_time: string | null
@@ -150,24 +125,20 @@ export type Database = {
           contact_telegram?: string | null
           couple_names?: string | null
           couple_names_km?: string | null
-          created_at?: string | null
-          dress_code?: string | null
+          created_at?: string
           gift_bank_account?: string | null
           gift_bank_name?: string | null
           gift_qr_code?: string | null
           hero_image?: string | null
-          hero_subtitle?: string | null
-          hero_title?: string | null
           id?: string
           map_embed_url?: string | null
           map_lat?: string | null
           map_lng?: string | null
           music_file?: string | null
           music_url?: string | null
-          updated_at?: string | null
+          updated_at?: string
           venue?: string | null
           venue_km?: string | null
-          venue_maps?: string | null
           wedding_date?: string | null
           wedding_date_km?: string | null
           wedding_date_time?: string | null
@@ -184,24 +155,20 @@ export type Database = {
           contact_telegram?: string | null
           couple_names?: string | null
           couple_names_km?: string | null
-          created_at?: string | null
-          dress_code?: string | null
+          created_at?: string
           gift_bank_account?: string | null
           gift_bank_name?: string | null
           gift_qr_code?: string | null
           hero_image?: string | null
-          hero_subtitle?: string | null
-          hero_title?: string | null
           id?: string
           map_embed_url?: string | null
           map_lat?: string | null
           map_lng?: string | null
           music_file?: string | null
           music_url?: string | null
-          updated_at?: string | null
+          updated_at?: string
           venue?: string | null
           venue_km?: string | null
-          venue_maps?: string | null
           wedding_date?: string | null
           wedding_date_km?: string | null
           wedding_date_time?: string | null
@@ -214,19 +181,19 @@ export type Database = {
       }
       wishes: {
         Row: {
-          created_at: string | null
+          created_at: string
           guest_name: string
           id: string
           message: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           guest_name: string
           id?: string
           message?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           guest_name?: string
           id?: string
           message?: string | null
