@@ -14,7 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      guests: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          number_of_guests: number
+          rsvp_status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          number_of_guests?: number
+          rsvp_status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          number_of_guests?: number
+          rsvp_status?: string
+        }
+        Relationships: []
+      }
+      photos: {
+        Row: {
+          created_at: string
+          id: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      program_schedule: {
+        Row: {
+          created_at: string
+          id: string
+          order_index: number
+          time_en: string | null
+          time_km: string | null
+          title_en: string | null
+          title_km: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_index?: number
+          time_en?: string | null
+          time_km?: string | null
+          title_en?: string | null
+          title_km?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_index?: number
+          time_en?: string | null
+          time_km?: string | null
+          title_en?: string | null
+          title_km?: string | null
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          calendar_url: string | null
+          contact_email: string | null
+          contact_facebook: string | null
+          contact_phone: string | null
+          contact_telegram: string | null
+          couple_names: string | null
+          couple_names_km: string | null
+          created_at: string
+          gift_bank_account: string | null
+          gift_bank_name: string | null
+          gift_qr_code: string | null
+          hero_image: string | null
+          id: string
+          map_embed_url: string | null
+          map_lat: string | null
+          map_lng: string | null
+          music_file: string | null
+          music_url: string | null
+          updated_at: string
+          venue: string | null
+          venue_km: string | null
+          wedding_date: string | null
+          wedding_date_km: string | null
+          wedding_date_time: string | null
+          wedding_description: string | null
+          wedding_description_km: string | null
+          wedding_time: string | null
+          wedding_time_km: string | null
+        }
+        Insert: {
+          calendar_url?: string | null
+          contact_email?: string | null
+          contact_facebook?: string | null
+          contact_phone?: string | null
+          contact_telegram?: string | null
+          couple_names?: string | null
+          couple_names_km?: string | null
+          created_at?: string
+          gift_bank_account?: string | null
+          gift_bank_name?: string | null
+          gift_qr_code?: string | null
+          hero_image?: string | null
+          id?: string
+          map_embed_url?: string | null
+          map_lat?: string | null
+          map_lng?: string | null
+          music_file?: string | null
+          music_url?: string | null
+          updated_at?: string
+          venue?: string | null
+          venue_km?: string | null
+          wedding_date?: string | null
+          wedding_date_km?: string | null
+          wedding_date_time?: string | null
+          wedding_description?: string | null
+          wedding_description_km?: string | null
+          wedding_time?: string | null
+          wedding_time_km?: string | null
+        }
+        Update: {
+          calendar_url?: string | null
+          contact_email?: string | null
+          contact_facebook?: string | null
+          contact_phone?: string | null
+          contact_telegram?: string | null
+          couple_names?: string | null
+          couple_names_km?: string | null
+          created_at?: string
+          gift_bank_account?: string | null
+          gift_bank_name?: string | null
+          gift_qr_code?: string | null
+          hero_image?: string | null
+          id?: string
+          map_embed_url?: string | null
+          map_lat?: string | null
+          map_lng?: string | null
+          music_file?: string | null
+          music_url?: string | null
+          updated_at?: string
+          venue?: string | null
+          venue_km?: string | null
+          wedding_date?: string | null
+          wedding_date_km?: string | null
+          wedding_date_time?: string | null
+          wedding_description?: string | null
+          wedding_description_km?: string | null
+          wedding_time?: string | null
+          wedding_time_km?: string | null
+        }
+        Relationships: []
+      }
+      wishes: {
+        Row: {
+          created_at: string
+          guest_name: string
+          id: string
+          message: string | null
+        }
+        Insert: {
+          created_at?: string
+          guest_name: string
+          id?: string
+          message?: string | null
+        }
+        Update: {
+          created_at?: string
+          guest_name?: string
+          id?: string
+          message?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
