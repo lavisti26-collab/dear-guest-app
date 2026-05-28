@@ -81,7 +81,12 @@ function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
   );
 }
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  publicSlug?: string;
+  isSuperAdmin?: boolean;
+}
+
+export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }: AdminDashboardProps) {
   const [tab, setTab] = useState<Tab>('guests');
   const data = useWeddingData();
   const { theme, setTheme } = useTheme();
@@ -89,6 +94,8 @@ export default function AdminDashboard() {
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
 
   const baseUrl = window.location.origin;
+  const publicUrl = publicSlug ? `${baseUrl}/invite/${publicSlug}` : '';
+  const guestUrl = (name: string) => `${publicUrl}?guest=${encodeURIComponent(name)}`;
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -158,7 +165,10 @@ export default function AdminDashboard() {
       <header className="glass-strong border-b border-border/30 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
         <h1 className="font-display text-xl font-semibold text-foreground">💍 Wedding Admin</h1>
         <div className="flex items-center gap-4">
-          <a href="/" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
+          {isSuperAdmin && (
+            <a href="/admin/super" className="text-sm bg-primary/30 rounded-full px-4 py-2 hover:bg-primary/50 transition-colors">👑 Super</a>
+          )}
+          <a href={publicUrl || "/"} target="_blank" rel="noreferrer" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
           <button onClick={handleLogout} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Logout
           </button>
@@ -194,6 +204,23 @@ export default function AdminDashboard() {
         {/* GUESTS TAB */}
         {tab === 'guests' && (
           <div className="space-y-6">
+            {publicUrl && (
+              <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row gap-5 items-center">
+                <div className="bg-card rounded-xl p-3">
+                  <QRCodeSVG id="qr-main" value={publicUrl} size={140} fgColor="hsl(30, 10%, 30%)" bgColor="transparent" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Your public invitation link</p>
+                  <p className="font-medium text-foreground break-all mb-3">{publicUrl}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <button onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copied!'); }} className="text-xs bg-accent/20 rounded-full px-3 py-1.5 hover:bg-accent/30">📋 Copy link</button>
+                    <button onClick={() => downloadQR('main')} className="text-xs bg-accent text-accent-foreground rounded-full px-3 py-1.5">📥 Download QR</button>
+                    <a href={publicUrl} target="_blank" rel="noreferrer" className="text-xs bg-primary/30 rounded-full px-3 py-1.5">↗ Open</a>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={addGuest} className="flex gap-3">
               <input
                 type="text"
@@ -246,7 +273,7 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3">
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(`${baseUrl}/?guest=${encodeURIComponent(g.name)}`);
+                            navigator.clipboard.writeText(guestUrl(g.name));
                             toast.success('Link copied!');
                           }}
                           className="text-accent hover:underline text-xs"
@@ -300,14 +327,14 @@ export default function AdminDashboard() {
                   <div className="flex justify-center mb-4 bg-card rounded-2xl p-4">
                     <QRCodeSVG
                       id={`qr-${selectedQR}`}
-                      value={`${baseUrl}/?guest=${encodeURIComponent(selectedQR)}`}
+                      value={guestUrl(selectedQR)}
                       size={256}
                       fgColor="hsl(30, 10%, 30%)"
                       bgColor="transparent"
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mb-4 break-all">
-                    {baseUrl}/?guest={encodeURIComponent(selectedQR)}
+                    {guestUrl(selectedQR)}
                   </p>
                   <div className="flex gap-3 justify-center">
                     <motion.button
@@ -357,6 +384,8 @@ export default function AdminDashboard() {
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground"># Guests</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Meal</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Note</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
@@ -373,6 +402,8 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-foreground">{g.numberOfGuests}</td>
+                    <td className="px-4 py-3 text-muted-foreground capitalize">{g.mealPreference || '—'}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-[200px] truncate" title={g.note}>{g.note || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -749,6 +780,11 @@ export default function AdminDashboard() {
           <div className={sectionCard}>
             <h3 className="font-display text-lg font-semibold text-foreground">🏦 Bank & Gift Settings</h3>
             <p className="text-sm text-muted-foreground">Upload your bank QR code and set account details.</p>
+
+            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl bg-muted/30">
+              <input type="checkbox" checked={data.giftEnabled} onChange={e => data.setGiftEnabled(e.target.checked)} className="w-4 h-4" />
+              <span className="text-sm font-medium">Show gift section on public invitation</span>
+            </label>
             
             {/* QR Upload */}
             <div>

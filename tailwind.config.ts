@@ -17,6 +17,8 @@ export default {
         display: ["'Playfair Display'", "'Cormorant Garamond'", "serif"],
         sans: ["'Figtree'", "sans-serif"],
         khmer: ["'Kantumruy Pro'", "sans-serif"],
+        "khmer-display": ["'Moul'", "'Kantumruy Pro'", "sans-serif"],
+        "khmer-serif": ["'Battambang'", "'Kantumruy Pro'", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",

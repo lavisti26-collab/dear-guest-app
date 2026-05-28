@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
+import { MUSIC_PLAY_EVENT } from '@/lib/wedding-music';
 
 export default function MusicToggle() {
   const { t } = useLanguage();
@@ -32,11 +33,29 @@ export default function MusicToggle() {
     }
     if (playing) {
       audioRef.current.pause();
+      setPlaying(false);
     } else {
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+      return;
     }
-    setPlaying(!playing);
   };
+
+  // Auto-start music when envelope is opened (user-gesture event satisfies autoplay)
+  useEffect(() => {
+    const handler = () => {
+      const src = getMusicSource();
+      if (!src) return;
+      if (!audioRef.current || currentUrlRef.current !== src) {
+        audioRef.current = new Audio(src);
+        audioRef.current.loop = true;
+        audioRef.current.volume = 0.25;
+        currentUrlRef.current = src;
+      }
+      audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+    };
+    window.addEventListener(MUSIC_PLAY_EVENT, handler);
+    return () => window.removeEventListener(MUSIC_PLAY_EVENT, handler);
+  }, [settings.musicUrl, settings.musicFile]);
 
   return (
     <motion.button

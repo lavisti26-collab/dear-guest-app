@@ -8,9 +8,11 @@ const spring = { type: "spring" as const, duration: 0.8, bounce: 0.08 };
 
 export default function GiftSection() {
   const { t, lang } = useLanguage();
-  const { bankName, bankAccount, bankQR } = useWeddingData();
+  const { bankName, bankAccount, bankQR, giftEnabled } = useWeddingData();
   const fontClass = lang === 'km' ? 'font-khmer' : '';
   const [copied, setCopied] = useState(false);
+
+  if (!giftEnabled) return null;
 
   const copyAccount = () => {
     navigator.clipboard.writeText(bankAccount).then(() => {

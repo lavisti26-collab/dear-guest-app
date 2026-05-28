@@ -18,23 +18,32 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          meal_preference: string | null
           name: string
+          note: string | null
           number_of_guests: number
           rsvp_status: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          meal_preference?: string | null
           name: string
+          note?: string | null
           number_of_guests?: number
           rsvp_status?: string
+          user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          meal_preference?: string | null
           name?: string
+          note?: string | null
           number_of_guests?: number
           rsvp_status?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -43,16 +52,55 @@ export type Database = {
           created_at: string
           id: string
           url: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           url: string
+          user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          is_super_admin: boolean
+          slug: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          is_super_admin?: boolean
+          slug: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          is_super_admin?: boolean
+          slug?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -65,6 +113,7 @@ export type Database = {
           time_km: string | null
           title_en: string | null
           title_km: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -74,6 +123,7 @@ export type Database = {
           time_km?: string | null
           title_en?: string | null
           title_km?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -83,6 +133,7 @@ export type Database = {
           time_km?: string | null
           title_en?: string | null
           title_km?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -98,6 +149,7 @@ export type Database = {
           created_at: string
           gift_bank_account: string | null
           gift_bank_name: string | null
+          gift_enabled: boolean
           gift_qr_code: string | null
           hero_image: string | null
           id: string
@@ -107,6 +159,7 @@ export type Database = {
           music_file: string | null
           music_url: string | null
           updated_at: string
+          user_id: string
           venue: string | null
           venue_km: string | null
           wedding_date: string | null
@@ -128,6 +181,7 @@ export type Database = {
           created_at?: string
           gift_bank_account?: string | null
           gift_bank_name?: string | null
+          gift_enabled?: boolean
           gift_qr_code?: string | null
           hero_image?: string | null
           id?: string
@@ -137,6 +191,7 @@ export type Database = {
           music_file?: string | null
           music_url?: string | null
           updated_at?: string
+          user_id: string
           venue?: string | null
           venue_km?: string | null
           wedding_date?: string | null
@@ -158,6 +213,7 @@ export type Database = {
           created_at?: string
           gift_bank_account?: string | null
           gift_bank_name?: string | null
+          gift_enabled?: boolean
           gift_qr_code?: string | null
           hero_image?: string | null
           id?: string
@@ -167,6 +223,7 @@ export type Database = {
           music_file?: string | null
           music_url?: string | null
           updated_at?: string
+          user_id?: string
           venue?: string | null
           venue_km?: string | null
           wedding_date?: string | null
@@ -185,18 +242,21 @@ export type Database = {
           guest_name: string
           id: string
           message: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
           guest_name: string
           id?: string
           message?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string
           guest_name?: string
           id?: string
           message?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -205,7 +265,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_id_by_slug: { Args: { _slug: string }; Returns: string }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
