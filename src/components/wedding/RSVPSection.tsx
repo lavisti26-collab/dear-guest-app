@@ -14,12 +14,14 @@ export default function RSVPSection({ guestName }: Props) {
   const fontClass = lang === 'km' ? 'font-khmer' : '';
   const [attending, setAttending] = useState<boolean | null>(null);
   const [numGuests, setNumGuests] = useState(1);
+  const [meal, setMeal] = useState('');
+  const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (attending === null) return;
-    updateRSVP(guestName || 'Guest', attending ? 'attending' : 'not_attending', numGuests);
+    updateRSVP(guestName || 'Guest', attending ? 'attending' : 'not_attending', numGuests, meal, note);
     setSubmitted(true);
     if (attending) {
       confetti({
@@ -85,14 +87,31 @@ export default function RSVPSection({ guestName }: Props) {
 
           {attending && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden">
-              <label className={`block text-xs text-muted-foreground mb-1.5 ${fontClass}`}>{t('rsvp.guests')}</label>
-              <select
-                value={numGuests}
-                onChange={e => setNumGuests(Number(e.target.value))}
-                className="w-full min-h-[44px] rounded-xl border border-border bg-ivory/80 backdrop-blur-sm px-4 text-foreground focus:ring-2 focus:ring-gold"
-              >
-                {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
-              </select>
+              <div className="space-y-3 text-left">
+                <div>
+                  <label className={`block text-xs text-muted-foreground mb-1.5 ${fontClass}`}>{t('rsvp.guests')}</label>
+                  <select value={numGuests} onChange={e => setNumGuests(Number(e.target.value))}
+                    className="w-full min-h-[44px] rounded-xl border border-border bg-ivory/80 backdrop-blur-sm px-4 text-foreground focus:ring-2 focus:ring-gold">
+                    {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={`block text-xs text-muted-foreground mb-1.5 ${fontClass}`}>Meal preference</label>
+                  <select value={meal} onChange={e => setMeal(e.target.value)}
+                    className="w-full min-h-[44px] rounded-xl border border-border bg-ivory/80 backdrop-blur-sm px-4 text-foreground focus:ring-2 focus:ring-gold">
+                    <option value="">No preference</option>
+                    <option value="meat">🍖 Meat</option>
+                    <option value="seafood">🦐 Seafood</option>
+                    <option value="vegetarian">🥗 Vegetarian</option>
+                    <option value="vegan">🌱 Vegan</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={`block text-xs text-muted-foreground mb-1.5 ${fontClass}`}>Note for the couple (optional)</label>
+                  <textarea value={note} onChange={e => setNote(e.target.value)} rows={2} maxLength={300}
+                    className="w-full rounded-xl border border-border bg-ivory/80 backdrop-blur-sm px-4 py-2 text-foreground focus:ring-2 focus:ring-gold" />
+                </div>
+              </div>
             </motion.div>
           )}
 
