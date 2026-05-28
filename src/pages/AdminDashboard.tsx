@@ -204,6 +204,23 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
         {/* GUESTS TAB */}
         {tab === 'guests' && (
           <div className="space-y-6">
+            {publicUrl && (
+              <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row gap-5 items-center">
+                <div className="bg-card rounded-xl p-3">
+                  <QRCodeSVG id="main-qr" value={publicUrl} size={140} fgColor="hsl(30, 10%, 30%)" bgColor="transparent" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Your public invitation link</p>
+                  <p className="font-medium text-foreground break-all mb-3">{publicUrl}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <button onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Link copied!'); }} className="text-xs bg-accent/20 rounded-full px-3 py-1.5 hover:bg-accent/30">📋 Copy link</button>
+                    <button onClick={() => downloadQR('main')} className="text-xs bg-accent text-accent-foreground rounded-full px-3 py-1.5">📥 Download QR</button>
+                    <a href={publicUrl} target="_blank" rel="noreferrer" className="text-xs bg-primary/30 rounded-full px-3 py-1.5">↗ Open</a>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={addGuest} className="flex gap-3">
               <input
                 type="text"
