@@ -207,7 +207,7 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
             {publicUrl && (
               <div className="glass-card rounded-2xl p-5 flex flex-col sm:flex-row gap-5 items-center">
                 <div className="bg-card rounded-xl p-3">
-                  <QRCodeSVG id="main-qr" value={publicUrl} size={140} fgColor="hsl(30, 10%, 30%)" bgColor="transparent" />
+                  <QRCodeSVG id="qr-main" value={publicUrl} size={140} fgColor="hsl(30, 10%, 30%)" bgColor="transparent" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Your public invitation link</p>
