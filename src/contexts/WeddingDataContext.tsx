@@ -60,35 +60,35 @@ interface WeddingData {
   bankName: string;
   bankAccount: string;
   bankQR: string;
+  giftEnabled: boolean;
   settings: WeddingSettings;
   programSchedule: ProgramItem[];
-  addGuest: (name: string) => void;
-  removeGuest: (id: string) => void;
-  updateRSVP: (name: string, status: 'attending' | 'not_attending', numGuests: number, meal?: string, note?: string) => void;
-  addWish: (name: string, message: string) => void;
-  addPhoto: (url: string) => void;
-  removePhoto: (url: string) => void;
-  setBankInfo: (name: string, account: string, qr: string) => void;
-  updateSettings: (s: Partial<WeddingSettings>) => void;
-  addProgramItem: (item: Omit<ProgramItem, 'id'>) => void;
-  removeProgramItem: (id: string) => void;
-  updateProgramItem: (id: string, item: Partial<ProgramItem>) => void;
-  giftEnabled: boolean;
-  setGiftEnabled: (v: boolean) => void;
+  addGuest: (name: string) => Promise<void>;
+  removeGuest: (id: string) => Promise<void>;
+  updateRSVP: (name: string, status: 'attending' | 'not_attending', numGuests: number, meal?: string, note?: string) => Promise<void>;
+  addWish: (name: string, message: string) => Promise<void>;
+  addPhoto: (url: string) => Promise<void>;
+  removePhoto: (url: string) => Promise<void>;
+  setBankInfo: (name: string, account: string, qr: string) => Promise<void>;
+  setGiftEnabled: (v: boolean) => Promise<void>;
+  updateSettings: (s: Partial<WeddingSettings>) => Promise<void>;
+  addProgramItem: (item: Omit<ProgramItem, 'id'>) => Promise<void>;
+  removeProgramItem: (id: string) => Promise<void>;
+  updateProgramItem: (id: string, item: Partial<ProgramItem>) => Promise<void>;
 }
 
 const WeddingDataContext = createContext<WeddingData | null>(null);
 
 const defaultSettings: WeddingSettings = {
-  coupleNames: 'Dara & Sophea',
-  coupleNamesKm: 'តារា & សុភា',
-  weddingDate: 'Saturday, 20 December 2026',
-  weddingDateKm: 'ថ្ងៃសៅរ៍ ២០ ខែធ្នូ ២០២៦',
-  weddingTime: '11:30 AM',
-  weddingTimeKm: '១១:៣០ ព្រឹក',
-  venueName: 'The Grand Palace Hotel',
-  venueNameKm: 'សណ្ឋាគារ ព្រះបរមរាជវាំង',
-  weddingDateTime: '2026-12-20T11:30:00',
+  coupleNames: 'Bride & Groom',
+  coupleNamesKm: 'កូនកំលោះ និង កូនក្រមុំ',
+  weddingDate: 'TBA',
+  weddingDateKm: '',
+  weddingTime: '',
+  weddingTimeKm: '',
+  venueName: 'TBA',
+  venueNameKm: '',
+  weddingDateTime: '',
   calendarUrl: '',
   mapLat: '11.5564',
   mapLng: '104.9282',
@@ -100,11 +100,10 @@ const defaultSettings: WeddingSettings = {
   musicUrl: '',
   musicFile: '',
   heroImage: '',
-  weddingDescription: 'We joyfully invite you to celebrate the beginning of our new journey together.',
+  weddingDescription: 'We joyfully invite you to celebrate our special day.',
   weddingDescriptionKm: 'យើងខ្ញុំសូមគោរពអញ្ជើញអ្នកមកចូលរួមពិធីមង្គលការរបស់យើង។',
 };
 
-// Map DB row to app Guest
 function dbToGuest(row: any): Guest {
   return {
     id: row.id,
@@ -116,7 +115,6 @@ function dbToGuest(row: any): Guest {
   };
 }
 
-// Map DB row to app Wish
 function dbToWish(row: any): Wish {
   return {
     id: row.id,
@@ -126,8 +124,7 @@ function dbToWish(row: any): Wish {
   };
 }
 
-// Map DB settings row to app WeddingSettings + bank info
-function dbToSettings(row: any): { settings: WeddingSettings; bankName: string; bankAccount: string; bankQR: string } {
+function dbToSettings(row: any) {
   return {
     settings: {
       coupleNames: row.couple_names || defaultSettings.coupleNames,
@@ -143,234 +140,215 @@ function dbToSettings(row: any): { settings: WeddingSettings; bankName: string; 
       mapLat: row.map_lat || defaultSettings.mapLat,
       mapLng: row.map_lng || defaultSettings.mapLng,
       mapEmbedUrl: row.map_embed_url || defaultSettings.mapEmbedUrl,
-      contactTelegram: row.contact_telegram || defaultSettings.contactTelegram,
-      contactPhone: row.contact_phone || defaultSettings.contactPhone,
-      contactFacebook: row.contact_facebook || defaultSettings.contactFacebook,
-      contactEmail: row.contact_email || defaultSettings.contactEmail,
-      musicUrl: row.music_url || defaultSettings.musicUrl,
-      musicFile: row.music_file || defaultSettings.musicFile,
-      heroImage: row.hero_image || defaultSettings.heroImage,
+      contactTelegram: row.contact_telegram || '',
+      contactPhone: row.contact_phone || '',
+      contactFacebook: row.contact_facebook || '',
+      contactEmail: row.contact_email || '',
+      musicUrl: row.music_url || '',
+      musicFile: row.music_file || '',
+      heroImage: row.hero_image || '',
       weddingDescription: row.wedding_description || defaultSettings.weddingDescription,
       weddingDescriptionKm: row.wedding_description_km || defaultSettings.weddingDescriptionKm,
-    },
-    bankName: row.gift_bank_name || 'ABA Bank',
-    bankAccount: row.gift_bank_account || '001 234 567',
+    } as WeddingSettings,
+    bankName: row.gift_bank_name || '',
+    bankAccount: row.gift_bank_account || '',
     bankQR: row.gift_qr_code || '',
+    giftEnabled: row.gift_enabled !== false,
   };
 }
 
-export function WeddingDataProvider({ children }: { children: ReactNode }) {
+interface ProviderProps {
+  children: ReactNode;
+  ownerUserId: string | null;
+}
+
+export function WeddingDataProvider({ children, ownerUserId }: ProviderProps) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
-  const [bankName, setBankName] = useState('ABA Bank');
-  const [bankAccount, setBankAccount] = useState('001 234 567');
+  const [bankName, setBankName] = useState('');
+  const [bankAccount, setBankAccount] = useState('');
   const [bankQR, setBankQR] = useState('');
+  const [giftEnabled, setGiftEnabledState] = useState(true);
   const [settings, setSettings] = useState<WeddingSettings>(defaultSettings);
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [programSchedule, setProgramSchedule] = useState<ProgramItem[]>([]);
+  const [ready, setReady] = useState(false);
 
-  // --- Fetch initial data ---
   useEffect(() => {
+    if (!ownerUserId) { setReady(false); return; }
+    let cancelled = false;
+    setReady(false);
     const fetchAll = async () => {
       const [guestsRes, wishesRes, photosRes, settingsRes, programRes] = await Promise.all([
-        supabase.from('guests').select('*').order('created_at', { ascending: true }),
-        supabase.from('wishes').select('*').order('created_at', { ascending: false }),
-        supabase.from('photos').select('*').order('created_at', { ascending: true }),
-        supabase.from('settings').select('*').limit(1).single(),
-        supabase.from('program_schedule').select('*').order('order_index', { ascending: true }),
+        supabase.from('guests').select('*').eq('user_id', ownerUserId).order('created_at', { ascending: true }),
+        supabase.from('wishes').select('*').eq('user_id', ownerUserId).order('created_at', { ascending: false }),
+        supabase.from('photos').select('*').eq('user_id', ownerUserId).order('created_at', { ascending: true }),
+        supabase.from('settings').select('*').eq('user_id', ownerUserId).maybeSingle(),
+        supabase.from('program_schedule').select('*').eq('user_id', ownerUserId).order('order_index', { ascending: true }),
       ]);
-
-      if (guestsRes.data) setGuests(guestsRes.data.map(dbToGuest));
-      if (wishesRes.data) setWishes(wishesRes.data.map(dbToWish));
-      if (photosRes.data) setPhotos(photosRes.data.map((p: any) => p.url));
-      if (programRes.data) setProgramSchedule(programRes.data as ProgramItem[]);
-
+      if (cancelled) return;
+      setGuests(guestsRes.data?.map(dbToGuest) || []);
+      setWishes(wishesRes.data?.map(dbToWish) || []);
+      setPhotos(photosRes.data?.map((p: any) => p.url) || []);
+      setProgramSchedule((programRes.data as ProgramItem[]) || []);
       if (settingsRes.data) {
-        const mapped = dbToSettings(settingsRes.data);
-        setSettings(mapped.settings);
-        setBankName(mapped.bankName);
-        setBankAccount(mapped.bankAccount);
-        setBankQR(mapped.bankQR);
+        const m = dbToSettings(settingsRes.data);
+        setSettings(m.settings);
+        setBankName(m.bankName);
+        setBankAccount(m.bankAccount);
+        setBankQR(m.bankQR);
+        setGiftEnabledState(m.giftEnabled);
         setSettingsId(settingsRes.data.id);
+      } else {
+        setSettings(defaultSettings);
+        setSettingsId(null);
       }
+      setReady(true);
     };
     fetchAll();
-  }, []);
+    return () => { cancelled = true; };
+  }, [ownerUserId]);
 
-  // --- Real-time subscriptions ---
   useEffect(() => {
+    if (!ownerUserId) return;
     const channel = supabase
-      .channel('wedding-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setGuests(prev => {
-            if (prev.find(g => g.id === payload.new.id)) return prev;
-            return [...prev, dbToGuest(payload.new)];
-          });
-        } else if (payload.eventType === 'UPDATE') {
-          setGuests(prev => prev.map(g => g.id === payload.new.id ? dbToGuest(payload.new) : g));
-        } else if (payload.eventType === 'DELETE') {
-          setGuests(prev => prev.filter(g => g.id !== payload.old.id));
-        }
+      .channel(`wedding-${ownerUserId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'guests', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+        if (payload.eventType === 'INSERT') setGuests(p => p.find(g => g.id === payload.new.id) ? p : [...p, dbToGuest(payload.new)]);
+        else if (payload.eventType === 'UPDATE') setGuests(p => p.map(g => g.id === payload.new.id ? dbToGuest(payload.new) : g));
+        else if (payload.eventType === 'DELETE') setGuests(p => p.filter(g => g.id !== payload.old.id));
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setWishes(prev => {
-            if (prev.find(w => w.id === payload.new.id)) return prev;
-            return [dbToWish(payload.new), ...prev];
-          });
-        } else if (payload.eventType === 'DELETE') {
-          setWishes(prev => prev.filter(w => w.id !== payload.old.id));
-        }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+        if (payload.eventType === 'INSERT') setWishes(p => p.find(w => w.id === payload.new.id) ? p : [dbToWish(payload.new), ...p]);
+        else if (payload.eventType === 'DELETE') setWishes(p => p.filter(w => w.id !== payload.old.id));
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'photos' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setPhotos(prev => {
-            if (prev.includes(payload.new.url)) return prev;
-            return [...prev, payload.new.url];
-          });
-        } else if (payload.eventType === 'DELETE') {
-          setPhotos(prev => prev.filter(p => p !== payload.old.url));
-        }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'photos', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+        if (payload.eventType === 'INSERT') setPhotos(p => p.includes(payload.new.url) ? p : [...p, payload.new.url]);
+        else if (payload.eventType === 'DELETE') setPhotos(p => p.filter(u => u !== payload.old.url));
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, (payload) => {
-        const mapped = dbToSettings(payload.new);
-        setSettings(mapped.settings);
-        setBankName(mapped.bankName);
-        setBankAccount(mapped.bankAccount);
-        setBankQR(mapped.bankQR);
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+        const m = dbToSettings(payload.new);
+        setSettings(m.settings); setBankName(m.bankName); setBankAccount(m.bankAccount); setBankQR(m.bankQR); setGiftEnabledState(m.giftEnabled);
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'program_schedule' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setProgramSchedule(prev => {
-            if (prev.find(p => p.id === payload.new.id)) return prev;
-            return [...prev, payload.new as ProgramItem].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
-          });
-        } else if (payload.eventType === 'UPDATE') {
-          setProgramSchedule(prev => prev.map(p => p.id === payload.new.id ? payload.new as ProgramItem : p).sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
-        } else if (payload.eventType === 'DELETE') {
-          setProgramSchedule(prev => prev.filter(p => p.id !== payload.old.id));
-        }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'program_schedule', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+        if (payload.eventType === 'INSERT') setProgramSchedule(p => p.find(x => x.id === payload.new.id) ? p : [...p, payload.new as ProgramItem].sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
+        else if (payload.eventType === 'UPDATE') setProgramSchedule(p => p.map(x => x.id === payload.new.id ? payload.new as ProgramItem : x).sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
+        else if (payload.eventType === 'DELETE') setProgramSchedule(p => p.filter(x => x.id !== payload.old.id));
       })
       .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [ownerUserId]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  const requireOwner = () => {
+    if (!ownerUserId) throw new Error('No wedding owner set');
+    return ownerUserId;
+  };
 
-  // --- Mutations ---
   const addGuest = useCallback(async (name: string) => {
-    await supabase.from('guests').insert({ name, rsvp_status: 'pending', number_of_guests: 1 });
-  }, []);
+    const uid = requireOwner();
+    await supabase.from('guests').insert({ user_id: uid, name, rsvp_status: 'pending', number_of_guests: 1 } as any);
+  }, [ownerUserId]);
 
   const removeGuest = useCallback(async (id: string) => {
     await supabase.from('guests').delete().eq('id', id);
   }, []);
 
-  const updateRSVP = useCallback(async (name: string, status: 'attending' | 'not_attending', numGuests: number) => {
-    const { data } = await supabase.from('guests').select('id').ilike('name', name).limit(1).single();
+  const updateRSVP = useCallback(async (name: string, status: 'attending' | 'not_attending', numGuests: number, meal?: string, note?: string) => {
+    const uid = requireOwner();
+    const { data } = await supabase.from('guests').select('id').eq('user_id', uid).ilike('name', name).limit(1).maybeSingle();
+    const payload: any = { rsvp_status: status, number_of_guests: numGuests };
+    if (meal !== undefined) payload.meal_preference = meal;
+    if (note !== undefined) payload.note = note;
     if (data) {
-      await supabase.from('guests').update({ rsvp_status: status, number_of_guests: numGuests }).eq('id', data.id);
+      await supabase.from('guests').update(payload).eq('id', data.id);
     } else {
-      await supabase.from('guests').insert({ name, rsvp_status: status, number_of_guests: numGuests });
+      await supabase.from('guests').insert({ user_id: uid, name, ...payload } as any);
     }
-  }, []);
+  }, [ownerUserId]);
 
   const addWish = useCallback(async (guestName: string, message: string) => {
-    await supabase.from('wishes').insert({ guest_name: guestName, message });
-  }, []);
+    const uid = requireOwner();
+    await supabase.from('wishes').insert({ user_id: uid, guest_name: guestName, message } as any);
+  }, [ownerUserId]);
 
   const addPhoto = useCallback(async (url: string) => {
-    await supabase.from('photos').insert({ url });
-  }, []);
+    const uid = requireOwner();
+    await supabase.from('photos').insert({ user_id: uid, url } as any);
+  }, [ownerUserId]);
 
   const removePhoto = useCallback(async (url: string) => {
     await supabase.from('photos').delete().eq('url', url);
   }, []);
 
+  const ensureSettingsRow = async () => {
+    const uid = requireOwner();
+    if (settingsId) return settingsId;
+    const { data } = await supabase.from('settings').insert({ user_id: uid } as any).select('id').single();
+    if (data) { setSettingsId(data.id); return data.id; }
+    throw new Error('Failed to create settings');
+  };
+
   const setBankInfo = useCallback(async (name: string, account: string, qr: string) => {
-    const update = { gift_bank_name: name, gift_bank_account: account, gift_qr_code: qr };
-    if (settingsId) {
-      await supabase.from('settings').update(update).eq('id', settingsId);
-    } else {
-      const { data } = await supabase.from('settings').insert(update as any).select('id').single();
-      if (data) setSettingsId(data.id);
-    }
-    setBankName(name);
-    setBankAccount(account);
-    setBankQR(qr);
-  }, [settingsId]);
+    const id = await ensureSettingsRow();
+    await supabase.from('settings').update({ gift_bank_name: name, gift_bank_account: account, gift_qr_code: qr }).eq('id', id);
+    setBankName(name); setBankAccount(account); setBankQR(qr);
+  }, [settingsId, ownerUserId]);
+
+  const setGiftEnabled = useCallback(async (v: boolean) => {
+    const id = await ensureSettingsRow();
+    await supabase.from('settings').update({ gift_enabled: v }).eq('id', id);
+    setGiftEnabledState(v);
+  }, [settingsId, ownerUserId]);
 
   const updateSettings = useCallback(async (s: Partial<WeddingSettings>) => {
-    const dbUpdate: Record<string, any> = {};
-    if (s.coupleNames !== undefined) dbUpdate.couple_names = s.coupleNames;
-    if (s.coupleNamesKm !== undefined) dbUpdate.couple_names_km = s.coupleNamesKm;
-    if (s.weddingDate !== undefined) dbUpdate.wedding_date = s.weddingDate;
-    if (s.weddingDateKm !== undefined) dbUpdate.wedding_date_km = s.weddingDateKm;
-    if (s.weddingTime !== undefined) dbUpdate.wedding_time = s.weddingTime;
-    if (s.weddingTimeKm !== undefined) dbUpdate.wedding_time_km = s.weddingTimeKm;
-    if (s.venueName !== undefined) dbUpdate.venue = s.venueName;
-    if (s.venueNameKm !== undefined) dbUpdate.venue_km = s.venueNameKm;
-    if (s.weddingDateTime !== undefined) dbUpdate.wedding_date_time = s.weddingDateTime;
-    if (s.calendarUrl !== undefined) dbUpdate.calendar_url = s.calendarUrl;
-    if (s.mapLat !== undefined) dbUpdate.map_lat = s.mapLat;
-    if (s.mapLng !== undefined) dbUpdate.map_lng = s.mapLng;
-    if (s.mapEmbedUrl !== undefined) dbUpdate.map_embed_url = s.mapEmbedUrl;
-    if (s.contactTelegram !== undefined) dbUpdate.contact_telegram = s.contactTelegram;
-    if (s.contactPhone !== undefined) dbUpdate.contact_phone = s.contactPhone;
-    if (s.contactFacebook !== undefined) dbUpdate.contact_facebook = s.contactFacebook;
-    if (s.contactEmail !== undefined) dbUpdate.contact_email = s.contactEmail;
-    if (s.musicUrl !== undefined) dbUpdate.music_url = s.musicUrl;
-    if (s.musicFile !== undefined) dbUpdate.music_file = s.musicFile;
-    if (s.heroImage !== undefined) dbUpdate.hero_image = s.heroImage;
-    if (s.weddingDescription !== undefined) dbUpdate.wedding_description = s.weddingDescription;
-    if (s.weddingDescriptionKm !== undefined) dbUpdate.wedding_description_km = s.weddingDescriptionKm;
-
-    if (Object.keys(dbUpdate).length === 0) return;
-
-    if (settingsId) {
-      await supabase.from('settings').update(dbUpdate).eq('id', settingsId);
-    } else {
-      const { data } = await supabase.from('settings').insert(dbUpdate).select('id').single();
-      if (data) setSettingsId(data.id);
+    const id = await ensureSettingsRow();
+    const dbUpdate: any = {};
+    const m: Record<string, string> = {
+      coupleNames: 'couple_names', coupleNamesKm: 'couple_names_km', weddingDate: 'wedding_date', weddingDateKm: 'wedding_date_km',
+      weddingTime: 'wedding_time', weddingTimeKm: 'wedding_time_km', venueName: 'venue', venueNameKm: 'venue_km',
+      weddingDateTime: 'wedding_date_time', calendarUrl: 'calendar_url', mapLat: 'map_lat', mapLng: 'map_lng', mapEmbedUrl: 'map_embed_url',
+      contactTelegram: 'contact_telegram', contactPhone: 'contact_phone', contactFacebook: 'contact_facebook', contactEmail: 'contact_email',
+      musicUrl: 'music_url', musicFile: 'music_file', heroImage: 'hero_image',
+      weddingDescription: 'wedding_description', weddingDescriptionKm: 'wedding_description_km',
+    };
+    for (const [k, v] of Object.entries(s)) {
+      if (v !== undefined && m[k]) dbUpdate[m[k]] = v;
     }
+    if (Object.keys(dbUpdate).length === 0) return;
+    await supabase.from('settings').update(dbUpdate).eq('id', id);
     setSettings(prev => ({ ...prev, ...s }));
-  }, [settingsId]);
+  }, [settingsId, ownerUserId]);
 
   const addProgramItem = useCallback(async (item: Omit<ProgramItem, 'id'>) => {
+    const uid = requireOwner();
     const { error } = await supabase.from('program_schedule').insert({
-      time_en: item.time_en,
-      time_km: item.time_km,
-      title_en: item.title_en,
-      title_km: item.title_km,
-      order_index: item.order_index || programSchedule.length,
-    });
+      user_id: uid,
+      time_en: item.time_en, time_km: item.time_km,
+      title_en: item.title_en, title_km: item.title_km,
+      order_index: item.order_index ?? programSchedule.length,
+    } as any);
     if (error) throw error;
-  }, [programSchedule.length]);
+  }, [programSchedule.length, ownerUserId]);
 
   const removeProgramItem = useCallback(async (id: string) => {
-    const { error } = await supabase.from('program_schedule').delete().eq('id', id);
-    if (error) throw error;
+    await supabase.from('program_schedule').delete().eq('id', id);
   }, []);
 
   const updateProgramItem = useCallback(async (id: string, item: Partial<ProgramItem>) => {
-    const dbUpdate: Record<string, any> = {};
-    if (item.time_en !== undefined) dbUpdate.time_en = item.time_en;
-    if (item.time_km !== undefined) dbUpdate.time_km = item.time_km;
-    if (item.title_en !== undefined) dbUpdate.title_en = item.title_en;
-    if (item.title_km !== undefined) dbUpdate.title_km = item.title_km;
-    if (item.order_index !== undefined) dbUpdate.order_index = item.order_index;
-    if (Object.keys(dbUpdate).length > 0) {
-      await supabase.from('program_schedule').update(dbUpdate).eq('id', id);
+    const dbUpdate: any = {};
+    for (const k of ['time_en', 'time_km', 'title_en', 'title_km', 'order_index'] as const) {
+      if (item[k] !== undefined) dbUpdate[k] = item[k];
     }
+    if (Object.keys(dbUpdate).length > 0) await supabase.from('program_schedule').update(dbUpdate).eq('id', id);
   }, []);
 
   return (
     <WeddingDataContext.Provider value={{
-      guests, wishes, photos, bankName, bankAccount, bankQR, settings, programSchedule,
-      addGuest, removeGuest, updateRSVP, addWish, addPhoto, removePhoto, setBankInfo, updateSettings,
+      ownerUserId, ready,
+      guests, wishes, photos, bankName, bankAccount, bankQR, giftEnabled, settings, programSchedule,
+      addGuest, removeGuest, updateRSVP, addWish, addPhoto, removePhoto,
+      setBankInfo, setGiftEnabled, updateSettings,
       addProgramItem, removeProgramItem, updateProgramItem,
     }}>
       {children}
