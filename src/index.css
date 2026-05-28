@@ -129,18 +129,31 @@
 @layer utilities {
   .font-khmer {
     font-family: 'Kantumruy Pro', sans-serif;
-    font-size: 1.05em;
-    line-height: 1.8;
-    letter-spacing: 0.01em;
+    font-size: 1.08em;
+    line-height: 1.85;
+    letter-spacing: 0.015em;
+    font-weight: 400;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Khmer heading sizes - bigger and bolder */
+  /* Khmer headings use Moul — the traditional Khmer display font */
   h1.font-khmer, h2.font-khmer, h3.font-khmer {
-    font-family: 'Kantumruy Pro', sans-serif;
-    font-size: 1.15em;
-    line-height: 1.4;
-    font-weight: 700;
+    font-family: 'Moul', 'Kantumruy Pro', sans-serif;
+    font-size: 1.1em;
+    line-height: 1.55;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+  }
+
+  .font-khmer-display {
+    font-family: 'Moul', 'Kantumruy Pro', sans-serif;
+    line-height: 1.55;
+    letter-spacing: 0.02em;
+  }
+
+  .font-khmer-serif {
+    font-family: 'Battambang', 'Kantumruy Pro', serif;
+    line-height: 1.8;
   }
 
   .font-display {

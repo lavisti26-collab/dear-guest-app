@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import confetti from 'canvas-confetti';
+import { requestPlayMusic } from '@/lib/wedding-music';
 
 interface EnvelopeProps {
   guestName: string;
@@ -38,6 +39,8 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
   const { t, lang } = useLanguage();
 
   const handleOpen = useCallback(() => {
+    // Trigger music inside the user gesture to satisfy browser autoplay policies.
+    requestPlayMusic();
     launchFireworks();
     onOpen();
   }, [onOpen]);
