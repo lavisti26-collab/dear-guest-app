@@ -165,6 +165,9 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
       <header className="glass-strong border-b border-border/30 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
         <h1 className="font-display text-xl font-semibold text-foreground">💍 Wedding Admin</h1>
         <div className="flex items-center gap-4">
+          {isSuperAdmin && (
+            <a href="/admin/super" className="text-sm bg-primary/30 rounded-full px-4 py-2 hover:bg-primary/50 transition-colors">👑 Super</a>
+          )}
           <a href={publicUrl || "/"} target="_blank" rel="noreferrer" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
           <button onClick={handleLogout} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Logout
