@@ -780,6 +780,11 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
           <div className={sectionCard}>
             <h3 className="font-display text-lg font-semibold text-foreground">🏦 Bank & Gift Settings</h3>
             <p className="text-sm text-muted-foreground">Upload your bank QR code and set account details.</p>
+
+            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl bg-muted/30">
+              <input type="checkbox" checked={data.giftEnabled} onChange={e => data.setGiftEnabled(e.target.checked)} className="w-4 h-4" />
+              <span className="text-sm font-medium">Show gift section on public invitation</span>
+            </label>
             
             {/* QR Upload */}
             <div>
