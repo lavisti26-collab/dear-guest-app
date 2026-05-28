@@ -165,7 +165,7 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
       <header className="glass-strong border-b border-border/30 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
         <h1 className="font-display text-xl font-semibold text-foreground">💍 Wedding Admin</h1>
         <div className="flex items-center gap-4">
-          <a href="/" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
+          <a href={publicUrl || "/"} target="_blank" rel="noreferrer" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
           <button onClick={handleLogout} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Logout
           </button>
@@ -253,7 +253,7 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                       <td className="px-4 py-3">
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(`${baseUrl}/?guest=${encodeURIComponent(g.name)}`);
+                            navigator.clipboard.writeText(guestUrl(g.name));
                             toast.success('Link copied!');
                           }}
                           className="text-accent hover:underline text-xs"
@@ -307,14 +307,14 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                   <div className="flex justify-center mb-4 bg-card rounded-2xl p-4">
                     <QRCodeSVG
                       id={`qr-${selectedQR}`}
-                      value={`${baseUrl}/?guest=${encodeURIComponent(selectedQR)}`}
+                      value={guestUrl(selectedQR)}
                       size={256}
                       fgColor="hsl(30, 10%, 30%)"
                       bgColor="transparent"
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mb-4 break-all">
-                    {baseUrl}/?guest={encodeURIComponent(selectedQR)}
+                    {guestUrl(selectedQR)}
                   </p>
                   <div className="flex gap-3 justify-center">
                     <motion.button
