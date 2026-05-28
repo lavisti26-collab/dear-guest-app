@@ -384,6 +384,8 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground"># Guests</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Meal</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Note</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
@@ -400,6 +402,8 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                       </span>
                     </td>
                     <td className="px-4 py-3 text-foreground">{g.numberOfGuests}</td>
+                    <td className="px-4 py-3 text-muted-foreground capitalize">{g.mealPreference || '—'}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-[200px] truncate" title={g.note}>{g.note || '—'}</td>
                   </tr>
                 ))}
               </tbody>
