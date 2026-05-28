@@ -81,7 +81,12 @@ function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
   );
 }
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  publicSlug?: string;
+  isSuperAdmin?: boolean;
+}
+
+export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }: AdminDashboardProps) {
   const [tab, setTab] = useState<Tab>('guests');
   const data = useWeddingData();
   const { theme, setTheme } = useTheme();
@@ -89,6 +94,8 @@ export default function AdminDashboard() {
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
 
   const baseUrl = window.location.origin;
+  const publicUrl = publicSlug ? `${baseUrl}/invite/${publicSlug}` : '';
+  const guestUrl = (name: string) => `${publicUrl}?guest=${encodeURIComponent(name)}`;
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
