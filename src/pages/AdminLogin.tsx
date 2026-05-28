@@ -31,8 +31,10 @@ export default function AdminLogin() {
 
   const handleGoogle = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-    if (error) toast.error(error.message);
+    const result = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: `${window.location.origin}/admin`,
+    });
+    if (result.error) toast.error(result.error.message);
     setLoading(false);
   };
 
