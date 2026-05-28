@@ -6,6 +6,8 @@ export interface Guest {
   name: string;
   rsvpStatus: 'pending' | 'attending' | 'not_attending';
   numberOfGuests: number;
+  mealPreference?: string;
+  note?: string;
 }
 
 export interface Wish {
@@ -50,6 +52,8 @@ export interface WeddingSettings {
 }
 
 interface WeddingData {
+  ownerUserId: string | null;
+  ready: boolean;
   guests: Guest[];
   wishes: Wish[];
   photos: string[];
@@ -60,7 +64,7 @@ interface WeddingData {
   programSchedule: ProgramItem[];
   addGuest: (name: string) => void;
   removeGuest: (id: string) => void;
-  updateRSVP: (name: string, status: 'attending' | 'not_attending', numGuests: number) => void;
+  updateRSVP: (name: string, status: 'attending' | 'not_attending', numGuests: number, meal?: string, note?: string) => void;
   addWish: (name: string, message: string) => void;
   addPhoto: (url: string) => void;
   removePhoto: (url: string) => void;
@@ -69,6 +73,8 @@ interface WeddingData {
   addProgramItem: (item: Omit<ProgramItem, 'id'>) => void;
   removeProgramItem: (id: string) => void;
   updateProgramItem: (id: string, item: Partial<ProgramItem>) => void;
+  giftEnabled: boolean;
+  setGiftEnabled: (v: boolean) => void;
 }
 
 const WeddingDataContext = createContext<WeddingData | null>(null);
@@ -105,6 +111,8 @@ function dbToGuest(row: any): Guest {
     name: row.name,
     rsvpStatus: (row.rsvp_status || 'pending') as Guest['rsvpStatus'],
     numberOfGuests: row.number_of_guests ?? 1,
+    mealPreference: row.meal_preference || '',
+    note: row.note || '',
   };
 }
 
