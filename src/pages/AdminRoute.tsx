@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/lovable-cloud';
 import AuthGuard from '@/components/AuthGuard';
 import { WeddingDataProvider } from '@/contexts/WeddingDataContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
