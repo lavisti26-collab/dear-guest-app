@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/lovable-cloud';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWeddingData } from '@/contexts/WeddingDataContext';

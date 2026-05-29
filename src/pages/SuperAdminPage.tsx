@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/lovable-cloud';
 import { Link } from 'react-router-dom';
 import AuthGuard from '@/components/AuthGuard';
 
