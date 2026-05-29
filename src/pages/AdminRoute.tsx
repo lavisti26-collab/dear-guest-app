@@ -5,8 +5,15 @@ import { WeddingDataProvider } from '@/contexts/WeddingDataContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import AdminDashboard from './AdminDashboard';
 
+type AdminProfile = {
+  user_id: string;
+  slug: string;
+  theme: string;
+  is_super_admin: boolean;
+};
+
 function AdminInner() {
-  const [profile, setProfile] = useState<{ user_id: string; slug: string; theme: string; is_super_admin: boolean } | null>(null);
+  const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,9 +35,9 @@ function AdminInner() {
           .select('user_id, slug, theme, is_super_admin')
           .maybeSingle();
         if (insErr) { setError(insErr.message); return; }
-        data = inserted as any;
+        data = inserted;
       }
-      if (data) setProfile(data as any);
+      if (data) setProfile(data);
       else setError('Could not load your profile.');
     })();
   }, []);
@@ -51,7 +58,7 @@ function AdminInner() {
   }
 
   return (
-    <ThemeProvider initialTheme={profile.theme as any} ownerUserId={profile.user_id}>
+    <ThemeProvider initialTheme={profile.theme as Parameters<typeof ThemeProvider>[0]['initialTheme']} ownerUserId={profile.user_id}>
       <WeddingDataProvider ownerUserId={profile.user_id}>
         <AdminDashboard publicSlug={profile.slug} isSuperAdmin={profile.is_super_admin} />
       </WeddingDataProvider>
