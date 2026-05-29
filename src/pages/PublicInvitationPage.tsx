@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/lovable-cloud';
 import { WeddingDataProvider } from '@/contexts/WeddingDataContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import InvitationPage from './InvitationPage';

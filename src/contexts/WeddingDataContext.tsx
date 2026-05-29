@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/lovable-cloud';
 
 export interface Guest {
   id: string;
