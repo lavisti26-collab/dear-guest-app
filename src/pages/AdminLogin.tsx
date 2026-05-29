@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/lovable-cloud';
 import { toast } from 'sonner';
 import { lovable } from '@/integrations/lovable';
 
