@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/lovable-cloud';
 import { toast } from 'sonner';
-import { lovable } from '@/integrations/lovable';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -31,10 +30,11 @@ export default function AdminLogin() {
 
   const handleGoogle = async () => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth('google', {
-      redirect_uri: `${window.location.origin}/admin`,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/admin` },
     });
-    if (result.error) toast.error(result.error.message);
+    if (error) toast.error(error.message);
     setLoading(false);
   };
 

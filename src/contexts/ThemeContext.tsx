@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/lovable-cloud';
 
 export type ThemeName = 'gold' | 'pink' | 'lavender' | 'rainbow' | 'classic' | 'modern' | 'romantic';
 
