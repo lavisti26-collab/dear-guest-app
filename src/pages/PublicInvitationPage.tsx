@@ -12,7 +12,7 @@ export default function PublicInvitationPage() {
 
   useEffect(() => {
     if (!slug) return;
-    supabase.from('profiles').select('user_id, theme').eq('slug', slug).maybeSingle()
+    supabase.from('profiles_public' as any).select('user_id, theme').eq('slug', slug).maybeSingle()
       .then(({ data }) => {
         if (data) setProfile(data as any);
         else setNotFound(true);

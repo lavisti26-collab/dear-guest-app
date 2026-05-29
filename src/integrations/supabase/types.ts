@@ -262,7 +262,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          display_name: string | null
+          slug: string | null
+          theme: string | null
+          user_id: string | null
+        }
+        Insert: {
+          display_name?: string | null
+          slug?: string | null
+          theme?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          display_name?: string | null
+          slug?: string | null
+          theme?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_user_id_by_slug: { Args: { _slug: string }; Returns: string }
