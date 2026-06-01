@@ -53,7 +53,7 @@ export default function ThemeAnimations() {
             animationDuration: `${p.duration}s`,
             fontSize: `${p.size}px`,
             opacity: 0.55,
-            ['--drift' as any]: `${p.drift}px`,
+['--drift' as string]: `${p.drift}px`,
             filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.35))',
           }}
         >

@@ -64,6 +64,38 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
 
+### Deploy with Netlify CLI
+
+If you want a local auto-deploy flow, install the Netlify CLI and configure two environment variables:
+
+- `NETLIFY_AUTH_TOKEN`
+- `NETLIFY_SITE_ID`
+
+Then run:
+
+```powershell
+npm run deploy:netlify
+```
+
+This will build the app and deploy the generated `dist` folder to your Netlify site.
+
+### Deploy from GitHub automatically
+
+A GitHub Actions workflow is included at `.github/workflows/netlify-deploy.yml`.
+
+When you push to `main` or `master`, GitHub will:
+
+1. install dependencies
+2. build the app
+3. deploy the `dist` folder to Netlify
+
+Set these repository secrets in GitHub:
+
+- `NETLIFY_AUTH_TOKEN`
+- `NETLIFY_SITE_ID`
+
+Then push your changes and GitHub Actions will deploy automatically.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

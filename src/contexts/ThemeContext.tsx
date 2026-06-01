@@ -1,24 +1,336 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/lib/lovable-cloud';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { PREMIUM_THEME_ACCENTS, PREMIUM_THEME_INFO } from '@/lib/premium-themes';
+import {
+  EXTENDED_INVITATION_COLORS,
+  EXTENDED_INVITATION_INFO,
+  EXTENDED_INVITATION_ACCENTS,
+  type ExtendedInvitationTheme,
+} from '@/lib/invitation-themes';
 
-export type ThemeName = 'gold' | 'pink' | 'lavender' | 'rainbow' | 'classic' | 'modern' | 'romantic';
+export type ThemeName =
+  | 'gold'
+  | 'pink'
+  | 'lavender'
+  | 'rainbow'
+  | 'classic'
+  | 'modern'
+  | 'romantic'
+  | 'luxury-emerald'
+  | 'rose-gold-elegance'
+  | 'nordic-frost'
+  | 'midnight-corporate'
+  | ExtendedInvitationTheme;
 
 interface ThemeContextType {
   theme: ThemeName;
   setTheme: (t: ThemeName) => void;
+  isDark: boolean;
 }
 
-const ThemeContext = createContext<ThemeContextType | null>(null);
+export const ThemeContext = createContext<ThemeContextType | null>(null);
 
-export const THEME_INFO: Record<ThemeName, { label: string; emoji: string; description: string; colors: string[] }> = {
-  classic: { label: 'Classic Elegant Khmer', emoji: '🪷', description: 'Traditional gold with Moul script', colors: ['#B8893E', '#E8C8A0', '#FAF3E7', '#5C3A1E'] },
-  modern: { label: 'Modern Minimalist', emoji: '⚪', description: 'Clean neutrals, sharp typography', colors: ['#2D2D2D', '#888888', '#F5F5F5', '#000000'] },
-  romantic: { label: 'Romantic Luxury', emoji: '💗', description: 'Rose-gold with soft blush tones', colors: ['#D4A76A', '#E8C8A0', '#F4C2C2', '#C9A96E'] },
-  gold: { label: 'Champagne Gold', emoji: '✨', description: 'Classic luxury with warm gold tones', colors: ['#D4A76A', '#E8C8A0', '#F4E4D0', '#C9A96E'] },
-  pink: { label: 'Blush Pink', emoji: '🌸', description: 'Soft romantic pink with rosy warmth', colors: ['#E8A0B4', '#F4C2D0', '#FFD6E0', '#D4708A'] },
-  lavender: { label: 'Dreamy Lavender', emoji: '💜', description: 'Elegant purple with gentle calm', colors: ['#B8A0D4', '#D0B8E8', '#E8D0F4', '#9A7EBE'] },
-  rainbow: { label: 'Pastel Rainbow', emoji: '🌈', description: 'Playful mix of soft pastels', colors: ['#FFB3BA', '#BAFFC9', '#BAE1FF', '#FFFFBA'] },
+// Define theme colors that map to CSS variables
+// All values are bare HSL triplets (no hsl() wrapper) because Tailwind uses hsl(var(--x))
+type ThemeColorTokens = {
+  primary: string;
+  primaryForeground: string;
+  accent: string;
+  accentForeground: string;
+  background: string;
+  foreground: string;
+  secondary: string;
+  secondaryForeground: string;
+  muted: string;
+  mutedForeground: string;
+  card: string;
+  cardForeground: string;
+  popover: string;
+  popoverForeground: string;
+  border: string;
+  input: string;
+  ring: string;
+  // Shadows (full values, not HSL)
+  shadowSurface: string;
+  shadowLuxury: string;
+  shadowGlow: string;
 };
+
+const CORE_THEME_COLORS: Record<string, ThemeColorTokens> = {
+  gold: {
+    primary:            '38 55% 58%',
+    primaryForeground:  '25 15% 18%',
+    accent:             '38 65% 52%',
+    accentForeground:   '38 60% 12%',
+    background:         '40 35% 97%',
+    foreground:         '25 15% 18%',
+    secondary:          '36 25% 91%',
+    secondaryForeground:'25 15% 25%',
+    muted:              '30 20% 88%',
+    mutedForeground:    '25 10% 45%',
+    card:               '38 30% 96%',
+    cardForeground:     '25 15% 18%',
+    popover:            '38 30% 96%',
+    popoverForeground:  '25 15% 18%',
+    border:             '36 18% 82%',
+    input:              '36 18% 82%',
+    ring:               '38 55% 52%',
+    shadowSurface:      '0 2px 16px 0 hsl(38 55% 40% / 0.10)',
+    shadowLuxury:       '0 8px 40px 0 hsl(38 55% 40% / 0.18)',
+    shadowGlow:         '0 0 24px 4px hsl(38 65% 52% / 0.20)',
+  },
+  classic: {
+    primary:            '345 45% 72%',
+    primaryForeground:  '345 30% 15%',
+    accent:             '38 65% 52%',
+    accentForeground:   '38 60% 12%',
+    background:         '42 40% 96%',
+    foreground:         '25 15% 18%',
+    secondary:          '36 25% 91%',
+    secondaryForeground:'25 15% 25%',
+    muted:              '30 20% 88%',
+    mutedForeground:    '25 10% 45%',
+    card:               '40 35% 95%',
+    cardForeground:     '25 15% 18%',
+    popover:            '40 35% 95%',
+    popoverForeground:  '25 15% 18%',
+    border:             '36 18% 80%',
+    input:              '36 18% 80%',
+    ring:               '345 45% 65%',
+    shadowSurface:      '0 2px 16px 0 hsl(345 45% 40% / 0.10)',
+    shadowLuxury:       '0 8px 40px 0 hsl(38 65% 40% / 0.18)',
+    shadowGlow:         '0 0 24px 4px hsl(38 65% 52% / 0.20)',
+  },
+  modern: {
+    primary:            '0 0% 50%',
+    primaryForeground:  '0 0% 10%',
+    accent:             '0 0% 20%',
+    accentForeground:   '0 0% 100%',
+    background:         '0 0% 98%',
+    foreground:         '0 0% 10%',
+    secondary:          '0 0% 95%',
+    secondaryForeground:'0 0% 20%',
+    muted:              '0 0% 85%',
+    mutedForeground:    '0 0% 50%',
+    card:               '0 0% 96%',
+    cardForeground:     '0 0% 10%',
+    popover:            '0 0% 96%',
+    popoverForeground:  '0 0% 10%',
+    border:             '0 0% 80%',
+    input:              '0 0% 80%',
+    ring:               '0 0% 60%',
+    shadowSurface:      '0 2px 16px 0 hsl(0 0% 0% / 0.06)',
+    shadowLuxury:       '0 8px 40px 0 hsl(0 0% 0% / 0.12)',
+    shadowGlow:         '0 0 24px 4px hsl(0 0% 50% / 0.15)',
+  },
+  romantic: {
+    primary:            '15 50% 72%',
+    primaryForeground:  '25 15% 18%',
+    accent:             '15 65% 60%',
+    accentForeground:   '25 15% 18%',
+    background:         '15 30% 96%',
+    foreground:         '25 15% 18%',
+    secondary:          '15 40% 92%',
+    secondaryForeground:'25 15% 25%',
+    muted:              '15 25% 88%',
+    mutedForeground:    '25 10% 45%',
+    card:               '15 28% 95%',
+    cardForeground:     '25 15% 18%',
+    popover:            '15 28% 95%',
+    popoverForeground:  '25 15% 18%',
+    border:             '15 20% 82%',
+    input:              '15 20% 82%',
+    ring:               '15 50% 65%',
+    shadowSurface:      '0 2px 16px 0 hsl(15 50% 40% / 0.10)',
+    shadowLuxury:       '0 8px 40px 0 hsl(15 65% 40% / 0.18)',
+    shadowGlow:         '0 0 24px 4px hsl(15 65% 60% / 0.20)',
+  },
+  pink: {
+    primary:            '345 45% 72%',
+    primaryForeground:  '345 30% 15%',
+    accent:             '345 65% 60%',
+    accentForeground:   '345 30% 15%',
+    background:         '345 30% 97%',
+    foreground:         '25 15% 18%',
+    secondary:          '345 40% 92%',
+    secondaryForeground:'25 15% 25%',
+    muted:              '345 25% 88%',
+    mutedForeground:    '25 10% 45%',
+    card:               '345 28% 96%',
+    cardForeground:     '25 15% 18%',
+    popover:            '345 28% 96%',
+    popoverForeground:  '25 15% 18%',
+    border:             '345 18% 82%',
+    input:              '345 18% 82%',
+    ring:               '345 45% 65%',
+    shadowSurface:      '0 2px 16px 0 hsl(345 45% 40% / 0.10)',
+    shadowLuxury:       '0 8px 40px 0 hsl(345 65% 40% / 0.18)',
+    shadowGlow:         '0 0 24px 4px hsl(345 65% 60% / 0.20)',
+  },
+  lavender: {
+    primary:            '260 45% 72%',
+    primaryForeground:  '260 30% 15%',
+    accent:             '260 65% 60%',
+    accentForeground:   '260 50% 12%',
+    background:         '260 30% 97%',
+    foreground:         '25 15% 18%',
+    secondary:          '260 40% 92%',
+    secondaryForeground:'25 15% 25%',
+    muted:              '260 25% 88%',
+    mutedForeground:    '25 10% 45%',
+    card:               '260 28% 96%',
+    cardForeground:     '25 15% 18%',
+    popover:            '260 28% 96%',
+    popoverForeground:  '25 15% 18%',
+    border:             '260 18% 82%',
+    input:              '260 18% 82%',
+    ring:               '260 45% 65%',
+    shadowSurface:      '0 2px 16px 0 hsl(260 45% 40% / 0.10)',
+    shadowLuxury:       '0 8px 40px 0 hsl(260 65% 40% / 0.18)',
+    shadowGlow:         '0 0 24px 4px hsl(260 65% 60% / 0.20)',
+  },
+  'luxury-emerald': {
+    primary:            '158 45% 28%',
+    primaryForeground:  '42 40% 96%',
+    accent:             '38 72% 52%',
+    accentForeground:   '158 50% 12%',
+    background:         '155 30% 96%',
+    foreground:         '158 40% 14%',
+    secondary:          '150 25% 90%',
+    secondaryForeground:'158 35% 20%',
+    muted:              '150 18% 85%',
+    mutedForeground:    '158 15% 40%',
+    card:               '42 40% 97%',
+    cardForeground:     '158 40% 14%',
+    popover:            '42 40% 97%',
+    popoverForeground:  '158 40% 14%',
+    border:             '158 20% 78%',
+    input:              '158 20% 78%',
+    ring:               '38 72% 52%',
+    shadowSurface:      '0 2px 16px 0 hsl(158 45% 20% / 0.12)',
+    shadowLuxury:       '0 8px 40px 0 hsl(38 72% 40% / 0.20)',
+    shadowGlow:         '0 0 28px 4px hsl(38 72% 52% / 0.25)',
+  },
+  'rose-gold-elegance': {
+    primary:            '12 48% 58%',
+    primaryForeground:  '15 35% 97%',
+    accent:             '18 55% 68%',
+    accentForeground:   '12 40% 15%',
+    background:         '15 35% 97%',
+    foreground:         '12 30% 18%',
+    secondary:          '350 45% 92%',
+    secondaryForeground:'12 25% 25%',
+    muted:              '15 25% 88%',
+    mutedForeground:    '12 15% 42%',
+    card:               '20 40% 96%',
+    cardForeground:     '12 30% 18%',
+    popover:            '20 40% 96%',
+    popoverForeground:  '12 30% 18%',
+    border:             '12 22% 82%',
+    input:              '12 22% 82%',
+    ring:               '12 48% 55%',
+    shadowSurface:      '0 2px 16px 0 hsl(12 48% 40% / 0.10)',
+    shadowLuxury:       '0 8px 40px 0 hsl(18 55% 50% / 0.18)',
+    shadowGlow:         '0 0 24px 4px hsl(12 48% 58% / 0.22)',
+  },
+  'nordic-frost': {
+    primary:            '210 18% 42%',
+    primaryForeground:  '210 25% 98%',
+    accent:             '210 25% 55%',
+    accentForeground:   '210 30% 12%',
+    background:         '210 25% 98%',
+    foreground:         '215 25% 18%',
+    secondary:          '210 20% 93%',
+    secondaryForeground:'215 20% 28%',
+    muted:              '210 15% 88%',
+    mutedForeground:    '215 12% 45%',
+    card:               '210 22% 97%',
+    cardForeground:     '215 25% 18%',
+    popover:            '210 22% 97%',
+    popoverForeground:  '215 25% 18%',
+    border:             '210 15% 82%',
+    input:              '210 15% 82%',
+    ring:               '210 18% 50%',
+    shadowSurface:      '0 2px 16px 0 hsl(210 18% 30% / 0.08)',
+    shadowLuxury:       '0 8px 32px 0 hsl(210 25% 40% / 0.12)',
+    shadowGlow:         '0 0 20px 2px hsl(210 25% 60% / 0.15)',
+  },
+  'midnight-corporate': {
+    primary:            '199 89% 48%',
+    primaryForeground:  '210 40% 98%',
+    accent:             '187 85% 53%',
+    accentForeground:   '222 47% 8%',
+    background:         '222 47% 8%',
+    foreground:         '210 40% 96%',
+    secondary:          '220 30% 16%',
+    secondaryForeground:'210 30% 90%',
+    muted:              '220 25% 18%',
+    mutedForeground:    '215 15% 58%',
+    card:               '222 40% 11%',
+    cardForeground:     '210 40% 96%',
+    popover:            '222 40% 11%',
+    popoverForeground:  '210 40% 96%',
+    border:             '199 50% 35%',
+    input:              '220 25% 22%',
+    ring:               '199 89% 48%',
+    shadowSurface:      '0 2px 20px 0 hsl(199 89% 30% / 0.25)',
+    shadowLuxury:       '0 8px 40px 0 hsl(187 85% 40% / 0.20)',
+    shadowGlow:         '0 0 32px 6px hsl(199 89% 48% / 0.35)',
+  },
+  rainbow: {
+    primary:            '30 70% 70%',
+    primaryForeground:  '25 15% 18%',
+    accent:             '180 70% 60%',
+    accentForeground:   '170 50% 12%',
+    background:         '60 50% 96%',
+    foreground:         '25 15% 18%',
+    secondary:          '300 70% 90%',
+    secondaryForeground:'25 15% 25%',
+    muted:              '45 50% 85%',
+    mutedForeground:    '25 10% 45%',
+    card:               '55 45% 95%',
+    cardForeground:     '25 15% 18%',
+    popover:            '55 45% 95%',
+    popoverForeground:  '25 15% 18%',
+    border:             '40 25% 80%',
+    input:              '40 25% 80%',
+    ring:               '200 50% 60%',
+    shadowSurface:      '0 2px 16px 0 hsl(30 70% 40% / 0.10)',
+    shadowLuxury:       '0 8px 40px 0 hsl(180 70% 40% / 0.18)',
+    shadowGlow:         '0 0 24px 4px hsl(30 70% 60% / 0.20)',
+  },
+};
+
+export const THEME_COLORS = {
+  ...CORE_THEME_COLORS,
+  ...EXTENDED_INVITATION_COLORS,
+} as Record<ThemeName, ThemeColorTokens>;
+
+const CORE_THEME_INFO: Record<string, { label: string; emoji: string; description: string; colors: string[] }> = {
+  classic: { label: 'Classic Elegant Khmer', emoji: '🪷', description: 'Traditional gold with Moul script', colors: ['#B8893E', '#E8C8A0', '#FAF3E7', '#5C3A1E'] },
+  modern:  { label: 'Modern Minimalist',      emoji: '⚪', description: 'Clean neutrals, sharp typography', colors: ['#2D2D2D', '#888888', '#F5F5F5', '#000000'] },
+  romantic:{ label: 'Romantic Luxury',        emoji: '💗', description: 'Rose-gold with soft blush tones', colors: ['#D4A76A', '#E8C8A0', '#F4C2C2', '#C9A96E'] },
+  gold:    { label: 'Champagne Gold',         emoji: '✨', description: 'Classic luxury with warm gold tones', colors: ['#D4A76A', '#E8C8A0', '#F4E4D0', '#C9A96E'] },
+  pink:    { label: 'Blush Pink',             emoji: '🌸', description: 'Soft romantic pink with rosy warmth', colors: ['#E8A0B4', '#F4C2D0', '#FFD6E0', '#D4708A'] },
+  lavender:{ label: 'Dreamy Lavender',        emoji: '💜', description: 'Elegant purple with gentle calm', colors: ['#B8A0D4', '#D0B8E8', '#E8D0F4', '#9A7EBE'] },
+  rainbow: { label: 'Pastel Rainbow',         emoji: '🌈', description: 'Playful mix of soft pastels', colors: ['#FFB3BA', '#BAFFC9', '#BAE1FF', '#FFFFBA'] },
+  'luxury-emerald': PREMIUM_THEME_INFO['luxury-emerald'],
+  'rose-gold-elegance': PREMIUM_THEME_INFO['rose-gold-elegance'],
+  'nordic-frost': PREMIUM_THEME_INFO['nordic-frost'],
+  'midnight-corporate': PREMIUM_THEME_INFO['midnight-corporate'],
+};
+
+export const THEME_INFO = {
+  ...CORE_THEME_INFO,
+  ...Object.fromEntries(
+    Object.entries(EXTENDED_INVITATION_INFO).map(([k, v]) => [
+      k,
+      { label: v.label, emoji: v.emoji, description: v.description, colors: v.colors },
+    ])
+  ),
+} as Record<ThemeName, { label: string; emoji: string; description: string; colors: string[] }>;
+
+const DARK_THEMES: ThemeName[] = ['midnight-corporate', 'midnight-gala'];
 
 interface Props {
   children: ReactNode;
@@ -26,20 +338,91 @@ interface Props {
   ownerUserId?: string | null; // when set, theme changes persist to profile
 }
 
+export function applyThemeColors(themeName: ThemeName) {
+  const c = THEME_COLORS[themeName] ?? THEME_COLORS.gold;
+  const root = document.documentElement;
+
+  // Core semantic tokens (used by Tailwind config via hsl(var(--x)))
+  root.style.setProperty('--primary',              c.primary);
+  root.style.setProperty('--primary-foreground',   c.primaryForeground);
+  root.style.setProperty('--accent',               c.accent);
+  root.style.setProperty('--accent-foreground',    c.accentForeground);
+  root.style.setProperty('--background',           c.background);
+  root.style.setProperty('--foreground',           c.foreground);
+  root.style.setProperty('--secondary',            c.secondary);
+  root.style.setProperty('--secondary-foreground', c.secondaryForeground);
+  root.style.setProperty('--muted',                c.muted);
+  root.style.setProperty('--muted-foreground',     c.mutedForeground);
+  root.style.setProperty('--card',                 c.card);
+  root.style.setProperty('--card-foreground',      c.cardForeground);
+  root.style.setProperty('--popover',              c.popover);
+  root.style.setProperty('--popover-foreground',   c.popoverForeground);
+  root.style.setProperty('--border',               c.border);
+  root.style.setProperty('--input',                c.input);
+  root.style.setProperty('--ring',                 c.ring);
+
+  // Shadow tokens (used by tailwind boxShadow config)
+  root.style.setProperty('--shadow-surface', c.shadowSurface);
+  root.style.setProperty('--shadow-luxury',  c.shadowLuxury);
+  root.style.setProperty('--shadow-glow',    c.shadowGlow);
+
+  // Premium accent tokens (Tailwind: gold, rose-gold, champagne, etc.)
+  const extendedAccent = EXTENDED_INVITATION_ACCENTS[themeName as ExtendedInvitationTheme];
+  const premium = PREMIUM_THEME_ACCENTS[themeName as keyof typeof PREMIUM_THEME_ACCENTS];
+  const accentSet = extendedAccent ?? premium;
+  if (accentSet) {
+    root.style.setProperty('--gold', accentSet.gold);
+    root.style.setProperty('--gold-light', accentSet.goldLight);
+    root.style.setProperty('--rose-gold', accentSet.roseGold);
+    root.style.setProperty('--champagne', accentSet.champagne);
+    root.style.setProperty('--ivory', accentSet.ivory);
+    root.style.setProperty('--blush', accentSet.blush);
+  } else {
+    root.style.setProperty('--gold', '38 55% 58%');
+    root.style.setProperty('--gold-light', '42 65% 72%');
+    root.style.setProperty('--rose-gold', '15 50% 65%');
+    root.style.setProperty('--champagne', '40 45% 88%');
+    root.style.setProperty('--ivory', '42 40% 96%');
+    root.style.setProperty('--blush', '345 40% 90%');
+  }
+
+  const isDark = DARK_THEMES.includes(themeName);
+  root.classList.toggle('dark', isDark);
+  root.setAttribute('data-theme', themeName);
+  root.setAttribute('data-theme-mode', isDark ? 'dark' : 'light');
+}
+
 export function ThemeProvider({ children, initialTheme = 'gold', ownerUserId }: Props) {
   const [theme, setThemeState] = useState<ThemeName>(initialTheme);
 
   const setTheme = (t: ThemeName) => {
     setThemeState(t);
+    applyThemeColors(t);
     if (ownerUserId) {
       supabase.from('profiles').update({ theme: t }).eq('user_id', ownerUserId).then(() => {});
     }
   };
 
-  useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
-  useEffect(() => () => { document.documentElement.removeAttribute('data-theme'); }, []);
+  // Apply on mount and whenever theme changes
+  useEffect(() => {
+    applyThemeColors(theme);
+    // No cleanup — we intentionally keep the theme applied globally.
+    // Unmounting a child ThemeProvider should NOT strip the attribute.
+  }, [theme]);
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+  // If the parent passes a new initialTheme (e.g. route change), sync it
+  useEffect(() => {
+    setThemeState(initialTheme);
+    applyThemeColors(initialTheme);
+  }, [initialTheme]);
+
+  const isDark = useMemo(() => DARK_THEMES.includes(theme), [theme]);
+
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, isDark }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

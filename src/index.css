@@ -1,230 +1,415 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   THEME SYSTEM
+   :root defines the GOLD (default) theme.
+   JS (ThemeContext) overrides inline on <html> via setProperty().
+   data-theme selectors below act as CSS-only fallbacks.
+   ========================================================================== */
+:root {
+  /* Gold / Champagne — default */
+  --primary:              38 55% 58%;
+  --primary-foreground:   25 15% 18%;
+  --accent:               38 65% 52%;
+  --accent-foreground:    38 60% 12%;
+  --background:           40 35% 97%;
+  --foreground:           25 15% 18%;
+  --secondary:            36 25% 91%;
+  --secondary-foreground: 25 15% 25%;
+  --muted:                30 20% 88%;
+  --muted-foreground:     25 10% 45%;
+  --card:                 38 30% 96%;
+  --card-foreground:      25 15% 18%;
+  --popover:              38 30% 96%;
+  --popover-foreground:   25 15% 18%;
+  --border:               36 18% 82%;
+  --input:                36 18% 82%;
+  --ring:                 38 55% 52%;
+  --destructive:          0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Shadows */
+  --shadow-surface: 0 2px 16px 0 hsl(38 55% 40% / 0.10);
+  --shadow-luxury:  0 8px 40px 0 hsl(38 55% 40% / 0.18);
+  --shadow-glow:    0 0 24px 4px hsl(38 65% 52% / 0.20);
+
+  /* Premium accent tokens */
+  --gold:                 38 55% 58%;
+  --gold-light:           42 65% 72%;
+  --rose-gold:            15 50% 65%;
+  --champagne:            40 45% 88%;
+  --ivory:                42 40% 96%;
+  --blush:                345 40% 90%;
+
+  /* Dashboard sidebar */
+  --sidebar-background:   40 35% 97%;
+  --sidebar-foreground:   25 15% 18%;
+  --sidebar-primary:      38 55% 58%;
+  --sidebar-primary-foreground: 25 15% 18%;
+  --sidebar-accent:       36 25% 91%;
+  --sidebar-accent-foreground: 25 15% 25%;
+  --sidebar-border:       36 18% 82%;
+  --sidebar-ring:         38 55% 52%;
+
+  /* Misc */
+  --radius: 1rem;
+}
+
+/* ==========================================================================
+   CSS-ONLY FALLBACK THEME OVERRIDES (data-theme attribute)
+   JS sets these values inline on <html> directly — these are fallbacks only.
+   ========================================================================== */
+
+[data-theme="gold"] {
+  --primary:              38 55% 58%;
+  --primary-foreground:   25 15% 18%;
+  --accent:               38 65% 52%;
+  --accent-foreground:    38 60% 12%;
+  --background:           40 35% 97%;
+  --foreground:           25 15% 18%;
+  --secondary:            36 25% 91%;
+  --secondary-foreground: 25 15% 25%;
+  --muted:                30 20% 88%;
+  --muted-foreground:     25 10% 45%;
+  --card:                 38 30% 96%;
+  --card-foreground:      25 15% 18%;
+  --popover:              38 30% 96%;
+  --popover-foreground:   25 15% 18%;
+  --border:               36 18% 82%;
+  --input:                36 18% 82%;
+  --ring:                 38 55% 52%;
+  --shadow-surface: 0 2px 16px 0 hsl(38 55% 40% / 0.10);
+  --shadow-luxury:  0 8px 40px 0 hsl(38 55% 40% / 0.18);
+  --shadow-glow:    0 0 24px 4px hsl(38 65% 52% / 0.20);
+}
+
+[data-theme="classic"] {
+  --primary:              345 45% 72%;
+  --primary-foreground:   345 30% 15%;
+  --accent:               38 65% 52%;
+  --accent-foreground:    38 60% 12%;
+  --background:           42 40% 96%;
+  --foreground:           25 15% 18%;
+  --secondary:            36 25% 91%;
+  --secondary-foreground: 25 15% 25%;
+  --muted:                30 20% 88%;
+  --muted-foreground:     25 10% 45%;
+  --card:                 40 35% 95%;
+  --card-foreground:      25 15% 18%;
+  --popover:              40 35% 95%;
+  --popover-foreground:   25 15% 18%;
+  --border:               36 18% 80%;
+  --input:                36 18% 80%;
+  --ring:                 345 45% 65%;
+  --shadow-surface: 0 2px 16px 0 hsl(345 45% 40% / 0.10);
+  --shadow-luxury:  0 8px 40px 0 hsl(38 65% 40% / 0.18);
+  --shadow-glow:    0 0 24px 4px hsl(38 65% 52% / 0.20);
+}
+
+[data-theme="pink"] {
+  --primary:              345 45% 72%;
+  --primary-foreground:   345 30% 15%;
+  --accent:               345 65% 60%;
+  --accent-foreground:    345 30% 15%;
+  --background:           345 30% 97%;
+  --foreground:           25 15% 18%;
+  --secondary:            345 40% 92%;
+  --secondary-foreground: 25 15% 25%;
+  --muted:                345 25% 88%;
+  --muted-foreground:     25 10% 45%;
+  --card:                 345 28% 96%;
+  --card-foreground:      25 15% 18%;
+  --popover:              345 28% 96%;
+  --popover-foreground:   25 15% 18%;
+  --border:               345 18% 82%;
+  --input:                345 18% 82%;
+  --ring:                 345 45% 65%;
+  --shadow-surface: 0 2px 16px 0 hsl(345 45% 40% / 0.10);
+  --shadow-luxury:  0 8px 40px 0 hsl(345 65% 40% / 0.18);
+  --shadow-glow:    0 0 24px 4px hsl(345 65% 60% / 0.20);
+}
+
+[data-theme="lavender"] {
+  --primary:              260 45% 72%;
+  --primary-foreground:   260 30% 15%;
+  --accent:               260 65% 60%;
+  --accent-foreground:    260 50% 12%;
+  --background:           260 30% 97%;
+  --foreground:           25 15% 18%;
+  --secondary:            260 40% 92%;
+  --secondary-foreground: 25 15% 25%;
+  --muted:                260 25% 88%;
+  --muted-foreground:     25 10% 45%;
+  --card:                 260 28% 96%;
+  --card-foreground:      25 15% 18%;
+  --popover:              260 28% 96%;
+  --popover-foreground:   25 15% 18%;
+  --border:               260 18% 82%;
+  --input:                260 18% 82%;
+  --ring:                 260 45% 65%;
+  --shadow-surface: 0 2px 16px 0 hsl(260 45% 40% / 0.10);
+  --shadow-luxury:  0 8px 40px 0 hsl(260 65% 40% / 0.18);
+  --shadow-glow:    0 0 24px 4px hsl(260 65% 60% / 0.20);
+}
+
+[data-theme="rainbow"] {
+  --primary:              30 70% 70%;
+  --primary-foreground:   25 15% 18%;
+  --accent:               180 70% 60%;
+  --accent-foreground:    170 50% 12%;
+  --background:           60 50% 96%;
+  --foreground:           25 15% 18%;
+  --secondary:            300 70% 90%;
+  --secondary-foreground: 25 15% 25%;
+  --muted:                45 50% 85%;
+  --muted-foreground:     25 10% 45%;
+  --card:                 55 45% 95%;
+  --card-foreground:      25 15% 18%;
+  --popover:              55 45% 95%;
+  --popover-foreground:   25 15% 18%;
+  --border:               40 25% 80%;
+  --input:                40 25% 80%;
+  --ring:                 200 50% 60%;
+  --shadow-surface: 0 2px 16px 0 hsl(30 70% 40% / 0.10);
+  --shadow-luxury:  0 8px 40px 0 hsl(180 70% 40% / 0.18);
+  --shadow-glow:    0 0 24px 4px hsl(30 70% 60% / 0.20);
+}
+
+[data-theme="modern"] {
+  --primary:              0 0% 50%;
+  --primary-foreground:   0 0% 10%;
+  --accent:               0 0% 20%;
+  --accent-foreground:    0 0% 100%;
+  --background:           0 0% 98%;
+  --foreground:           0 0% 10%;
+  --secondary:            0 0% 95%;
+  --secondary-foreground: 0 0% 20%;
+  --muted:                0 0% 85%;
+  --muted-foreground:     0 0% 50%;
+  --card:                 0 0% 96%;
+  --card-foreground:      0 0% 10%;
+  --popover:              0 0% 96%;
+  --popover-foreground:   0 0% 10%;
+  --border:               0 0% 80%;
+  --input:                0 0% 80%;
+  --ring:                 0 0% 60%;
+  --shadow-surface: 0 2px 16px 0 hsl(0 0% 0% / 0.06);
+  --shadow-luxury:  0 8px 40px 0 hsl(0 0% 0% / 0.12);
+  --shadow-glow:    0 0 24px 4px hsl(0 0% 50% / 0.15);
+}
+
+[data-theme="luxury-emerald"] {
+  --primary: 158 45% 28%;
+  --accent: 38 72% 52%;
+  --background: 155 30% 96%;
+  --gold: 38 72% 52%;
+  --rose-gold: 38 55% 58%;
+}
+
+[data-theme="rose-gold-elegance"] {
+  --primary: 12 48% 58%;
+  --accent: 18 55% 68%;
+  --background: 15 35% 97%;
+  --rose-gold: 12 48% 58%;
+  --blush: 350 45% 88%;
+}
+
+[data-theme="nordic-frost"] {
+  --primary: 210 18% 42%;
+  --background: 210 25% 98%;
+  --gold: 210 18% 55%;
+}
+
+[data-theme="midnight-corporate"] {
+  --primary: 199 89% 48%;
+  --background: 222 47% 8%;
+  --foreground: 210 40% 96%;
+  --card: 222 40% 11%;
+  --border: 199 50% 35%;
+  --gold: 199 89% 58%;
+  --sidebar-background: 222 47% 8%;
+  --sidebar-foreground: 210 40% 96%;
+}
+
+[data-theme="romantic"] {
+  --primary:              15 50% 72%;
+  --primary-foreground:   25 15% 18%;
+  --accent:               15 65% 60%;
+  --accent-foreground:    25 15% 18%;
+  --background:           15 30% 96%;
+  --foreground:           25 15% 18%;
+  --secondary:            15 40% 92%;
+  --secondary-foreground: 25 15% 25%;
+  --muted:                15 25% 88%;
+  --muted-foreground:     25 10% 45%;
+  --card:                 15 28% 95%;
+  --card-foreground:      25 15% 18%;
+  --popover:              15 28% 95%;
+  --popover-foreground:   25 15% 18%;
+  --border:               15 20% 82%;
+  --input:                15 20% 82%;
+  --ring:                 15 50% 65%;
+  --shadow-surface: 0 2px 16px 0 hsl(15 50% 40% / 0.10);
+  --shadow-luxury:  0 8px 40px 0 hsl(15 65% 40% / 0.18);
+  --shadow-glow:    0 0 24px 4px hsl(15 65% 60% / 0.20);
+}
+
+/* ==========================================================================
+   BASE STYLES
+   ========================================================================== */
+
 @layer base {
-  :root {
-    --background: 36 33% 97%;
-    --foreground: 25 15% 18%;
-    --card: 36 30% 96%;
-    --card-foreground: 25 15% 18%;
-    --popover: 36 30% 96%;
-    --popover-foreground: 25 15% 18%;
-    --primary: 345 45% 72%;
-    --primary-foreground: 345 30% 15%;
-    --secondary: 36 25% 91%;
-    --secondary-foreground: 25 15% 25%;
-    --muted: 30 20% 88%;
-    --muted-foreground: 25 10% 45%;
-    --accent: 38 55% 58%;
-    --accent-foreground: 38 60% 12%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 36 18% 82%;
-    --input: 36 18% 82%;
-    --ring: 345 45% 65%;
-    --radius: 1rem;
-
-    --gold: 38 65% 52%;
-    --gold-light: 40 70% 78%;
-    --rose-gold: 15 50% 72%;
-    --champagne: 36 45% 88%;
-    --ivory: 42 40% 96%;
-    --blush: 345 40% 88%;
-
-    --sidebar-background: 36 30% 97%;
-    --sidebar-foreground: 25 15% 18%;
-    --sidebar-primary: 345 45% 72%;
-    --sidebar-primary-foreground: 345 30% 15%;
-    --sidebar-accent: 36 25% 92%;
-    --sidebar-accent-foreground: 25 15% 18%;
-    --sidebar-border: 36 18% 88%;
-    --sidebar-ring: 345 45% 65%;
-
-    --shadow-surface: 0 2px 8px rgba(0,0,0,.04), 0 8px 24px -8px rgba(139,109,71,.08);
-    --shadow-luxury: 0 4px 20px -4px rgba(139,109,71,.12), 0 12px 40px -12px rgba(139,109,71,.08);
-    --shadow-glow: 0 0 40px rgba(212,167,106,.15);
-
-    --glass: rgba(255, 253, 248, 0.65);
-    --glass-border: rgba(212,167,106,.15);
-    --glass-shadow: 0 8px 32px rgba(139,109,71,.06);
-  }
-
-  /* ===== PINK THEME ===== */
-  [data-theme="pink"] {
-    --primary: 340 55% 68%;
-    --primary-foreground: 340 40% 15%;
-    --accent: 350 50% 62%;
-    --accent-foreground: 350 60% 12%;
-    --ring: 340 55% 60%;
-    --gold: 350 55% 62%;
-    --gold-light: 345 60% 80%;
-    --rose-gold: 340 50% 72%;
-    --champagne: 345 40% 90%;
-    --blush: 340 50% 88%;
-    --shadow-luxury: 0 4px 20px -4px rgba(200,100,130,.12), 0 12px 40px -12px rgba(200,100,130,.08);
-    --shadow-glow: 0 0 40px rgba(220,130,160,.15);
-    --glass-border: rgba(220,130,160,.15);
-  }
-
-  /* ===== LAVENDER THEME ===== */
-  [data-theme="lavender"] {
-    --primary: 270 40% 68%;
-    --primary-foreground: 270 30% 15%;
-    --accent: 275 45% 58%;
-    --accent-foreground: 275 50% 12%;
-    --ring: 270 40% 60%;
-    --gold: 275 45% 58%;
-    --gold-light: 270 50% 78%;
-    --rose-gold: 280 40% 72%;
-    --champagne: 270 30% 90%;
-    --blush: 275 35% 88%;
-    --shadow-luxury: 0 4px 20px -4px rgba(150,100,200,.12), 0 12px 40px -12px rgba(150,100,200,.08);
-    --shadow-glow: 0 0 40px rgba(170,130,220,.15);
-    --glass-border: rgba(170,130,220,.15);
-  }
-
-  /* ===== RAINBOW THEME ===== */
-  [data-theme="rainbow"] {
-    --primary: 350 50% 72%;
-    --primary-foreground: 350 30% 15%;
-    --accent: 170 40% 55%;
-    --accent-foreground: 170 50% 12%;
-    --ring: 200 50% 60%;
-    --gold: 45 60% 55%;
-    --gold-light: 120 40% 75%;
-    --rose-gold: 300 40% 72%;
-    --champagne: 60 40% 90%;
-    --blush: 200 35% 88%;
-    --shadow-luxury: 0 4px 20px -4px rgba(150,150,200,.12), 0 12px 40px -12px rgba(150,150,200,.08);
-    --shadow-glow: 0 0 40px rgba(180,160,220,.15);
-    --glass-border: rgba(180,160,220,.15);
-  }
-
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground;
+    font-family: 'Figtree', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
 
-  h1, h2, h3 {
-    font-family: 'Playfair Display', 'Cormorant Garamond', serif;
-    letter-spacing: -0.01em;
-    line-height: 1.15;
-    text-wrap: balance;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 
-  p {
-    text-wrap: pretty;
-    line-height: 1.7;
+  .animate-petal-fall,
+  .animate-butterfly-float,
+  .animate-pulse-glow,
+  .animate-sparkle,
+  .animate-cinematic-fade {
+    animation: none !important;
   }
 }
 
-@layer utilities {
-  .font-khmer {
-    font-family: 'Kantumruy Pro', sans-serif;
-    font-size: 1.08em;
-    line-height: 1.85;
-    letter-spacing: 0.015em;
-    font-weight: 400;
-    -webkit-font-smoothing: antialiased;
-  }
+/* ==========================================================================
+   COMPONENT UTILITIES
+   These classes are used throughout the app via className strings.
+   Tailwind's JIT compiler picks them up from src/ files.
+   ========================================================================== */
 
-  /* Khmer headings use Moul — the traditional Khmer display font */
-  h1.font-khmer, h2.font-khmer, h3.font-khmer {
-    font-family: 'Moul', 'Kantumruy Pro', sans-serif;
-    font-size: 1.1em;
-    line-height: 1.55;
-    letter-spacing: 0.02em;
-    font-weight: 400;
-  }
-
-  .font-khmer-display {
-    font-family: 'Moul', 'Kantumruy Pro', sans-serif;
-    line-height: 1.55;
-    letter-spacing: 0.02em;
-  }
-
-  .font-khmer-serif {
-    font-family: 'Battambang', 'Kantumruy Pro', serif;
-    line-height: 1.8;
-  }
-
-  .font-display {
-    font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+@layer components {
+  /* Glassmorphism cards */
+  .glass-card {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: var(--shadow-surface);
   }
 
   .glass {
-    background: var(--glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+    background: hsl(var(--background) / 0.6);
+    backdrop-filter: blur(8px) saturate(1.2);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    border: 1px solid hsl(var(--border) / 0.3);
   }
 
   .glass-strong {
-    background: rgba(255, 253, 248, 0.82);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    border: 1px solid rgba(212,167,106,.18);
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid hsl(var(--border) / 0.6);
     box-shadow: var(--shadow-luxury);
   }
 
-  .glass-card {
-    background: rgba(255, 253, 248, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(212,167,106,.12);
-    box-shadow: var(--shadow-surface), inset 0 1px 0 rgba(255,255,255,.6);
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 
+  /* Luxury card style */
   .luxury-card {
-    background: linear-gradient(145deg, rgba(255,253,248,.85), rgba(255,249,240,.7));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
+    background: linear-gradient(145deg, hsl(var(--card) / 0.9), hsl(var(--background) / 0.75));
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border: 1px solid hsl(var(--border) / 0.5);
     box-shadow: var(--shadow-luxury);
   }
 
+  /* Gold text gradient */
   .gold-text {
-    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--rose-gold)), hsl(var(--gold)));
+    background: linear-gradient(135deg, #D4A76A, #FAF3E7, #C9A96E);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
+  /* Gold border style */
   .gold-border {
-    border: 1px solid rgba(212,167,106,.25);
-    box-shadow: 0 0 0 1px rgba(212,167,106,.08);
+    border: 1px solid hsl(var(--border) / 0.7);
+    box-shadow: 0 0 0 1px hsl(var(--border) / 0.2);
   }
 
+  /* Section divider graphic */
   .section-divider {
     display: block;
     width: min(220px, 56vw);
     height: 54px;
     margin: 0 auto;
     background: center / contain no-repeat url('./assets/khmer-divider.svg');
-    filter: drop-shadow(0 10px 24px hsl(var(--gold) / 0.16));
+    filter: drop-shadow(0 10px 24px hsl(var(--accent) / 0.16));
     opacity: 0.96;
   }
 
+  /* Hero line divider */
   .hero-line {
     height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--gold-light) / 0.92), transparent);
-    box-shadow: 0 0 18px hsl(var(--gold) / 0.18);
+    background: linear-gradient(90deg, transparent, hsl(var(--border) / 0.8), transparent);
   }
 
+  /* FlyonUI dashboard helpers */
+  .dashboard-stat-grid .stat {
+    @apply luxury-card rounded-2xl;
+  }
+
+  .flyon-steps .step-primary {
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+  }
+
+  .neon-border-admin {
+    box-shadow: 0 0 0 1px hsl(var(--ring) / 0.5), 0 0 20px hsl(var(--ring) / 0.15);
+  }
+
+  .font-dashboard {
+    font-family: 'Figtree', 'Kantumruy Pro', sans-serif;
+  }
+
+  .font-display-premium {
+    font-family: 'Playfair Display', 'Cormorant Garamond', 'Moul', serif;
+  }
+
+  .font-body-khmer {
+    font-family: 'Battambang', 'Kantumruy Pro', serif;
+  }
+
+  /* Shimmer background animation */
   .shimmer {
     background: linear-gradient(
       110deg,
       transparent 25%,
-      hsl(var(--gold) / 0.08) 37%,
+      hsl(var(--primary) / 0.08) 37%,
       transparent 63%
     );
     background-size: 200% 100%;
@@ -235,4 +420,245 @@
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* ==========================================================================
+   VISUAL STYLE LAYER (append-only — does not replace color themes)
+   Activated via data-visual-style on <html> from VisualStyleProvider
+   ========================================================================== */
+
+@layer components {
+  .vs-surface {
+    @apply bg-card text-card-foreground border border-border rounded-xl;
+    box-shadow: var(--shadow-surface);
+  }
+
+  .vs-heading {
+    @apply tracking-tight;
+  }
+
+  .vs-divider {
+    @apply h-px w-full bg-border my-4;
+  }
+}
+
+/* A. Minimalist & Clean */
+[data-visual-style="minimalist"] {
+  letter-spacing: 0.02em;
+}
+
+[data-visual-style="minimalist"] .vs-surface,
+[data-visual-style="minimalist"] .vs-card {
+  @apply bg-background border-border/30 rounded-lg;
+  box-shadow: none !important;
+}
+
+[data-visual-style="minimalist"] .vs-heading {
+  @apply tracking-[0.12em] uppercase text-sm font-semibold;
+}
+
+[data-visual-style="minimalist"] .vs-subheading {
+  @apply tracking-wide text-muted-foreground;
+}
+
+[data-visual-style="minimalist"] .vs-sidebar {
+  @apply bg-background border-r border-border/30 shadow-none;
+}
+
+[data-visual-style="minimalist"] .vs-stat {
+  @apply border-b border-border/40 rounded-none border-x-0 border-t-0 shadow-none;
+}
+
+[data-visual-style="minimalist"] .luxury-card,
+[data-visual-style="minimalist"] .glass-card {
+  box-shadow: none !important;
+  @apply border border-border/30 bg-background;
+}
+
+[data-visual-style="minimalist"] .vs-sticker-pill {
+  @apply shadow-none border-border/30 bg-transparent;
+}
+
+/* B. Dark Cyberpunk */
+[data-visual-style="cyberpunk"] {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 96%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 96%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 65%;
+  --border: 300 100% 50%;
+  --primary: 180 100% 50%;
+  --accent: 330 100% 60%;
+  --ring: 270 100% 60%;
+  --sidebar-background: 0 0% 6%;
+  --sidebar-foreground: 0 0% 96%;
+  --sidebar-border: 180 80% 40%;
+}
+
+[data-visual-style="cyberpunk"] .vs-surface,
+[data-visual-style="cyberpunk"] .vs-card,
+[data-visual-style="cyberpunk"] .vs-stat {
+  background: hsl(0 0% 6%);
+  border: 1px solid hsl(300 100% 50% / 0.45);
+  border-radius: 0.5rem;
+  box-shadow: 0 0 20px hsl(180 100% 50% / 0.12), 0 0 40px hsl(300 100% 50% / 0.08);
+}
+
+[data-visual-style="cyberpunk"] .vs-surface:hover,
+[data-visual-style="cyberpunk"] .vs-stat:hover {
+  animation: pulse-glow 3s ease-in-out infinite;
+  border-color: hsl(180 100% 50% / 0.65);
+}
+
+[data-visual-style="cyberpunk"] .vs-heading {
+  color: hsl(180 90% 70%);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 24px hsl(180 100% 50% / 0.35);
+}
+
+[data-visual-style="cyberpunk"] .radial-progress {
+  color: hsl(330 100% 65%);
+  filter: drop-shadow(0 0 8px hsl(330 100% 60% / 0.5));
+}
+
+[data-visual-style="cyberpunk"] .vs-btn-primary {
+  animation: pulse-glow 3s ease-in-out infinite;
+  border: 2px solid hsl(180 100% 50% / 0.7);
+  background: hsl(330 100% 40% / 0.2);
+}
+
+/* C. Glassmorphism */
+[data-visual-style="glassmorphism"] .vs-surface,
+[data-visual-style="glassmorphism"] .vs-card,
+[data-visual-style="glassmorphism"] .vs-stat {
+  @apply rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md;
+  box-shadow: 0 24px 48px hsl(0 0% 0% / 0.12);
+}
+
+[data-visual-style="glassmorphism"] .vs-sidebar {
+  @apply bg-white/5 backdrop-blur-xl border-white/15;
+}
+
+[data-visual-style="glassmorphism"] .vs-table-wrap {
+  @apply bg-black/10 backdrop-blur-md border-white/15 rounded-2xl;
+}
+
+[data-visual-style="glassmorphism"] .luxury-card {
+  @apply bg-white/10 backdrop-blur-md border-white/20 rounded-2xl;
+  box-shadow: 0 20px 50px hsl(0 0% 0% / 0.15);
+}
+
+/* D. Neo-Brutalism */
+[data-visual-style="neo-brutalism"] {
+  --radius: 0.25rem;
+}
+
+[data-visual-style="neo-brutalism"] .vs-surface,
+[data-visual-style="neo-brutalism"] .vs-card,
+[data-visual-style="neo-brutalism"] .vs-stat {
+  @apply rounded-md border-4 border-black bg-primary/20;
+  box-shadow: 4px 4px 0 0 #000;
+}
+
+[data-visual-style="neo-brutalism"] .vs-heading {
+  @apply font-black uppercase tracking-tight text-2xl;
+}
+
+[data-visual-style="neo-brutalism"] .vs-btn-primary {
+  @apply border-4 border-black shadow-[4px_4px_0_0_#000] font-bold uppercase;
+}
+
+[data-visual-style="neo-brutalism"] .vs-sidebar {
+  @apply border-r-4 border-black bg-accent/30 shadow-[4px_0_0_0_#000];
+}
+
+[data-visual-style="neo-brutalism"] .vs-sticker-pill {
+  @apply border-2 border-black shadow-[2px_2px_0_0_#000] bg-background font-bold;
+}
+
+[data-visual-style="neo-brutalism"] .dashboard-stat-grid .stat {
+  @apply border-4 border-black shadow-[4px_4px_0_0_#000] rounded-md;
+}
+
+/* E. Romantic */
+[data-visual-style="romantic"] .vs-surface,
+[data-visual-style="romantic"] .vs-card,
+[data-visual-style="romantic"] .vs-stat {
+  @apply rounded-[1.75rem] border border-pink-200/60 bg-white/80;
+  box-shadow: 0 24px 60px hsl(340 70% 80% / 0.14);
+}
+
+[data-visual-style="romantic"] .vs-heading {
+  @apply text-pink-800 font-semibold tracking-[0.06em];
+}
+
+[data-visual-style="romantic"] .vs-subheading {
+  @apply text-pink-600/90;
+}
+
+[data-visual-style="romantic"] .vs-sidebar {
+  @apply bg-pink-50/90 border-pink-100/70;
+}
+
+[data-visual-style="romantic"] .vs-btn-primary {
+  @apply bg-pink-200/90 text-pink-950 border-transparent shadow-lg;
+}
+
+[data-visual-style="romantic"] .vs-sticker-pill {
+  @apply bg-pink-100/80 border-pink-200/70 text-pink-800;
+}
+
+/* F. Elegant Luxe */
+[data-visual-style="elegant"] .vs-surface,
+[data-visual-style="elegant"] .vs-card,
+[data-visual-style="elegant"] .vs-stat {
+  @apply rounded-3xl border border-slate-200/60 bg-slate-50/80;
+  box-shadow: 0 20px 40px hsl(210 10% 32% / 0.08);
+}
+
+[data-visual-style="elegant"] .vs-heading {
+  @apply text-slate-900 tracking-[0.04em] font-semibold;
+}
+
+[data-visual-style="elegant"] .vs-subheading {
+  @apply text-slate-600;
+}
+
+[data-visual-style="elegant"] .vs-sidebar {
+  @apply bg-white/90 border-slate-200/70;
+}
+
+[data-visual-style="elegant"] .vs-btn-primary {
+  @apply bg-slate-900 text-white border-transparent shadow-xl;
+}
+
+[data-visual-style="elegant"] .vs-sticker-pill {
+  @apply bg-slate-100 border-slate-200 text-slate-800;
+}
+
+/* Guest invite page — morph glass/luxury surfaces with layout style */
+[data-visual-style="romantic"] .glass-card,
+[data-visual-style="romantic"] .glass-strong {
+  @apply rounded-[1.75rem] border border-pink-200/60 bg-white/80;
+  box-shadow: 0 24px 60px hsl(340 70% 80% / 0.14);
+}
+
+[data-visual-style="elegant"] .glass-card,
+[data-visual-style="elegant"] .glass-strong {
+  @apply rounded-3xl border border-slate-200/60 bg-slate-50/80;
+  box-shadow: 0 20px 40px hsl(210 10% 32% / 0.08);
+}
+
+[data-visual-style="neo-brutalism"] .glass-card,
+[data-visual-style="neo-brutalism"] .glass-strong {
+  @apply rounded-md border-4 border-black bg-primary/20;
+  box-shadow: 4px 4px 0 0 #000;
+}
+
+[data-visual-style="cyberpunk"] .glass-card,
+[data-visual-style="cyberpunk"] .glass-strong {
+  background: hsl(0 0% 6%);
+  border: 1px solid hsl(300 100% 50% / 0.45);
+  box-shadow: 0 0 20px hsl(180 100% 50% / 0.12);
 }

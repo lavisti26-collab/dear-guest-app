@@ -1,0 +1,63 @@
+redirectsOrigin = "config"
+headers = []
+
+[functions]
+
+[functions."*"]
+
+[[plugins]]
+origin = "ui"
+package = "@netlify/plugin-lighthouse"
+
+[plugins.inputs]
+
+[[plugins]]
+origin = "ui"
+package = "netlify-plugin-inline-functions-env"
+
+[plugins.inputs]
+
+[build]
+publish = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\Introduction to Python - V2\\dear-guest-app\\dist"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "npm run build"
+base = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\Introduction to Python - V2\\dear-guest-app"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = true
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

@@ -1,4 +1,4 @@
-import { cloudUrl, supabase } from '@/lib/lovable-cloud';
+import { cloudUrl, supabase } from '@/integrations/supabase/client';
 
 export function getPublicUrl(bucket: string, path: string): string {
   return `${cloudUrl}/storage/v1/object/public/${bucket}/${path}`;

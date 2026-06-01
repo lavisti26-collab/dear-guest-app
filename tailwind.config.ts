@@ -1,8 +1,17 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+// @ts-ignore
+import flyonui from "flyonui";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+    "./node_modules/flyonui/dist/js/*.js",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -94,15 +103,24 @@ export default {
           to: { height: "0" },
         },
         "petal-fall": {
-          "0%": { transform: "translateY(-10vh) rotate(0deg) translateX(0)", opacity: "0.8" },
-          "50%": { transform: "translateY(50vh) rotate(180deg) translateX(20px)", opacity: "0.6" },
-          "100%": { transform: "translateY(110vh) rotate(360deg) translateX(-10px)", opacity: "0" },
+          "0%": {
+            transform: "translateY(-10vh) rotate(0deg) translateX(0)",
+            opacity: "0.8",
+          },
+          "50%": {
+            transform: "translateY(50vh) rotate(180deg) translateX(20px)",
+            opacity: "0.6",
+          },
+          "100%": {
+            transform: "translateY(110vh) rotate(360deg) translateX(-10px)",
+            opacity: "0",
+          },
         },
         "float-up": {
           "0%": { transform: "translateY(0) scale(1)", opacity: "0.7" },
           "100%": { transform: "translateY(-80px) scale(0.3)", opacity: "0" },
         },
-        "sparkle": {
+        sparkle: {
           "0%, 100%": { opacity: "0", transform: "scale(0) rotate(0deg)" },
           "50%": { opacity: "1", transform: "scale(1) rotate(180deg)" },
         },
@@ -111,8 +129,14 @@ export default {
           "50%": { transform: "translateY(-8px) rotate(3deg)" },
         },
         "pulse-glow": {
-          "0%, 100%": { opacity: "0.3", boxShadow: "0 0 20px rgba(212,167,106,.1)" },
-          "50%": { opacity: "0.6", boxShadow: "0 0 40px rgba(212,167,106,.2)" },
+          "0%, 100%": {
+            opacity: "0.3",
+            boxShadow: "0 0 20px rgba(212,167,106,.1)",
+          },
+          "50%": {
+            opacity: "0.6",
+            boxShadow: "0 0 40px rgba(212,167,106,.2)",
+          },
         },
         "cinematic-fade": {
           "0%": { opacity: "0", transform: "translateY(30px) scale(0.97)" },
@@ -132,7 +156,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "petal-fall": "petal-fall linear infinite",
         "float-up": "float-up 2.5s ease-out forwards",
-        "sparkle": "sparkle 2s ease-in-out infinite",
+        sparkle: "sparkle 2s ease-in-out infinite",
         "gentle-float": "gentle-float 4s ease-in-out infinite",
         "pulse-glow": "pulse-glow 3s ease-in-out infinite",
         "cinematic-fade": "cinematic-fade 0.8s ease-out forwards",
@@ -140,5 +164,6 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate, flyonui],
 } satisfies Config;
+

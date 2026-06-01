@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { useWeddingData } from '@/contexts/WeddingDataContext';
 import EnvelopeAnimation from '@/components/wedding/EnvelopeAnimation';
 import FallingPetals from '@/components/wedding/FallingPetals';
 import FloatingHearts from '@/components/wedding/FloatingHearts';
@@ -23,21 +24,35 @@ import ContactSection from '@/components/wedding/ContactSection';
 import WishesSection from '@/components/wedding/WishesSection';
 import SectionReveal from '@/components/wedding/SectionReveal';
 
-export default function InvitationPage() {
+function InvitationContent() {
   const [searchParams] = useSearchParams();
   const guestName = searchParams.get('guest') || '';
+  const showEnvelope = searchParams.get('envelope') !== '0';
+  const { ready } = useWeddingData();
   const [envelopeOpen, setEnvelopeOpen] = useState(false);
+  const hideMain = showEnvelope && !envelopeOpen;
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent" />
+        <p className="text-sm text-muted-foreground">Loading your invitation…</p>
+      </div>
+    );
+  }
 
   return (
-    <LanguageProvider>
-      <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background">
+      {showEnvelope && (
         <EnvelopeAnimation
           guestName={guestName}
           onOpen={() => setEnvelopeOpen(true)}
           isOpen={envelopeOpen}
         />
+      )}
 
-        {envelopeOpen && (
+
+      <div className={hideMain ? 'sr-only' : undefined} aria-hidden={hideMain}>
           <>
             <FallingPetals />
             <FloatingHearts />
@@ -69,8 +84,15 @@ export default function InvitationPage() {
               </SectionReveal>
             </main>
           </>
-        )}
       </div>
+    </div>
+  );
+}
+
+export default function InvitationPage() {
+  return (
+    <LanguageProvider>
+      <InvitationContent />
     </LanguageProvider>
   );
 }

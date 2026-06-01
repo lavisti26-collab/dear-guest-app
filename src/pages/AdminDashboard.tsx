@@ -1,11 +1,20 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { supabase } from '@/lib/lovable-cloud';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
-import { useTheme, THEME_INFO, ThemeName } from '@/contexts/ThemeContext';
+import { useTheme, THEME_INFO } from '@/contexts/ThemeContext';
+import InvitationThemePicker from '@/components/dashboard/InvitationThemePicker';
+import VisualStylePicker from '@/components/dashboard/VisualStylePicker';
 import { toast } from 'sonner';
 import { uploadFile } from '@/lib/supabase-storage';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from 'recharts';
+import CinematicTransition from '@/components/effects/CinematicTransition';
+import GlowButton from '@/components/effects/GlowButton';
+import RoleBasedSticker from '@/components/stickers/RoleBasedSticker';
+import DashboardText from '@/components/typography/DashboardText';
+import AdminCardGrid from '@/components/layouts/AdminCardGrid';
+import ThemeAwareParticles from '@/components/effects/ThemeAwareParticles';
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
@@ -92,21 +101,103 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
   const { theme, setTheme } = useTheme();
   const [newGuest, setNewGuest] = useState('');
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
+  const [musicUploading, setMusicUploading] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [bulkText, setBulkText] = useState('');
+  const [selectedInviteGuest, setSelectedInviteGuest] = useState<{ id: string; name: string } | null>(null);
+  const [inviteTemplate, setInviteTemplate] = useState(() => {
+    return localStorage.getItem('wedding_invite_template') || 'Hi [Name]! We would love to invite you to our wedding. Please view our invitation and RSVP here: [Link]';
+  });
 
   const baseUrl = window.location.origin;
   const publicUrl = publicSlug ? `${baseUrl}/invite/${publicSlug}` : '';
   const guestUrl = (name: string) => `${publicUrl}?guest=${encodeURIComponent(name)}`;
 
+  const attendingParties = useMemo(() => data.guests.filter(g => g.rsvpStatus === 'attending').length, [data.guests]);
+  const declinedParties = useMemo(() => data.guests.filter(g => g.rsvpStatus === 'not_attending').length, [data.guests]);
+  const pendingParties = useMemo(() => data.guests.filter(g => g.rsvpStatus === 'pending').length, [data.guests]);
+  
+  const attendingGuestsCount = useMemo(() => 
+    data.guests.filter(g => g.rsvpStatus === 'attending').reduce((acc, g) => acc + (g.numberOfGuests || 1), 0),
+    [data.guests]
+  );
+  
+  const declinedGuestsCount = useMemo(() => 
+    data.guests.filter(g => g.rsvpStatus === 'not_attending').reduce((acc, g) => acc + (g.numberOfGuests || 1), 0),
+    [data.guests]
+  );
+
+  const mealData = useMemo(() => {
+    const mealCounts: { [key: string]: number } = {};
+    data.guests.forEach(g => {
+      if (g.rsvpStatus === 'attending' && g.mealPreference) {
+        const meal = g.mealPreference.trim();
+        if (meal) {
+          mealCounts[meal] = (mealCounts[meal] || 0) + (g.numberOfGuests || 1);
+        }
+      }
+    });
+    return Object.entries(mealCounts).map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value
+    }));
+  }, [data.guests]);
+
+  const getPersonalizedMessage = useCallback((guestName: string) => {
+    return inviteTemplate
+      .replace(/\[Name\]/g, guestName)
+      .replace(/\[Link\]/g, guestUrl(guestName));
+  }, [inviteTemplate, publicUrl]);
+
+  const handleBulkImport = async () => {
+    const names = bulkText
+      .split('\n')
+      .map(n => n.trim())
+      .filter(n => n.length > 0);
+
+    if (names.length === 0) {
+      toast.error('Please enter at least one guest name');
+      return;
+    }
+
+    const toastId = toast.loading(`Importing ${names.length} guests...`);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const name of names) {
+      try {
+        await data.addGuest(name);
+        successCount++;
+      } catch (err) {
+        failCount++;
+      }
+    }
+
+    toast.dismiss(toastId);
+    if (successCount > 0) {
+      toast.success(`Successfully imported ${successCount} guests!`);
+      setBulkText('');
+      setShowBulkImport(false);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to import ${failCount} guests.`);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
 
-  const addGuest = (e: React.FormEvent) => {
+  const addGuest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGuest.trim()) return;
-    data.addGuest(newGuest.trim());
-    setNewGuest('');
-    toast.success('Guest added!');
+    try {
+      await data.addGuest(newGuest.trim());
+      setNewGuest('');
+      toast.success('Guest added!');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not add guest');
+    }
   };
 
   const exportCSV = () => {
@@ -146,7 +237,7 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
     { key: 'wishes', label: 'Wishes', icon: '💌' },
     { key: 'photos', label: 'Photos', icon: '📸' },
     { key: 'wedding', label: 'Info', icon: '💍' },
-    { key: 'program', label: 'Program', icon: '📋' },
+    { key: 'program', label: 'Program', icon: '🗓️' },
     { key: 'map', label: 'Map', icon: '📍' },
     { key: 'bank', label: 'Bank', icon: '🏦' },
     { key: 'contacts', label: 'Contact', icon: '📱' },
@@ -160,36 +251,59 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
   const saveBtn = "bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface font-medium";
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="glass-strong border-b border-border/30 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
-        <h1 className="font-display text-xl font-semibold text-foreground">💍 Wedding Admin</h1>
-        <div className="flex items-center gap-4">
+    <CinematicTransition>
+      <div className="min-h-screen bg-background">
+        {/* Premium Header with Role-Based Styling */}
+        <header className="glass-strong border-b border-border/30 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-4">
+            <RoleBasedSticker 
+              role={isSuperAdmin ? 'super-admin' : 'admin'} 
+              variant="primary" 
+              size="sm" 
+              animated={false}
+            />
+            <div>
+              <DashboardText variant="title" className="font-semibold">
+                💍 Wedding Admin
+              </DashboardText>
+              {isSuperAdmin && (
+                <DashboardText variant="label" className="text-xs text-accent">
+                  🔒 Super Admin Mode
+                </DashboardText>
+              )}
+            </div>
+          </div>
           {isSuperAdmin && (
             <a href="/admin/super" className="text-sm bg-primary/30 rounded-full px-4 py-2 hover:bg-primary/50 transition-colors">👑 Super</a>
           )}
-          <a href={publicUrl || "/"} target="_blank" rel="noreferrer" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
+          {publicUrl && (
+            <a href={publicUrl} target="_blank" rel="noreferrer" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
+          )}
           <button onClick={handleLogout} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Logout
           </button>
-        </div>
-      </header>
+        </header>
 
-      {/* Tabs */}
-      <div className="border-b border-border/30 glass px-4 flex gap-1 overflow-x-auto sticky top-[65px] z-20">
-        {tabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-3 py-3 text-xs font-medium whitespace-nowrap transition-all border-b-2 ${
-              tab === t.key ? 'border-accent text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <span className="block text-lg mb-0.5">{t.icon}</span>
-            {t.label}
-          </button>
-        ))}
-      </div>
+        {/* Premium Tabs with Glow Effects */}
+        <div className="border-b border-border/30 bg-muted/20 px-6 py-4 overflow-x-auto sticky top-[65px] z-20 shadow-sm backdrop-blur-md">
+          <div className="tabs tabs-box p-1 bg-background border border-border/30 rounded-2xl flex gap-1 w-max mx-auto shadow-surface">
+            {tabs.map(t => (
+              <ThemeAwareParticles effect="glow" key={t.key}>
+                <button
+                  onClick={() => setTab(t.key)}
+                  className={`tab tab-md rounded-xl flex flex-col items-center justify-center min-h-[52px] min-w-[70px] px-4 font-bold text-xs whitespace-nowrap transition-all ${
+                    tab === t.key 
+                      ? 'tab-active bg-accent text-accent-foreground shadow-glow animate-pulse-glow' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/10'
+                  }`}
+                >
+                  <span className="text-lg mb-0.5">{t.icon}</span>
+                  <span className="text-[10px] uppercase tracking-wider">{t.label}</span>
+                </button>
+              </ThemeAwareParticles>
+            ))}
+          </div>
+        </div>
 
       <main className="max-w-4xl mx-auto p-6">
         <AnimatePresence mode="wait">
@@ -221,24 +335,91 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
               </div>
             )}
 
-            <form onSubmit={addGuest} className="flex gap-3">
-              <input
-                type="text"
-                value={newGuest}
-                onChange={e => setNewGuest(e.target.value)}
-                placeholder="Guest name..."
-                maxLength={100}
-                className={`flex-1 ${inputClass}`}
-              />
-              <motion.button
-                type="submit"
-                className={saveBtn}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                + Add
-              </motion.button>
-            </form>
+            <div className="glass-card rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display font-semibold text-foreground text-sm">👥 Manage Guest Entry</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkImport(!showBulkImport)}
+                  className="text-xs text-accent hover:underline flex items-center gap-1 font-semibold"
+                >
+                  {showBulkImport ? '⚡ Single Guest Form' : '📦 Paste Bulk Names'}
+                </button>
+              </div>
+
+              {!showBulkImport ? (
+                <form onSubmit={addGuest} className="flex gap-3">
+                  <input
+                    type="text"
+                    value={newGuest}
+                    onChange={e => setNewGuest(e.target.value)}
+                    placeholder="Guest name..."
+                    maxLength={100}
+                    className={`flex-1 ${inputClass}`}
+                  />
+                  <motion.button
+                    type="submit"
+                    className={saveBtn}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    + Add
+                  </motion.button>
+                </form>
+              ) : (
+                <div className="space-y-3">
+                  <textarea
+                    value={bulkText}
+                    onChange={e => setBulkText(e.target.value)}
+                    placeholder="Enter guest names, one per line (e.g. John Doe, Jane Smith)..."
+                    rows={4}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:ring-2 focus:ring-ring text-sm"
+                  />
+                  <div className="flex gap-3 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => { setBulkText(''); setShowBulkImport(false); }}
+                      className="bg-muted text-muted-foreground rounded-full px-4 py-2 text-xs"
+                    >
+                      Cancel
+                    </button>
+                    <motion.button
+                      onClick={handleBulkImport}
+                      className="bg-accent text-accent-foreground rounded-full px-5 py-2 text-xs font-semibold"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      ⚡ Import List
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Template Editor Collapsible */}
+            <div className="glass-card rounded-2xl p-4">
+              <details className="group">
+                <summary className="list-none flex items-center justify-between cursor-pointer font-display font-semibold text-foreground text-sm">
+                  <span>💬 Customize Message Invite Template</span>
+                  <span className="text-xs text-accent transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div className="mt-3 space-y-3">
+                  <textarea
+                    value={inviteTemplate}
+                    onChange={e => {
+                      setInviteTemplate(e.target.value);
+                      localStorage.setItem('wedding_invite_template', e.target.value);
+                    }}
+                    rows={3}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:ring-2 focus:ring-ring text-xs"
+                    placeholder="Use [Name] and [Link] placeholders"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Use <code>[Name]</code> for guest name and <code>[Link]</code> for their personalized invitation link.
+                  </p>
+                </div>
+              </details>
+            </div>
 
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">{data.guests.length} guests</span>
@@ -283,13 +464,19 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                       </td>
                       <td className="px-4 py-3 flex gap-2">
                         <button
+                          onClick={() => setSelectedInviteGuest({ id: g.id, name: g.name })}
+                          className="text-xs bg-accent/20 text-accent-foreground rounded-full px-3 py-1.5 hover:bg-accent/30 transition-colors"
+                        >
+                          💬 Invite
+                        </button>
+                        <button
                           onClick={() => setSelectedQR(selectedQR === g.name ? null : g.name)}
                           className="text-xs bg-primary/30 rounded-full px-3 py-1.5 hover:bg-primary/50 transition-colors"
                         >
                           QR
                         </button>
                         <button
-                          onClick={() => { data.removeGuest(g.id); toast.success('Guest removed'); }}
+                          onClick={() => { data.removeGuest(g.id).catch(err => toast.error(err.message || 'Failed to remove guest')); toast.success('Guest removed'); }}
                           className="text-xs text-destructive hover:bg-destructive/10 rounded-full px-3 py-1.5 transition-colors"
                         >
                           Delete
@@ -358,56 +545,235 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
               </motion.div>
             )}
             </AnimatePresence>
+
+            {/* Invite Modal */}
+            <AnimatePresence>
+            {selectedInviteGuest && (
+              <motion.div
+                className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedInviteGuest(null)}
+              >
+                <motion.div
+                  className="glass-strong rounded-3xl p-6 text-left max-w-md w-full space-y-4"
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0.9 }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <h3 className="font-display text-lg font-semibold text-foreground">
+                    Send Invitation to {selectedInviteGuest.name}
+                  </h3>
+                  
+                  <div className="space-y-2">
+                    <label className="text-xs text-muted-foreground uppercase font-semibold">Message Preview</label>
+                    <textarea
+                      value={getPersonalizedMessage(selectedInviteGuest.name)}
+                      readOnly
+                      rows={4}
+                      className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2.5 text-xs text-foreground resize-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => {
+                        const msg = encodeURIComponent(getPersonalizedMessage(selectedInviteGuest.name));
+                        window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+                      }}
+                      className="flex items-center justify-center gap-2 bg-[#25D366] text-white rounded-full py-2.5 text-xs font-semibold hover:opacity-90 transition-opacity"
+                    >
+                      WhatsApp
+                    </button>
+                    <button
+                      onClick={() => {
+                        const msg = encodeURIComponent(getPersonalizedMessage(selectedInviteGuest.name));
+                        window.open(`https://t.me/share/url?url=${encodeURIComponent(guestUrl(selectedInviteGuest.name))}&text=${msg}`, '_blank');
+                      }}
+                      className="flex items-center justify-center gap-2 bg-[#0088cc] text-white rounded-full py-2.5 text-xs font-semibold hover:opacity-90 transition-opacity"
+                    >
+                      Telegram
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(getPersonalizedMessage(selectedInviteGuest.name));
+                        toast.success('Message copied!');
+                      }}
+                      className="flex-1 bg-accent text-accent-foreground rounded-full py-2 text-xs font-semibold hover:opacity-90 transition-opacity"
+                    >
+                      📋 Copy Text
+                    </button>
+                    <button
+                      onClick={() => setSelectedInviteGuest(null)}
+                      className="bg-muted text-muted-foreground rounded-full px-4 py-2 text-xs"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+            </AnimatePresence>
           </div>
         )}
 
         {/* RSVP TAB */}
         {tab === 'rsvp' && (
-          <div className="glass-card rounded-2xl overflow-hidden">
-            <div className="p-4 bg-muted/30 flex justify-between items-center border-b border-border/30">
-              <span className="font-medium text-foreground">📋 RSVP Responses</span>
-              <div className="flex gap-3 text-sm">
-                <span className="bg-green-100 text-green-800 rounded-full px-3 py-1">
-                  ✅ {data.guests.filter(g => g.rsvpStatus === 'attending').length}
-                </span>
-                <span className="bg-red-100 text-red-800 rounded-full px-3 py-1">
-                  ❌ {data.guests.filter(g => g.rsvpStatus === 'not_attending').length}
-                </span>
-                <span className="bg-yellow-100 text-yellow-800 rounded-full px-3 py-1">
-                  ⏳ {data.guests.filter(g => g.rsvpStatus === 'pending').length}
-                </span>
+          <div className="space-y-6">
+            {/* FlyonUI Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-muted/20 border border-border/40 p-4 rounded-3xl shadow-surface">
+              <div className="stat p-4 text-center border-r border-border/30 last:border-0 flex flex-col justify-center">
+                <div className="stat-title text-xs text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                  👥 Invited
+                </div>
+                <div className="stat-value text-3xl font-extrabold text-foreground">{data.guests.length}</div>
+                <div className="stat-desc text-[10px] text-muted-foreground mt-0.5">Total invited parties</div>
+              </div>
+
+              <div className="stat p-4 text-center border-r border-border/30 last:border-0 flex flex-col justify-center">
+                <div className="stat-title text-xs text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1 text-green-600 dark:text-green-400">
+                  ✅ Attending
+                </div>
+                <div className="stat-value text-3xl font-extrabold text-green-600 dark:text-green-400">{attendingGuestsCount}</div>
+                <div className="stat-desc text-[10px] text-muted-foreground mt-0.5">({attendingParties} parties)</div>
+              </div>
+
+              <div className="stat p-4 text-center border-r border-border/30 last:border-0 flex flex-col justify-center">
+                <div className="stat-title text-xs text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1 text-red-600 dark:text-red-400">
+                  ❌ Declined
+                </div>
+                <div className="stat-value text-3xl font-extrabold text-red-600 dark:text-red-400">{declinedGuestsCount}</div>
+                <div className="stat-desc text-[10px] text-muted-foreground mt-0.5">({declinedParties} parties)</div>
+              </div>
+
+              <div className="stat p-4 text-center flex flex-col justify-center">
+                <div className="stat-title text-xs text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1 text-yellow-600 dark:text-yellow-400">
+                  ⏳ Pending
+                </div>
+                <div className="stat-value text-3xl font-extrabold text-yellow-600 dark:text-yellow-400">{pendingParties}</div>
+                <div className="stat-desc text-[10px] text-muted-foreground mt-0.5">Awaiting response</div>
               </div>
             </div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/30">
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground"># Guests</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Meal</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Note</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/30">
-                {data.guests.map(g => (
-                  <tr key={g.id} className="hover:bg-muted/20">
-                    <td className="px-4 py-3 text-foreground font-medium">{g.name}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-                        g.rsvpStatus === 'attending' ? 'bg-green-100 text-green-800' :
-                        g.rsvpStatus === 'not_attending' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {g.rsvpStatus === 'attending' ? '✅ Yes' : g.rsvpStatus === 'not_attending' ? '❌ No' : '⏳ Pending'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-foreground">{g.numberOfGuests}</td>
-                    <td className="px-4 py-3 text-muted-foreground capitalize">{g.mealPreference || '—'}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs max-w-[200px] truncate" title={g.note}>{g.note || '—'}</td>
+
+            {/* Recharts Analytics Panel */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* RSVP status Donut Chart */}
+              <div className="glass-card rounded-3xl p-5 space-y-4">
+                <h4 className="font-display font-semibold text-foreground text-sm flex items-center gap-1.5">
+                  📊 RSVP Distribution
+                </h4>
+                <div className="h-64 w-full flex items-center justify-center">
+                  {data.guests.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Attending', value: attendingParties, color: '#10B981' },
+                            { name: 'Declined', value: declinedParties, color: '#EF4444' },
+                            { name: 'Pending', value: pendingParties, color: '#F59E0B' },
+                          ].filter(d => d.value > 0)}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {[
+                            { name: 'Attending', value: attendingParties, color: '#10B981' },
+                            { name: 'Declined', value: declinedParties, color: '#EF4444' },
+                            { name: 'Pending', value: pendingParties, color: '#F59E0B' },
+                          ].filter(d => d.value > 0).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px', color: 'hsl(var(--foreground))' }} />
+                        <Legend verticalAlign="bottom" height={36} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <p className="text-muted-foreground text-xs">No RSVPs yet to display</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Meal Preferences Bar Chart */}
+              <div className="glass-card rounded-3xl p-5 space-y-4">
+                <h4 className="font-display font-semibold text-foreground text-sm flex items-center gap-1.5">
+                  🍽️ Meal Preferences
+                </h4>
+                <div className="h-64 w-full flex items-center justify-center">
+                  {mealData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={mealData}>
+                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                        <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px', color: 'hsl(var(--foreground))' }} />
+                        <Bar dataKey="value" fill="hsl(var(--accent))" radius={[8, 8, 0, 0]}>
+                          {mealData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? 'hsl(var(--accent))' : 'hsl(var(--primary))'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <p className="text-muted-foreground text-xs">No meal preferences recorded yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="glass-card rounded-2xl overflow-hidden">
+              <div className="p-4 bg-muted/30 flex justify-between items-center border-b border-border/30">
+                <span className="font-medium text-foreground">📋 RSVP Responses</span>
+                <div className="flex gap-3 text-sm">
+                  <span className="bg-green-100 text-green-800 rounded-full px-3 py-1 text-xs">
+                    ✅ {data.guests.filter(g => g.rsvpStatus === 'attending').length}
+                  </span>
+                  <span className="bg-red-100 text-red-800 rounded-full px-3 py-1 text-xs">
+                    ❌ {data.guests.filter(g => g.rsvpStatus === 'not_attending').length}
+                  </span>
+                  <span className="bg-yellow-100 text-yellow-800 rounded-full px-3 py-1 text-xs">
+                    ⏳ {data.guests.filter(g => g.rsvpStatus === 'pending').length}
+                  </span>
+                </div>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/30">
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground"># Guests</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Meal</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Note</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/30">
+                  {data.guests.map(g => (
+                    <tr key={g.id} className="hover:bg-muted/20">
+                      <td className="px-4 py-3 text-foreground font-medium">{g.name}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+                          g.rsvpStatus === 'attending' ? 'bg-green-100 text-green-800' :
+                          g.rsvpStatus === 'not_attending' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {g.rsvpStatus === 'attending' ? '✅ Yes' : g.rsvpStatus === 'not_attending' ? '❌ No' : '⏳ Pending'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-foreground">{g.numberOfGuests}</td>
+                      <td className="px-4 py-3 text-muted-foreground capitalize">{g.mealPreference || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs max-w-[200px] truncate" title={g.note}>{g.note || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -487,7 +853,7 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                     >
                       <img src={p} alt="" className="w-full h-40 object-cover" />
                       <button
-                        onClick={() => { data.removePhoto(p); toast.success('Photo removed'); }}
+                        onClick={() => { data.removePhoto(p).catch(err => toast.error(err.message || 'Failed to remove photo')); toast.success('Photo removed'); }}
                         className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-8 h-8 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-lg"
                       >
                         ✕
@@ -544,9 +910,37 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                   calendarUrl: fd.get('calendarUrl') as string,
                   weddingDescription: fd.get('weddingDescription') as string,
                   weddingDescriptionKm: fd.get('weddingDescriptionKm') as string,
+                  eventTitleEn: fd.get('eventTitleEn') as string,
+                  eventTitleKm: fd.get('eventTitleKm') as string,
                 });
                 toast.success('Wedding info saved!');
               }} className="space-y-4">
+                <div className="glass-card rounded-2xl p-4 border border-accent/20 space-y-3">
+                  <p className="text-sm font-medium text-foreground">Event title (hero & envelope)</p>
+                  <p className="text-xs text-muted-foreground">
+                    Use for wedding, engagement, or other ceremonies — shown above couple names.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClass}>Title (English)</label>
+                      <input
+                        name="eventTitleEn"
+                        defaultValue={data.settings.eventTitleEn}
+                        className={inputClass}
+                        placeholder="✦  The Wedding of  ✦"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Title (Khmer)</label>
+                      <input
+                        name="eventTitleKm"
+                        defaultValue={data.settings.eventTitleKm}
+                        className={inputClass}
+                        placeholder="ពិធីមង្គលការ"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}>Couple Names (EN)</label>
@@ -591,7 +985,7 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                 </div>
                 <div>
                   <label className={labelClass}>Wedding Date/Time (countdown)</label>
-                  <input name="weddingDateTime" type="datetime-local" defaultValue={data.settings.weddingDateTime.slice(0, 16)} className={inputClass} />
+                  <input name="weddingDateTime" type="datetime-local" defaultValue={(data.settings.weddingDateTime || '').slice(0, 16)} className={inputClass} />
                 </div>
                 <div>
                   <label className={labelClass}>Google Calendar URL</label>
@@ -885,59 +1279,15 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
               <h3 className="font-display text-lg font-semibold text-foreground">🎨 Invitation Theme</h3>
               <p className="text-sm text-muted-foreground">Choose a romantic theme for your wedding invitation. This changes the color palette and visual mood for all guests.</p>
 
-              <div className="grid grid-cols-2 gap-4">
-                {(Object.keys(THEME_INFO) as ThemeName[]).map((themeName) => {
-                  const info = THEME_INFO[themeName];
-                  const isActive = theme === themeName;
-                  return (
-                    <motion.button
-                      key={themeName}
-                      onClick={() => { setTheme(themeName); toast.success(`${info.emoji} ${info.label} theme applied!`); }}
-                      className={`relative rounded-2xl p-5 text-left transition-all border-2 ${
-                        isActive
-                          ? 'border-accent shadow-luxury scale-[1.02]'
-                          : 'border-border/30 hover:border-accent/40 hover:shadow-surface'
-                      }`}
-                      style={{
-                        background: isActive
-                          ? `linear-gradient(145deg, ${info.colors[2]}40, ${info.colors[0]}20)`
-                          : undefined,
-                      }}
-                      whileHover={{ scale: isActive ? 1.02 : 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                    >
-                      {isActive && (
-                        <motion.div
-                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: 'spring', bounce: 0.5 }}
-                        >
-                          ✓
-                        </motion.div>
-                      )}
-                      <div className="text-2xl mb-2">{info.emoji}</div>
-                      <h4 className="font-display font-semibold text-foreground text-sm">{info.label}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">{info.description}</p>
-                      <div className="flex gap-1.5 mt-3">
-                        {info.colors.map((c, ci) => (
-                          <div
-                            key={ci}
-                            className="w-6 h-6 rounded-full border border-border/30"
-                            style={{ background: c }}
-                          />
-                        ))}
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
+              <InvitationThemePicker />
+            </div>
 
-              <div className="glass-card rounded-2xl p-4 mt-4">
-                <p className="text-xs text-muted-foreground">
-                  💡 <strong>Current theme:</strong> {THEME_INFO[theme].emoji} {THEME_INFO[theme].label} — All guests will see this theme on their invitation.
-                </p>
-              </div>
+            <div className={sectionCard}>
+              <h3 className="font-display text-lg font-semibold text-foreground">🧩 Visual layout style</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Add a structural look (borders, shadows, glass, neon) on top of your color theme. Existing palettes are unchanged.
+              </p>
+              <VisualStylePicker />
             </div>
           </div>
         )}
@@ -952,8 +1302,12 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
             <div>
               <label className={labelClass}>Upload MP3 from device</label>
               <div
-                className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer border-border hover:border-accent/50`}
-                onClick={() => document.getElementById('music-upload')?.click()}
+                className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${
+                  musicUploading
+                    ? 'border-accent/50 opacity-60 pointer-events-none'
+                    : 'cursor-pointer border-border hover:border-accent/50'
+                }`}
+                onClick={() => !musicUploading && document.getElementById('music-upload')?.click()}
               >
                 <input
                   id="music-upload"
@@ -967,16 +1321,25 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                       toast.error('File too large (max 10MB)');
                       return;
                     }
+                    setMusicUploading(true);
                     try {
                       const url = await uploadFile('music', file);
                       data.updateSettings({ musicFile: url });
                       toast.success('Music uploaded! 🎵');
                     } catch (err: any) {
                       toast.error(err.message || 'Upload failed');
+                    } finally {
+                      setMusicUploading(false);
+                      e.target.value = '';
                     }
                   }}
                 />
-                {data.settings.musicFile ? (
+                {musicUploading ? (
+                  <div className="space-y-2">
+                    <div className="text-3xl animate-pulse">⏳</div>
+                    <p className="text-sm font-medium text-foreground">Uploading music...</p>
+                  </div>
+                ) : data.settings.musicFile ? (
                   <div className="space-y-3">
                     <div className="text-3xl">🎵</div>
                     <p className="text-sm font-medium text-foreground">Music file uploaded</p>
@@ -1032,6 +1395,7 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
           </motion.div>
         </AnimatePresence>
       </main>
-    </div>
+      </div>
+    </CinematicTransition>
   );
 }

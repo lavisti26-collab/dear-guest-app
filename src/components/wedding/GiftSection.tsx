@@ -47,8 +47,8 @@ export default function GiftSection() {
 
           <p className={`text-xs text-muted-foreground mb-1 ${fontClass}`}>{t('gift.bank')}</p>
           <p className="text-lg font-semibold text-foreground">{bankName}</p>
-          <div className="mt-2 bg-ivory/80 rounded-xl py-2.5 px-4 inline-block gold-border">
-            <p className="text-xl font-display font-bold gold-text tracking-wider">{bankAccount}</p>
+          <div className="mt-2 bg-ivory/90 rounded-xl py-2.5 px-6 inline-block gold-border">
+            <p className="text-2xl font-sans font-bold text-foreground tracking-widest">{bankAccount}</p>
           </div>
         </motion.div>
 

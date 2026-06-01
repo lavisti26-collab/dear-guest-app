@@ -24,7 +24,7 @@ export default function TimelineSection() {
       viewport={{ once: true, amount: 0.2 }}
       transition={spring}
     >
-      <div className="max-w-xl mx-auto text-center">
+      <div className="max-w-2xl mx-auto text-center">
         <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
           {t('timeline.title')}
         </h2>
@@ -39,75 +39,46 @@ export default function TimelineSection() {
             </p>
           </div>
         ) : (
-          <div className="relative">
-            {/* Center line */}
-            <div className="absolute left-5 sm:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold-light to-transparent sm:-translate-x-px" />
+          <ul className="timeline timeline-vertical timeline-snap-icon max-md:timeline-compact w-full text-left">
+            {items.map((item, i) => {
+              const time = (lang === 'km' ? item.time_km || item.time_en : item.time_en || item.time_km) || '';
+              const title = (lang === 'km' ? item.title_km || item.title_en : item.title_en || item.title_km) || '';
+              const isEven = i % 2 === 0;
 
-            <div className="space-y-4">
-              {items.map((item, i) => {
-                const time = (lang === 'km' ? item.time_km || item.time_en : item.time_en || item.time_km) || '';
-                const title = (lang === 'km' ? item.title_km || item.title_en : item.title_en || item.title_km) || '';
-                const isLeft = i % 2 === 0;
+              return (
+                <li key={item.id || i}>
+                  {/* Left part: Time on desktop, else placeholder */}
+                  <div className={`timeline-start md:text-end mb-1 text-sm font-bold text-gold ${fontClass} ${isEven ? '' : 'md:text-right'}`}>
+                    {isEven ? time : <span className="md:hidden">{time}</span>}
+                  </div>
 
-                return (
-                  <motion.div
-                    key={item.id || i}
-                    className="relative"
-                    initial={{ opacity: 0, y: 15 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ ...spring, delay: i * 0.06 }}
-                  >
-                    {/* Desktop */}
-                    <div className="hidden sm:grid sm:grid-cols-[1fr_36px_1fr] items-center gap-0">
-                      {isLeft ? (
-                        <>
-                          <div className="text-right pr-4">
-                            <div className="luxury-card rounded-xl p-3 inline-block text-right">
-                              <p className={`text-[11px] font-semibold text-gold mb-0.5 ${fontClass}`}>{time}</p>
-                              <h3 className={`font-semibold text-foreground text-sm ${fontClass}`}>{title}</h3>
-                            </div>
-                          </div>
-                          <div className="flex justify-center">
-                            <div className="w-8 h-8 rounded-full bg-champagne border-2 border-gold-light flex items-center justify-center text-xs z-10 shadow-glow">
-                              ✦
-                            </div>
-                          </div>
-                          <div />
-                        </>
-                      ) : (
-                        <>
-                          <div />
-                          <div className="flex justify-center">
-                            <div className="w-8 h-8 rounded-full bg-champagne border-2 border-gold-light flex items-center justify-center text-xs z-10 shadow-glow">
-                              ✦
-                            </div>
-                          </div>
-                          <div className="text-left pl-4">
-                            <div className="luxury-card rounded-xl p-3 inline-block text-left">
-                              <p className={`text-[11px] font-semibold text-gold mb-0.5 ${fontClass}`}>{time}</p>
-                              <h3 className={`font-semibold text-foreground text-sm ${fontClass}`}>{title}</h3>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                  {/* Middle part: Circle indicator */}
+                  <div className="timeline-middle text-accent hover:scale-125 transition-transform cursor-pointer">
+                    <span className="w-7 h-7 rounded-full bg-champagne border-2 border-gold-light flex items-center justify-center text-xs shadow-glow">
+                      ✦
+                    </span>
+                  </div>
 
-                    {/* Mobile */}
-                    <div className="flex sm:hidden items-center gap-3">
-                      <div className="relative z-10 w-8 h-8 rounded-full bg-champagne border-2 border-gold-light flex items-center justify-center text-xs flex-shrink-0 ml-1 shadow-glow">
-                        ✦
-                      </div>
-                      <div className="luxury-card rounded-xl p-3 flex-1">
-                        <p className={`text-[11px] font-semibold text-gold mb-0.5 ${fontClass}`}>{time}</p>
-                        <h3 className={`font-semibold text-foreground text-sm ${fontClass}`}>{title}</h3>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
+                  {/* Right part: Card box */}
+                  <div className={`timeline-end timeline-box mb-6 w-full ${isEven ? '' : 'md:timeline-start md:text-right'}`}>
+                    <motion.div
+                      className="luxury-card rounded-2xl p-4 shadow-surface border border-border/30"
+                      initial={{ opacity: 0, x: isEven ? 20 : -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ ...spring, delay: i * 0.05 }}
+                    >
+                      {!isEven && <p className={`hidden md:block text-xs font-bold text-gold mb-1 ${fontClass}`}>{time}</p>}
+                      {isEven && <p className={`md:hidden text-xs font-bold text-gold mb-1 ${fontClass}`}>{time}</p>}
+                      <h3 className={`font-semibold text-foreground text-sm sm:text-base leading-snug ${fontClass}`}>{title}</h3>
+                    </motion.div>
+                  </div>
+
+                  {i < items.length - 1 && <hr className="bg-gradient-to-b from-gold-light/80 to-transparent" />}
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
     </motion.section>
