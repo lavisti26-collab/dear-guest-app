@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 
@@ -137,16 +137,25 @@ export default function DetailsSection() {
               >
                 {/* Flip-Clock Split Cell */}
                 <div className="relative w-full aspect-square sm:aspect-auto sm:min-h-[88px] rounded-2xl bg-gradient-to-b from-card via-card/90 to-card/75 border border-border/40 shadow-luxury overflow-hidden flex items-center justify-center z-0 border-b-[3px] border-b-gold">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={formattedVal}
+                        initial={{ rotateX: -90, opacity: 0 }}
+                        animate={{ rotateX: 0, opacity: 1 }}
+                        exit={{ rotateX: 90, opacity: 0 }}
+                        transition={{ duration: 0.38, ease: 'easeInOut' }}
+                        className="text-3xl sm:text-4xl md:text-5xl font-mono font-bold tracking-tight text-foreground drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.15)] z-0"
+                        style={{ transformStyle: 'preserve-3d' }}
+                      >
+                        {formattedVal}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+
                   {/* Flaps separator divider */}
                   <div className="absolute top-[49%] left-0 right-0 h-[1.5px] bg-black/22 z-10 shadow-[0_0.5px_0_rgba(255,255,255,0.15)]" />
-                  
-                  {/* Ambient top flap shading */}
                   <div className="absolute top-0 left-0 right-0 h-[49%] bg-black/[0.03] pointer-events-none" />
-                  
-                  {/* Digital value */}
-                  <div className="text-3xl sm:text-4xl md:text-5xl font-mono font-bold tracking-tight text-foreground drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.15)] z-0">
-                    {formattedVal}
-                  </div>
                 </div>
 
                 {/* Subtitle label underneath */}

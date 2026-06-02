@@ -13,10 +13,12 @@ const NAV = {
   super_admin: [
     { to: '/admin/super', label: 'Platform control', icon: 'icon-fluent-emoji-flat:crown' },
     { to: '/admin/super?tab=system', label: 'Control center', icon: 'icon-fluent-emoji-flat:desktop' },
+    { to: '/studio', label: 'Design studio', icon: 'icon-fluent-emoji-flat:artist-palette' },
     { to: '/admin', label: 'Couple admin', icon: 'icon-fluent-emoji-flat:heart-with-ribbon' },
   ],
   admin: [
     { to: '/admin', label: 'Wedding admin', icon: 'icon-fluent-emoji-flat:memo' },
+    { to: '/studio', label: 'Design studio', icon: 'icon-fluent-emoji-flat:artist-palette' },
   ],
   guest: [
     { to: '/hub', label: 'Guest hub', icon: 'icon-fluent-emoji-flat:house-with-garden' },

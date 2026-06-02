@@ -6,6 +6,7 @@ import { useWeddingData } from '@/contexts/WeddingDataContext';
 import { useTheme, THEME_INFO } from '@/contexts/ThemeContext';
 import InvitationThemePicker from '@/components/dashboard/InvitationThemePicker';
 import VisualStylePicker from '@/components/dashboard/VisualStylePicker';
+import ThemeStudio from '@/components/dashboard/ThemeStudio';
 import { toast } from 'sonner';
 import { uploadFile } from '@/lib/supabase-storage';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from 'recharts';

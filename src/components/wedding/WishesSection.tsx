@@ -12,6 +12,16 @@ export default function WishesSection() {
   const fontClass = lang === 'km' ? 'font-khmer' : '';
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
+  const [filter, setFilter] = useState('');
+
+  const filteredWishes = wishes.filter((w) => {
+    const search = filter.trim().toLowerCase();
+    if (!search) return true;
+    return (
+      w.guestName.toLowerCase().includes(search) ||
+      w.message.toLowerCase().includes(search)
+    );
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +49,17 @@ export default function WishesSection() {
         <form onSubmit={handleSubmit} className="mb-8 space-y-3 max-w-md mx-auto">
           <input
             type="text"
+            value={filter}
+            onChange={e => setFilter(e.target.value)}
+            placeholder={t('wishes.search')}
+            className={`w-full min-h-[44px] rounded-xl bg-ivory/80 backdrop-blur-sm gold-border px-4 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-gold text-sm ${fontClass}`}
+          />
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{`${t('wishes.showing')} ${filteredWishes.length} ${t('wishes.of')} ${wishes.length}`}</span>
+            {filter && <span>{`“${filter}”`}</span>}
+          </div>
+          <input
+            type="text"
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder={t('wishes.name')}
@@ -64,25 +85,37 @@ export default function WishesSection() {
           </motion.button>
         </form>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {wishes.map((w, i) => (
-            <motion.div
-              key={w.id}
-              className="luxury-card rounded-2xl p-4 text-left"
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ ...spring, delay: i * 0.08 }}
-            >
-              <p className={`text-foreground text-sm mb-2.5 leading-relaxed ${fontClass}`}>"{w.message}"</p>
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gold-light/40 flex items-center justify-center text-xs font-display font-bold text-foreground">
-                  {w.guestName.charAt(0).toUpperCase()}
-                </div>
-                <p className={`text-xs text-muted-foreground ${fontClass}`}>{w.guestName}</p>
+        <div className="max-h-[52vh] overflow-y-auto space-y-3 pr-1">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {filteredWishes.length === 0 ? (
+              <div className="luxury-card rounded-2xl p-4 text-left col-span-full">
+                <p className={`text-foreground text-sm leading-relaxed ${fontClass}`}>
+                  {filter ? (lang === 'km' ? 'មិនមានពាក្យជូនពរកំពុងស្វែងរកទេ។' : 'No wishes match your search.') : (lang === 'km' ? 'មិនទាន់មានពាក្យជូនពរទេ។' : 'No wishes yet.')}
+                </p>
               </div>
-            </motion.div>
-          ))}
+            ) : (
+              filteredWishes.map((w, i) => (
+                <motion.div
+                  key={w.id}
+                  className="luxury-card rounded-2xl p-4 text-left"
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ ...spring, delay: i * 0.08 }}
+                >
+                  <p className={`text-foreground text-sm mb-2.5 leading-relaxed ${fontClass}`}>
+                    "{w.message}"
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-gold-light/40 flex items-center justify-center text-xs font-display font-bold text-foreground">
+                      {w.guestName.charAt(0).toUpperCase()}
+                    </div>
+                    <p className={`text-xs text-muted-foreground ${fontClass}`}>{w.guestName}</p>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </motion.section>

@@ -273,12 +273,23 @@ CREATE POLICY "profiles_super_admin_update" ON public.profiles
   USING (public.current_user_is_super_admin())
   WITH CHECK (public.current_user_is_super_admin());
 
+DROP POLICY IF EXISTS "profiles_super_admin_delete" ON public.profiles;
+CREATE POLICY "profiles_super_admin_delete" ON public.profiles
+  FOR DELETE TO authenticated
+  USING (public.current_user_is_super_admin());
+
 -- guests
 DROP POLICY IF EXISTS "guests_owner_all" ON public.guests;
 CREATE POLICY "guests_owner_all" ON public.guests
   FOR ALL TO authenticated
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "guests_super_admin_all" ON public.guests;
+CREATE POLICY "guests_super_admin_all" ON public.guests
+  FOR ALL TO authenticated
+  USING (public.current_user_is_super_admin())
+  WITH CHECK (public.current_user_is_super_admin());
 
 DROP POLICY IF EXISTS "guests_anon_insert" ON public.guests;
 CREATE POLICY "guests_anon_insert" ON public.guests
@@ -291,6 +302,12 @@ CREATE POLICY "wishes_owner_all" ON public.wishes
   FOR ALL TO authenticated
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "wishes_super_admin_all" ON public.wishes;
+CREATE POLICY "wishes_super_admin_all" ON public.wishes
+  FOR ALL TO authenticated
+  USING (public.current_user_is_super_admin())
+  WITH CHECK (public.current_user_is_super_admin());
 
 DROP POLICY IF EXISTS "wishes_anon_select" ON public.wishes;
 CREATE POLICY "wishes_anon_select" ON public.wishes
@@ -309,6 +326,12 @@ CREATE POLICY "program_owner_all" ON public.program_schedule
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "program_super_admin_all" ON public.program_schedule;
+CREATE POLICY "program_super_admin_all" ON public.program_schedule
+  FOR ALL TO authenticated
+  USING (public.current_user_is_super_admin())
+  WITH CHECK (public.current_user_is_super_admin());
+
 DROP POLICY IF EXISTS "program_anon_select" ON public.program_schedule;
 CREATE POLICY "program_anon_select" ON public.program_schedule
   FOR SELECT TO anon
@@ -321,6 +344,12 @@ CREATE POLICY "settings_owner_all" ON public.settings
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "settings_super_admin_all" ON public.settings;
+CREATE POLICY "settings_super_admin_all" ON public.settings
+  FOR ALL TO authenticated
+  USING (public.current_user_is_super_admin())
+  WITH CHECK (public.current_user_is_super_admin());
+
 DROP POLICY IF EXISTS "settings_anon_select" ON public.settings;
 CREATE POLICY "settings_anon_select" ON public.settings
   FOR SELECT TO anon
@@ -332,6 +361,12 @@ CREATE POLICY "photos_owner_all" ON public.photos
   FOR ALL TO authenticated
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "photos_super_admin_all" ON public.photos;
+CREATE POLICY "photos_super_admin_all" ON public.photos
+  FOR ALL TO authenticated
+  USING (public.current_user_is_super_admin())
+  WITH CHECK (public.current_user_is_super_admin());
 
 DROP POLICY IF EXISTS "photos_anon_select" ON public.photos;
 CREATE POLICY "photos_anon_select" ON public.photos

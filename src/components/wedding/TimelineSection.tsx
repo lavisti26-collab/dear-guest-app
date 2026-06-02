@@ -39,8 +39,9 @@ export default function TimelineSection() {
             </p>
           </div>
         ) : (
-          <ul className="timeline timeline-vertical timeline-snap-icon max-md:timeline-compact w-full text-left">
-            {items.map((item, i) => {
+          <div className="max-h-[62vh] overflow-y-auto pr-1">
+            <ul className="timeline timeline-vertical timeline-snap-icon max-md:timeline-compact w-full text-left">
+              {items.map((item, i) => {
               const time = (lang === 'km' ? item.time_km || item.time_en : item.time_en || item.time_km) || '';
               const title = (lang === 'km' ? item.title_km || item.title_en : item.title_en || item.title_km) || '';
               const isEven = i % 2 === 0;
@@ -79,6 +80,7 @@ export default function TimelineSection() {
               );
             })}
           </ul>
+          </div>
         )}
       </div>
     </motion.section>

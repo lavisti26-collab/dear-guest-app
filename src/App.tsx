@@ -8,6 +8,7 @@ import PublicInvitationPage from "./pages/PublicInvitationPage";
 import AdminRoute from "./pages/AdminRoute";
 import SuperAdminPage from "./pages/SuperAdminPage";
 import DashboardShellPage from "./pages/DashboardShellPage";
+import DesignStudioPage from "./pages/DesignStudioPage";
 import AuthGuard from "./components/AuthGuard";
 import NotFound from "./pages/NotFound";
 // Note: ThemeProvider is intentionally NOT used here at the root level.
@@ -35,6 +36,7 @@ const App = () => (
             element={<Navigate to="/admin" replace />}
           />
           <Route path="/invite/:slug" element={<PublicInvitationPage />} />
+          <Route path="/studio" element={<AuthGuard><DesignStudioPage /></AuthGuard>} />
           <Route path="/admin" element={<AdminRoute />} />
           <Route path="/admin/super" element={<SuperAdminPage />} />
           <Route path="*" element={<NotFound />} />

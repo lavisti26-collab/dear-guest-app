@@ -127,6 +127,25 @@ function Inner() {
     }
   };
 
+  const loadCouples = async () => {
+    const [{ data: cps }, { count: gc }, { count: wc }, { count: rc }] = await Promise.all([
+      supabase.from('profiles').select('user_id, slug, display_name, email, created_at, theme').order('created_at', { ascending: false }),
+      supabase.from('guests').select('*', { count: 'exact', head: true }),
+      supabase.from('wishes').select('*', { count: 'exact', head: true }),
+      supabase.from('guests').select('*', { count: 'exact', head: true }).eq('attendance_status', 'attending'),
+    ]);
+
+    const couplesData = (cps as Couple[]) || [];
+    const coupleStats = await fetchCoupleStats(couplesData.map((c) => c.user_id));
+    setCouples(couplesData.map((c) => ({
+      ...c,
+      guestCount: coupleStats[c.user_id]?.guests || 0,
+      rsvpCount: coupleStats[c.user_id]?.rsvps || 0,
+      wishCount: coupleStats[c.user_id]?.wishes || 0,
+    })));
+    setStats({ guests: gc || 0, wishes: wc || 0, rsvps: rc || 0, totalCouples: couplesData.length });
+  };
+
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -146,26 +165,7 @@ function Inner() {
         return;
       }
       setAuthorized(true);
-
-      const [{ data: cps }, { count: gc }, { count: wc }, { count: rc }] = await Promise.all([
-        supabase.from('profiles').select('user_id, slug, display_name, email, created_at, theme').order('created_at', { ascending: false }),
-        supabase.from('guests').select('*', { count: 'exact', head: true }),
-        supabase.from('wishes').select('*', { count: 'exact', head: true }),
-        supabase.from('guests').select('*', { count: 'exact', head: true }).eq('attendance_status', 'attending'),
-      ]);
-      
-      const couplesData = (cps as Couple[]) || [];
-      setCouples(couplesData);
-      setStats({ guests: gc || 0, wishes: wc || 0, rsvps: rc || 0, totalCouples: couplesData.length });
-
-      // Fetch per-couple stats
-      const coupleStats = await fetchCoupleStats(couplesData.map(c => c.user_id));
-      setCouples(prev => prev.map(c => ({
-        ...c,
-        guestCount: coupleStats[c.user_id]?.guests || 0,
-        rsvpCount: coupleStats[c.user_id]?.rsvps || 0,
-        wishCount: coupleStats[c.user_id]?.wishes || 0,
-      })));
+      await loadCouples();
     })();
   }, []);
 
@@ -180,26 +180,37 @@ function Inner() {
 
   const handleDeleteCouple = async (userId: string, displayName: string) => {
     if (!confirm(`Delete all data for "${displayName}"? This cannot be undone.`)) return;
-    
+
+    const deletedCouple = couples.find((c) => c.user_id === userId);
+
     try {
-      // Delete related data
-      await Promise.all([
+      const deleteRequests = await Promise.all([
         supabase.from('guests').delete().eq('user_id', userId),
         supabase.from('wishes').delete().eq('user_id', userId),
         supabase.from('photos').delete().eq('user_id', userId),
         supabase.from('settings').delete().eq('user_id', userId),
         supabase.from('program_schedule').delete().eq('user_id', userId),
+        supabase.from('profiles').delete().eq('user_id', userId),
       ]);
-      
-      // Delete profile
-      await supabase.from('profiles').delete().eq('user_id', userId);
-      
-      setCouples(prev => prev.filter(c => c.user_id !== userId));
+
+      const errors = deleteRequests
+        .map((result) => (result as any).error)
+        .filter(Boolean) as Array<{ message: string }>;
+
+      if (errors.length > 0) {
+        console.error('Delete errors:', errors);
+        toast.error(`Delete failed: ${errors[0].message || 'Please try again.'}`);
+        return;
+      }
+
+      await loadCouples();
       toast.success(`${displayName} deleted`);
       if (selectedCouple?.user_id === userId) {
         setSelectedCouple(null);
+        setCoupleDetails(null);
       }
     } catch (err) {
+      console.error('Delete exception:', err);
       toast.error('Failed to delete couple');
     }
   };
@@ -269,8 +280,11 @@ function Inner() {
               </DashboardText>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Link to="/hub" className="text-sm border border-border rounded-full px-4 py-2 font-dashboard hover:bg-muted/50">
+          <div className="flex flex-wrap gap-2">
+            <Link to="/studio" className="text-sm rounded-full border border-border bg-primary/10 px-4 py-2 text-primary hover:bg-primary/20 transition-colors">
+              Design studio
+            </Link>
+            <Link to="/hub" className="text-sm rounded-full border border-border px-4 py-2 font-dashboard hover:bg-muted/50">
               Guest hub
             </Link>
             <Link to="/admin" className="text-sm bg-accent text-accent-foreground font-medium rounded-full px-5 py-2 hover:bg-accent/90 transition-all shadow-glow">
