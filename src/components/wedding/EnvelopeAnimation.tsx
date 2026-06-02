@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import React, { useCallback, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 import confetti from 'canvas-confetti';
@@ -199,25 +199,23 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
             </motion.div>
           ))}
 
-          {/* ── Top decorative text ── */}
-          <motion.div
-            className="absolute top-6 left-1/2 -translate-x-1/2 text-center pointer-events-none"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-          >
-            <p className={`tracking-[0.4em] uppercase text-amber-700/50 text-xs ${lang === 'km' ? 'font-khmer tracking-wider' : 'font-sans'}`}>
-              {eventTitle}
-            </p>
-          </motion.div>
-
           {/* ── Centre content ── */}
           <motion.div
-            className="relative flex flex-col items-center gap-7 px-6"
+            className="relative flex flex-col items-center gap-6 px-6 text-center"
             initial={{ scale: 0.82, opacity: 0, y: 24 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ ...spring, duration: 1.1, delay: 0.2 }}
           >
+            <motion.div
+              className="w-full max-w-[420px]"
+              initial={{ opacity: 0, y: -14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
+              <p className={`mx-auto max-w-full tracking-[0.24em] uppercase text-amber-800/80 text-xl sm:text-2xl md:text-3xl ${lang === 'km' ? 'font-khmer font-semibold tracking-wide' : 'font-sans font-semibold'}`}>
+                {eventTitle}
+              </p>
+            </motion.div>
             {/* Orbiting sparkles around envelope */}
             <div className="absolute inset-0 pointer-events-none">
               {[0, 72, 144, 216, 288].map((angle, i) => (
@@ -308,32 +306,32 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
                 <AnimatePresence>
                   {cardRising ? (
                     <motion.div
-                      className="absolute left-4 right-4 rounded-xl overflow-hidden"
+                      className="absolute left-4 right-4 rounded-xl overflow-visible"
                       style={{
                         bottom: 12,
+                        minHeight: 280,
                         background: 'linear-gradient(145deg, #fffdf8, #fdf6e8)',
                         boxShadow: '0 -4px 20px rgba(180,130,60,0.15), 0 8px 32px rgba(0,0,0,0.08)',
                         border: '1px solid rgba(212,167,106,0.4)',
                         zIndex: 5,
                       }}
-                      initial={{ y: 0, height: '60%' }}
-                      animate={{ y: -130, height: '90%' }}
-                      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      initial={{ y: 0, opacity: 0.85 }}
+                      animate={{ y: -170, opacity: 1 }}
+                      transition={{ duration: 0.92, ease: [0.22, 1, 0.36, 1] }}
                     >
                       <CardContent guestName={guestName} coupleNames={coupleNames} weddingDate={weddingDate} eventTitle={eventTitle} lang={lang} t={t} />
                     </motion.div>
                   ) : (
                     /* Static card peek while closed */
                     <div
-                      className="absolute left-4 right-4 bottom-3 rounded-xl overflow-hidden flex flex-col items-center justify-end pb-3"
+                      className="absolute left-4 right-4 bottom-3 rounded-xl overflow-visible flex flex-col items-center justify-center px-4 py-4 min-h-[180px]"
                       style={{
-                        height: '60%',
                         background: 'linear-gradient(145deg, #fffdf8, #fdf6e8)',
                         border: '1px solid rgba(212,167,106,0.25)',
                         zIndex: 5,
                       }}
                     >
-                      <p className={`text-xs text-amber-700/50 tracking-widest ${lang === 'km' ? 'font-khmer' : 'font-sans'}`}>
+                      <p className={`text-xs text-amber-700/50 tracking-widest mb-1 ${lang === 'km' ? 'font-khmer' : 'font-sans'}`}>
                         {t('envelope.to')}
                       </p>
                       <p className={`text-base font-bold text-amber-900/70 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
@@ -347,25 +345,6 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
                 <WaxSeal popping={sealPopping} />
               </motion.div>
             </div>
-
-            {/* ──── Guest address label ──── */}
-            <motion.div
-              className="text-center -mt-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
-            >
-              <p className={`text-xs tracking-[0.3em] uppercase text-amber-700/60 mb-0.5 ${lang === 'km' ? 'font-khmer tracking-wide text-sm' : 'font-sans'}`}>
-                {t('envelope.to')}
-              </p>
-              <motion.p
-                className={`text-xl sm:text-2xl font-bold text-amber-900 ${lang === 'km' ? 'font-khmer' : 'font-display italic'}`}
-                animate={{ opacity: [0.85, 1, 0.85] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                {guestName || t('greeting.guest')}
-              </motion.p>
-            </motion.div>
 
             {/* ──── CTA Button ──── */}
             <motion.button
@@ -444,10 +423,11 @@ function CardContent({
 }: { guestName: string; coupleNames: string; weddingDate: string; eventTitle: string; lang: string; t: (k: string) => string }) {
   return (
     <motion.div
-      className="flex flex-col items-center justify-center gap-2 h-full px-4 py-5 text-center"
+      className="flex flex-col items-center justify-center gap-3 min-h-[260px] px-6 py-6 text-center overflow-visible"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.3, duration: 0.5 }}
+      style={{ overflow: 'visible' }}
     >
       {/* Top line */}
       <div className="flex items-center gap-2 w-full">
@@ -473,9 +453,6 @@ function CardContent({
       </motion.div>
 
       {/* Couple names */}
-      <p className={`text-xs text-amber-700/50 tracking-wider ${lang === 'km' ? 'font-khmer' : 'font-sans uppercase'}`}>
-        {eventTitle}
-      </p>
       <p className={`text-base font-bold text-amber-800 leading-snug ${lang === 'km' ? 'font-khmer' : 'font-display italic'}`}>
         {coupleNames}
       </p>

@@ -19,13 +19,16 @@ export default function FloatingDaisies() {
           className="absolute text-gold-light/30"
           style={{ left: d.x, top: d.y, fontSize: `${d.size}px` }}
           animate={{
-            y: [0, -8, 0, 5, 0],
-            rotate: [0, 10, -5, 0],
-            opacity: [0.15, 0.25, 0.15],
+            y: [0, -12, 0, -8, 0],
+            x: [0, 6, -6, 6, 0],
+            rotate: [0, 12, -12, 10, 0],
+            scale: [1, 1.02, 0.98, 1.03, 1],
+            opacity: [0.2, 0.35, 0.2, 0.35, 0.2],
           }}
           transition={{
-            duration: 7 + Math.random() * 3,
+            duration: 6 + Math.random() * 2,
             repeat: Infinity,
+            repeatType: 'mirror',
             delay: d.delay,
             ease: 'easeInOut',
           }}
