@@ -399,7 +399,18 @@ export function ThemeProvider({ children, initialTheme = 'gold', ownerUserId }: 
     setThemeState(t);
     applyThemeColors(t);
     if (ownerUserId) {
-      supabase.from('profiles').update({ theme: t }).eq('user_id', ownerUserId).then(() => {});
+      supabase
+        .from('profiles')
+        .update({ theme: t })
+        .eq('user_id', ownerUserId)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Failed to persist theme to Supabase:', error);
+          }
+        })
+        .catch((error) => {
+          console.error('Supabase theme update exception:', error);
+        });
     }
   };
 

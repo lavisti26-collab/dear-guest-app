@@ -93,8 +93,14 @@ export function VisualStyleProvider({ children, initialStyle, ownerUserId, readO
         .from('profiles')
         .update({ visual_style: style })
         .eq('user_id', ownerUserId)
-        .then(() => {})
-        .catch(() => {});
+        .then(({ error }) => {
+          if (error) {
+            console.error('Failed to persist visual style to Supabase:', error);
+          }
+        })
+        .catch((error) => {
+          console.error('Supabase visual style update exception:', error);
+        });
     }
   };
 

@@ -66,6 +66,8 @@ const VALID_VISUAL_STYLE_IDS = new Set(VISUAL_STYLE_OPTIONS.map((o) => o.id));
 /** Map legacy DB values → current ids */
 const LEGACY_VISUAL_STYLE_MAP: Record<string, VisualStyleId> = {
   minimal: 'minimalist',
+  'split-screen': 'elegant',
+  'dashboard-grid': 'neo-brutalism',
 };
 
 export function normalizeVisualStyle(value: string | null | undefined): VisualStyleId | null {
