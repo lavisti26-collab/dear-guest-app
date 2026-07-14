@@ -1,28 +1,22 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
+import { toast } from 'sonner';
 
-const spring = { type: 'spring' as const, duration: 0.6, bounce: 0.12 };
-const springFast = { type: 'spring' as const, duration: 0.4, bounce: 0.08 };
+import { normalizeGuestName } from '@/pages/InvitationPage';
+
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 interface Props { guestName: string; }
 
-const mealOptions = [
-  { value: '', label: 'No preference', labelKm: 'គ្មានចំណូលចិត្ត', icon: '🍽️' },
-  { value: 'meat', label: 'Meat', labelKm: 'សាច់', icon: '🍖' },
-  { value: 'seafood', label: 'Seafood', labelKm: 'អាហារសមុទ្រ', icon: '🦐' },
-  { value: 'vegetarian', label: 'Vegetarian', labelKm: 'បន្លែ', icon: '🥗' },
-  { value: 'vegan', label: 'Vegan', labelKm: 'ម្ហូបបន្លែ', icon: '🌱' },
-];
-
 function FloatingInput({
-  label, value, onChange, type = 'text', maxLength, rows,
+  label, value, onChange, type = 'text', maxLength, rows, lang,
 }: {
   label: string; value: string; onChange: (v: string) => void;
-  type?: string; maxLength?: number; rows?: number;
+  type?: string; maxLength?: number; rows?: number; lang: string;
 }) {
   const [focused, setFocused] = useState(false);
   const isActive = focused || value.length > 0;
@@ -31,11 +25,15 @@ function FloatingInput({
   return (
     <div className="relative">
       <label
-        className={`absolute left-4 transition-all duration-200 pointer-events-none z-10 ${
-          isActive
-            ? 'top-2 text-[10px] font-semibold text-accent tracking-wider uppercase'
-            : 'top-1/2 -translate-y-1/2 text-sm text-muted-foreground'
-        }`}
+        className="absolute left-4 transition-all duration-300 pointer-events-none z-10"
+        style={{
+          fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)',
+          color: isActive ? 'hsl(var(--accent))' : 'hsl(var(--muted-foreground) / 0.7)',
+          transform: isActive ? 'translateY(6px) scale(0.85)' : 'translateY(16px) scale(1)',
+          transformOrigin: 'top left',
+          fontSize: '14px',
+          fontWeight: isActive ? '600' : '400',
+        }}
       >
         {label}
       </label>
@@ -48,12 +46,18 @@ function FloatingInput({
         onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className={`w-full bg-white/70 backdrop-blur-sm border rounded-2xl px-4 text-foreground text-sm outline-none transition-all duration-200 ${
-          rows ? 'pt-6 pb-3' : 'pt-6 pb-2 min-h-[56px]'
-        } ${focused ? 'border-accent/70 shadow-[0_0_0_3px_hsl(var(--accent)/0.12)]' : 'border-border/50 hover:border-accent/40'}`}
+        className={`w-full bg-white/40 backdrop-blur-md border rounded-2xl px-4 text-foreground outline-none transition-all duration-300 ${
+          rows ? 'pt-7 pb-3 min-h-[96px]' : 'pt-6 pb-2 min-h-[58px]'
+        }`}
+        style={{
+          fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)',
+          fontSize: '15px',
+          borderColor: focused ? 'hsl(var(--accent))' : 'hsl(var(--border) / 0.5)',
+          boxShadow: focused ? '0 0 0 3px hsl(var(--accent) / 0.12)' : 'none',
+        }}
       />
       {maxLength && (
-        <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground/50">
+        <span className="absolute bottom-2.5 right-3 text-[10px] text-muted-foreground/60">
           {value.length}/{maxLength}
         </span>
       )}
@@ -63,13 +67,15 @@ function FloatingInput({
 
 export default function RSVPSection({ guestName }: Props) {
   const { t, lang } = useLanguage();
-  const { updateRSVP } = useWeddingData();
+  const { settings, updateRSVP, guests } = useWeddingData();
   const [searchParams] = useSearchParams();
-  const guestId = searchParams.get('id') || undefined;
-  const fontClass = lang === 'km' ? 'font-khmer' : '';
+
+  // Find guest ID dynamically from context using the guestName prop
+  const dbGuest = guestName ? guests.find(g => normalizeGuestName(g.name) === normalizeGuestName(guestName)) : null;
+  const guestId = dbGuest?.id || searchParams.get('id') || undefined;
+
   const [attending, setAttending] = useState<boolean | null>(null);
   const [numGuests, setNumGuests] = useState(1);
-  const [meal, setMeal] = useState('');
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -79,357 +85,283 @@ export default function RSVPSection({ guestName }: Props) {
     if (attending === null || loading) return;
     setLoading(true);
     try {
-      await updateRSVP(guestName || 'Guest', attending ? 'attending' : 'not_attending', numGuests, meal, note, guestId);
+      await updateRSVP(guestName || 'Guest', attending ? 'attending' : 'not_attending', numGuests, '', note, guestId);
+      // Only mark as submitted AFTER the DB write succeeds
       setSubmitted(true);
       if (attending) {
-        // multi-burst confetti
         const fire = (particleRatio: number, opts: confetti.Options) =>
           confetti({ origin: { y: 0.4 }, ...opts, particleCount: Math.floor(150 * particleRatio) });
-        fire(0.25, { spread: 26, startVelocity: 55, colors: ['#D4AF37', '#F4C2C2'] });
-        fire(0.2,  { spread: 60, colors: ['#C9A96E', '#E8C8A0'] });
-        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: ['#FFD700', '#FFC0CB', '#fff'] });
-        fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: ['#D4AF37'] });
-        fire(0.1,  { spread: 120, startVelocity: 45, colors: ['#F4C2C2', '#DDA0DD'] });
+        fire(0.25, { spread: 26, startVelocity: 55, colors: ['#e2b96a', '#ffffff'] });
+        fire(0.2,  { spread: 60, colors: ['#c9932a', '#e8d5a8'] });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: ['#e2b96a', '#fff'] });
+        fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: ['#c9932a'] });
       }
-    } catch {
-      // error handled silently
+    } catch (err) {
+      toast.error(lang === 'km' ? 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្ដងទៀត។' : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  /* ── Success state ─────────────────────────────────────── */
-  if (submitted) {
-    return (
-      <motion.section
-        id="rsvp"
-        className="py-16 sm:py-24 px-5 text-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <motion.div
-          className="max-w-sm mx-auto"
-          initial={{ scale: 0.8, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={spring}
-        >
-          {/* Animated ring */}
-          <div className="relative w-24 h-24 mx-auto mb-6">
-            <motion.div
-              className="absolute inset-0 rounded-full border-2 border-accent/30"
-              animate={{ scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] }}
-              transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
-            />
-            <motion.div
-              className="absolute inset-0 rounded-full border-2 border-accent/20"
-              animate={{ scale: [1, 1.7, 1], opacity: [0.4, 0, 0.4] }}
-              transition={{ repeat: Infinity, duration: 2.4, delay: 0.4, ease: 'easeInOut' }}
-            />
-            <div className="relative z-10 w-full h-full rounded-full bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center border border-accent/30">
-              <motion.span
-                className="text-4xl"
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ ...spring, delay: 0.2 }}
-              >
-                {attending ? '💍' : '🙏'}
-              </motion.span>
-            </div>
-          </div>
-
-          <motion.h2
-            className={`text-2xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            {t('rsvp.success')}
-          </motion.h2>
-          <motion.p
-            className={`text-sm text-muted-foreground mt-2 ${fontClass}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            {attending
-              ? (lang === 'km' ? 'យើងរង់ចាំជួបអ្នកនៅថ្ងៃនោះ! 🎊' : "We can't wait to celebrate with you! 🎊")
-              : (lang === 'km' ? 'សូមអរគុណ។ លើកក្រោយ! 💙' : 'We understand. We appreciate your response! 💙')
-            }
-          </motion.p>
-
-          {attending && (
-            <motion.div
-              className="mt-6 flex flex-wrap justify-center gap-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              {[
-                { icon: '👥', label: `${numGuests} ${numGuests > 1 ? 'guests' : 'guest'}` },
-                ...(meal ? [{ icon: mealOptions.find(m => m.value === meal)?.icon || '🍽️', label: mealOptions.find(m => m.value === meal)?.label || meal }] : []),
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-1.5 bg-accent/10 border border-accent/20 rounded-full px-3 py-1.5 text-xs font-medium text-foreground">
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </motion.div>
-      </motion.section>
-    );
-  }
-
-  /* ── Main RSVP form ──────────────────────────────────────── */
   return (
     <motion.section
       id="rsvp"
-      className="py-16 sm:py-24 px-4 sm:px-5 relative"
-      initial={{ opacity: 0, y: 30 }}
+      className="py-12 sm:py-16 px-4 relative"
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
-      transition={spring}
+      transition={{ duration: 0.7, ease: EASE }}
     >
       <div className="max-w-lg mx-auto">
-        {/* Section header */}
-        <div className="text-center mb-10">
-          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
-            {t('rsvp.title')}
-          </h2>
-          <div className="section-divider mb-4" />
-          <p className={`text-sm text-muted-foreground ${fontClass}`}>
-            {lang === 'km'
-              ? 'សូមបញ្ជាក់ការចូលរួមរបស់អ្នកតាមរយៈទម្រង់ខាងក្រោម'
-              : 'Kindly confirm your attendance by filling out the form below'}
-          </p>
-        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Attendance cards */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              {
-                value: true,
-                icon: '🎊',
-                label: t('rsvp.attending'),
-                labelKm: 'បាទ/ចាស ខ្ញុំនឹងចូលរួម',
-                gradient: 'from-emerald-50 to-green-50',
-                border: 'border-emerald-400',
-                check: 'text-emerald-600',
-                ring: 'ring-emerald-300/50',
-              },
-              {
-                value: false,
-                icon: '🙏',
-                label: t('rsvp.not_attending'),
-                labelKm: 'សូមទោស មិនអាចចូលរួម',
-                gradient: 'from-rose-50 to-pink-50',
-                border: 'border-rose-300',
-                check: 'text-rose-500',
-                ring: 'ring-rose-200/50',
-              },
-            ].map(({ value, icon, label, labelKm, gradient, border, check, ring }) => {
-              const isSelected = attending === value;
-              return (
-                <motion.button
-                  key={String(value)}
-                  type="button"
-                  onClick={() => setAttending(value)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  className={`relative p-5 rounded-3xl border-2 text-center transition-all duration-300 overflow-hidden ${
-                    isSelected
-                      ? `bg-gradient-to-br ${gradient} ${border} shadow-lg ring-4 ${ring} scale-[1.02]`
-                      : 'bg-white/60 border-border/40 hover:border-border hover:bg-white/80'
-                  }`}
-                >
-                  {/* Selected checkmark */}
-                  <AnimatePresence>
-                    {isSelected && (
-                      <motion.div
-                        className={`absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center ${check} bg-white shadow-sm`}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={springFast}
-                      >
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+        {/* ── Virtual Premium RSVP Card ── */}
+        <div
+          className="relative p-6 sm:p-8 rounded-3xl border-2 border-double shadow-luxury bg-white/50 backdrop-blur-md overflow-hidden"
+          style={{
+            borderColor: 'hsl(var(--accent) / 0.5)',
+            backgroundImage: 'radial-gradient(circle at 100% 150%, hsl(var(--accent)/0.03) 24%, transparent 24%), radial-gradient(circle at 0% 150%, hsl(var(--accent)/0.03) 24%, transparent 24%)',
+          }}
+        >
+          {/* Traditional Khmer Corner Ornaments */}
+          <div className="absolute top-2 left-2 text-[10px] text-accent/40 select-none">🔱</div>
+          <div className="absolute top-2 right-2 text-[10px] text-accent/40 select-none">🔱</div>
+          <div className="absolute bottom-2 left-2 text-[10px] text-accent/40 select-none">🔱</div>
+          <div className="absolute bottom-2 right-2 text-[10px] text-accent/40 select-none">🔱</div>
 
-                  <div className="text-3xl mb-2">{icon}</div>
-                  <p className={`text-xs font-semibold leading-snug text-foreground ${fontClass}`}>
-                    {lang === 'km' ? labelKm : label}
-                  </p>
-                </motion.button>
-              );
-            })}
+          {/* Card Header */}
+          <div className="text-center mb-8 pt-2">
+            <h2
+              className="text-2xl sm:text-3xl font-bold mb-2 tracking-wide"
+              style={{
+                color: 'hsl(var(--foreground))',
+                fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-display)',
+              }}
+            >
+              {lang === 'km' ? (settings.rsvpTitleKm || t('rsvp.title')) : (settings.rsvpTitleEn || t('rsvp.title'))}
+            </h2>
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="h-px w-8 bg-accent/30" />
+              <span className="text-accent text-[8px]">✦</span>
+              <div className="h-px w-8 bg-accent/30" />
+            </div>
+            <p
+              className="text-xs sm:text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed"
+              style={{ fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)' }}
+            >
+              {lang === 'km'
+                ? 'សូមបញ្ជាក់ការចូលរួមរបស់អ្នកតាមរយៈទម្រង់ខាងក្រោម'
+                : 'Kindly confirm your attendance by filling out the form below'}
+            </p>
           </div>
 
-          {/* Expanded fields for attending */}
-          <AnimatePresence>
-            {attending === true && (
+          <AnimatePresence mode="wait">
+            {submitted ? (
               <motion.div
-                key="attend-fields"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
-                className="overflow-hidden"
+                key="success"
+                className="text-center py-8"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, ease: EASE }}
               >
-                <div className="space-y-4 pt-1">
-                  {/* Guest counter */}
-                  <div className="bg-white/70 border border-border/50 rounded-2xl p-4">
-                    <p className={`text-xs font-semibold text-muted-foreground uppercase mb-3 ${lang === 'km' ? 'font-khmer tracking-normal' : 'tracking-wider'}`}>
-                      {t('rsvp.guests')}
-                    </p>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <motion.button
-                            key={n}
-                            type="button"
-                            onClick={() => setNumGuests(n)}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className={`w-9 h-9 rounded-full text-sm font-bold transition-all duration-200 flex items-center justify-center ${
-                              numGuests === n
-                                ? 'bg-accent text-accent-foreground shadow-md scale-110'
-                                : 'bg-muted/50 text-muted-foreground hover:bg-accent/20 hover:text-accent'
-                            }`}
+                <div className="w-16 h-16 mx-auto mb-5 flex items-center justify-center rounded-full bg-accent/10 border border-accent/20">
+                  <span className="text-2xl">{attending ? '💍' : '🙏'}</span>
+                </div>
+                <h3
+                  className="text-xl font-bold mb-2"
+                  style={{
+                    color: 'hsl(var(--foreground))',
+                    fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-display)',
+                  }}
+                >
+                  {t('rsvp.success')}
+                </h3>
+                <p
+                  className="text-sm text-muted-foreground leading-relaxed"
+                  style={{ fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)' }}
+                >
+                  {attending
+                    ? (lang === 'km' ? 'យើងរង់ចាំជួបអ្នកនៅថ្ងៃនោះ! 🎊' : "We can't wait to celebrate with you! 🎊")
+                    : (lang === 'km' ? 'សូមអរគុណ។ លើកក្រោយ! 💙' : 'We understand. We appreciate your response! 💙')
+                  }
+                </p>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+
+                {/* ── Sliding Golden Pill Selector ── */}
+                <div className="relative flex p-1 bg-black/5 rounded-2xl border border-border/30 max-w-sm mx-auto z-0">
+                  
+                  <div
+                    className="absolute inset-y-1 rounded-xl border z-10 transition-all duration-300 ease-out"
+                    style={{
+                      left: attending === null ? '2.5%' : attending === true ? '2.5%' : '52.5%',
+                      width: attending === null ? '95%' : '45%',
+                      background: attending === null ? 'transparent' : 'linear-gradient(135deg, #FAF6EE 0%, #D4AF37 100%)',
+                      borderColor: attending === null ? 'transparent' : 'rgba(255,255,255,0.2)',
+                      boxShadow: attending === null ? 'none' : '0 4px 15px -2px hsl(var(--accent) / 0.3)',
+                      opacity: attending === null ? 0 : 1,
+                    }}
+                  />
+
+                  {/* Yes Option */}
+                  <button
+                    type="button"
+                    onClick={() => setAttending(true)}
+                    className="relative z-20 flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5"
+                    style={{
+                      fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)',
+                      color: attending === true ? '#4E3606' : 'hsl(var(--foreground) / 0.65)',
+                    }}
+                  >
+                    <span>💍</span>
+                    <span>{lang === 'km' ? 'យល់ព្រមចូលរួម' : 'Will Attend'}</span>
+                  </button>
+
+                  {/* No Option */}
+                  <button
+                    type="button"
+                    onClick={() => setAttending(false)}
+                    className="relative z-20 flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5"
+                    style={{
+                      fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)',
+                      color: attending === false ? '#4E3606' : 'hsl(var(--foreground) / 0.65)',
+                    }}
+                  >
+                    <span>✉️</span>
+                    <span>{lang === 'km' ? 'មិនអាចចូលរួម' : 'Regretfully Decline'}</span>
+                  </button>
+                </div>
+
+                {/* Conditional Fields */}
+                <AnimatePresence mode="wait">
+                  {attending === true && (
+                    <motion.div
+                      key="attend-options"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.35, ease: EASE }}
+                      className="space-y-5 overflow-hidden pt-1"
+                    >
+                      {/* Guest Counter */}
+                      <div className="bg-white/40 backdrop-blur-md border border-border/40 rounded-2xl p-4 sm:p-5">
+                        <p
+                          className="text-[11px] font-bold text-accent uppercase tracking-wider mb-3"
+                          style={{ fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)' }}
+                        >
+                          {t('rsvp.guests')}
+                        </p>
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <motion.button
+                                key={n}
+                                type="button"
+                                onClick={() => setNumGuests(n)}
+                                whileHover={{ scale: 1.06 }}
+                                whileTap={{ scale: 0.94 }}
+                                className="w-9 h-9 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center transition-all duration-300 border"
+                                style={{
+                                  fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)',
+                                  backgroundColor: numGuests === n ? 'hsl(var(--accent))' : 'rgba(255,255,255,0.4)',
+                                  color: numGuests === n ? 'white' : 'hsl(var(--foreground))',
+                                  borderColor: numGuests === n ? 'hsl(var(--accent))' : 'hsl(var(--border) / 0.5)',
+                                  boxShadow: numGuests === n ? '0 4px 10px hsl(var(--accent) / 0.2)' : 'none',
+                                }}
+                              >
+                                {n}
+                              </motion.button>
+                            ))}
+                          </div>
+                          <span
+                            className="text-xs sm:text-sm font-bold text-foreground"
+                            style={{ fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)' }}
                           >
-                            {n}
-                          </motion.button>
-                        ))}
+                            {lang === 'km' ? `${numGuests} នាក់` : `${numGuests} ${numGuests > 1 ? 'people' : 'person'}`}
+                          </span>
+                        </div>
                       </div>
-                      <span className={`text-xs text-muted-foreground ${fontClass}`}>
-                        {lang === 'km' ? `${numGuests} នាក់` : `${numGuests} ${numGuests > 1 ? 'people' : 'person'}`}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Meal preference - icon grid */}
-                  <div className="bg-white/70 border border-border/50 rounded-2xl p-4">
-                    <p className={`text-xs font-semibold text-muted-foreground uppercase mb-3 ${lang === 'km' ? 'font-khmer tracking-normal' : 'tracking-wider'}`}>
-                      {lang === 'km' ? 'ចំណូលចិត្តម្ហូប' : 'Meal Preference'}
-                    </p>
-                    <div className="grid grid-cols-5 gap-2">
-                      {mealOptions.map((opt) => {
-                        const isSelected = meal === opt.value;
-                        return (
-                          <motion.button
-                            key={opt.value}
-                            type="button"
-                            onClick={() => setMeal(opt.value)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all duration-200 text-center ${
-                              isSelected
-                                ? 'bg-accent/15 border-accent/50 shadow-sm'
-                                : 'bg-white/50 border-border/30 hover:border-accent/30 hover:bg-accent/5'
-                            }`}
-                          >
-                            <span className="text-xl">{opt.icon}</span>
-                            <span className={`text-[9px] font-semibold leading-tight ${isSelected ? 'text-accent' : 'text-muted-foreground'}`}>
-                              {lang === 'km' ? opt.labelKm : opt.label}
-                            </span>
-                          </motion.button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                      {/* Note */}
+                      <FloatingInput
+                        label={lang === 'km' ? 'ចំណាំផ្សេងៗ (ស្រេចចិត្ត)' : 'Special notes or allergies (optional)'}
+                        value={note}
+                        onChange={setNote}
+                        maxLength={280}
+                        rows={3}
+                        lang={lang}
+                      />
+                    </motion.div>
+                  )}
 
-                  {/* Note */}
-                  <FloatingInput
-                    label={lang === 'km' ? 'ចំណាំ (ស្រេចចិត្ត)' : 'Note for the couple (optional)'}
-                    value={note}
-                    onChange={setNote}
-                    maxLength={280}
-                    rows={3}
-                  />
-                </div>
-              </motion.div>
-            )}
+                  {attending === false && (
+                    <motion.div
+                      key="decline-options"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.35, ease: EASE }}
+                      className="overflow-hidden pt-1"
+                    >
+                      <FloatingInput
+                        label={lang === 'km' ? 'ជូនពរដល់គូស្រករ (ស្រេចចិត្ត)' : 'Send your warm wishes (optional)'}
+                        value={note}
+                        onChange={setNote}
+                        maxLength={200}
+                        rows={3}
+                        lang={lang}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-            {attending === false && (
-              <motion.div
-                key="decline-fields"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.35, ease: 'easeInOut' }}
-                className="overflow-hidden"
-              >
-                <div className="pt-1">
-                  <FloatingInput
-                    label={lang === 'km' ? 'ជូនចំពោះគូស្នេហ៍ (ស្រេចចិត្ត)' : 'Leave a kind message (optional)'}
-                    value={note}
-                    onChange={setNote}
-                    maxLength={200}
-                    rows={3}
-                  />
-                </div>
-              </motion.div>
+                {/* Submit Button */}
+                <motion.button
+                  type="submit"
+                  disabled={attending === null || loading}
+                  whileHover={attending !== null ? { scale: 1.01 } : {}}
+                  whileTap={attending !== null ? { scale: 0.99 } : {}}
+                  className="relative w-full rounded-2xl py-4 px-6 font-bold text-sm sm:text-base overflow-hidden transition-all duration-300 flex items-center justify-center gap-2 border shadow-md"
+                  style={{
+                    fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)',
+                    backgroundColor: attending !== null ? 'hsl(var(--accent))' : 'hsl(var(--muted) / 0.5)',
+                    color: attending !== null ? 'white' : 'hsl(var(--muted-foreground) / 0.6)',
+                    borderColor: attending !== null ? 'hsl(var(--accent))' : 'hsl(var(--border) / 0.3)',
+                    cursor: attending !== null && !loading ? 'pointer' : 'not-allowed',
+                    boxShadow: attending !== null ? '0 6px 20px hsl(var(--accent) / 0.2)' : 'none',
+                  }}
+                >
+                  {loading ? (
+                    <>
+                      <motion.span
+                        className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+                      />
+                      <span>{lang === 'km' ? 'កំពុងផ្ញើ...' : 'Sending...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{attending === true ? '💍' : attending === false ? '🙏' : '💌'}</span>
+                      <span>{t('rsvp.submit')}</span>
+                    </>
+                  )}
+                </motion.button>
+
+                {/* Privacy Footer */}
+                <p
+                  className="text-center text-[10px] text-muted-foreground/60 pt-1"
+                  style={{ fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)' }}
+                >
+                  {lang === 'km'
+                    ? 'ការឆ្លើយតបរបស់អ្នកនឹងត្រូវបញ្ជូនទៅកាន់គូស្នេហ៍ដោយផ្ទាល់'
+                    : 'Your response goes directly to the couple'}
+                </p>
+              </form>
             )}
           </AnimatePresence>
+        </div>
 
-          {/* Submit button */}
-          <motion.button
-            type="submit"
-            disabled={attending === null || loading}
-            whileHover={attending !== null ? { scale: 1.02, y: -1 } : {}}
-            whileTap={attending !== null ? { scale: 0.97 } : {}}
-            className={`relative w-full rounded-2xl py-4 px-6 font-semibold text-sm overflow-hidden transition-all duration-300 ${
-              lang === 'km' ? 'font-khmer tracking-normal' : 'tracking-wide'
-            } ${
-              attending !== null
-                ? 'shadow-[0_8px_32px_hsl(38_55%_58%/0.4)] cursor-pointer'
-                : 'opacity-40 cursor-not-allowed'
-            }`}
-            style={{
-              background: attending !== null
-                ? 'linear-gradient(135deg, hsl(38 60% 52%), hsl(40 70% 42%))'
-                : 'hsl(var(--muted))',
-              color: 'white',
-            }}
-          >
-            {/* Shimmer */}
-            {attending !== null && (
-              <motion.span
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full"
-                animate={{ x: ['−100%', '200%'] }}
-                transition={{ repeat: Infinity, duration: 2.5, ease: 'linear', repeatDelay: 1 }}
-              />
-            )}
-            <span className="relative flex items-center justify-center gap-2">
-              {loading ? (
-                <>
-                  <motion.span
-                    className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
-                  />
-                  {lang === 'km' ? 'កំពុងផ្ញើ...' : 'Sending...'}
-                </>
-              ) : (
-                <>
-                  <span>{attending === true ? '💍' : attending === false ? '🙏' : '💌'}</span>
-                  {t('rsvp.submit')}
-                </>
-              )}
-            </span>
-          </motion.button>
-
-          {/* Privacy note */}
-          <p className="text-center text-[11px] text-muted-foreground/60">
-            {lang === 'km'
-              ? 'ការឆ្លើយតបរបស់អ្នកនឹងត្រូវបញ្ជូនដល់គូស្នេហ៍ដោយផ្ទាល់'
-              : 'Your response goes directly to the couple'}
-          </p>
-        </form>
       </div>
     </motion.section>
   );

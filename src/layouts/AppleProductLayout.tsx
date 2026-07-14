@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import HeroSection from '@/components/wedding/HeroSection';
+import React from 'react';
+import HeroSection from '@/components/wedding/hero/HeroSection';
 import GreetingSection from '@/components/wedding/GreetingSection';
 import DetailsSection from '@/components/wedding/DetailsSection';
 import TimelineSection from '@/components/wedding/TimelineSection';

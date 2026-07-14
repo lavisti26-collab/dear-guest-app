@@ -12,26 +12,31 @@ interface WishesSectionProps {
 
 export default function WishesSection({ guestName }: WishesSectionProps) {
   const { t, lang } = useLanguage();
-  const { wishes, addWish } = useWeddingData();
+  const { settings, wishes, addWish } = useWeddingData();
   const fontClass = lang === 'km' ? 'font-khmer' : '';
-  const [name, setName] = useState(guestName || '');
+  const [name, setName] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (guestName && !name) {
+    if (guestName) {
       setName(guestName);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guestName]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const hasGuestName = !!guestName?.trim();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) return;
-    addWish(name.trim(), message.trim());
-    // Keep name prefilled with guestName if available, otherwise clear it
-    setName(guestName || '');
-    setMessage('');
-    toast.success('💌 Wish sent!');
+    const finalName = hasGuestName ? guestName : name;
+    if (!finalName.trim() || !message.trim()) return;
+    try {
+      await addWish(finalName.trim(), message.trim());
+      // Only reset + show success after DB write confirms
+      setMessage('');
+      toast.success('💌 Wish sent!');
+    } catch (err) {
+      toast.error(lang === 'km' ? 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្ដងទៀត។' : 'Something went wrong. Please try again.');
+    }
   };
 
   return (
@@ -45,19 +50,29 @@ export default function WishesSection({ guestName }: WishesSectionProps) {
     >
       <div className="max-w-2xl mx-auto text-center">
         <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
-          {t('wishes.title')}
+          {lang === 'km' ? (settings.wishesTitleKm || t('wishes.title')) : (settings.wishesTitleEn || t('wishes.title'))}
         </h2>
         <div className="section-divider mb-8" />
 
-        <form onSubmit={handleSubmit} className="mb-8 space-y-3 max-w-md mx-auto">
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder={t('wishes.name')}
-            maxLength={100}
-            className={`w-full min-h-[44px] rounded-xl bg-ivory/80 backdrop-blur-sm gold-border px-4 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-gold text-sm ${fontClass}`}
-          />
+        <form onSubmit={handleSubmit} className="mb-8 space-y-3.5 max-w-md mx-auto text-center">
+          {hasGuestName ? (
+            <div
+              className="text-xs sm:text-sm font-semibold text-muted-foreground/80 mb-2.5 bg-white/40 backdrop-blur-sm py-2.5 px-4 rounded-xl border border-border/20 inline-block shadow-sm"
+              style={{ fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)' }}
+            >
+              {lang === 'km' ? 'ជូនពរក្នុងនាមជា៖ ' : 'Sending wish as: '}
+              <span className="text-foreground font-bold font-sans ml-1">{guestName}</span>
+            </div>
+          ) : (
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder={t('wishes.name')}
+              maxLength={100}
+              className={`w-full min-h-[44px] rounded-xl bg-ivory/80 backdrop-blur-sm gold-border px-4 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-gold text-sm ${fontClass}`}
+            />
+          )}
           <textarea
             value={message}
             onChange={e => setMessage(e.target.value)}

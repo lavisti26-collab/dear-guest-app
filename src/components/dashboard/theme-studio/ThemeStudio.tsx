@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme as useEngineTheme } from '@/theme/ThemeEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -7,8 +8,8 @@ import injectFontFaces from '@/lib/font-loader';
 import FontLibraryPicker from '@/components/dashboard/FontLibraryPicker';
 import { useWeddingData, type CoupleCardConfig, DEFAULT_COUPLE_CARD_CONFIG } from '@/contexts/WeddingDataContext';
 import CoupleCard from '@/components/wedding/CoupleCard';
-import EnvelopeAnimation from '@/components/wedding/EnvelopeAnimation';
-import { Type, Sliders, Heart, Sparkles } from 'lucide-react';
+import EnvelopeAnimation from '@/components/wedding/envelope/EnvelopeAnimation';
+import { Type, Sliders, Heart, Sparkles, BookOpen, Settings, Layout, SwatchBook } from 'lucide-react';
 
 interface ThemeStudioProps {
   ownerUserId?: string | null;
@@ -16,42 +17,42 @@ interface ThemeStudioProps {
 
 const COUPLE_FONT_OPTIONS = [
   // ── Khmer (Supabase storage) ──
-  { value: 'Battambang',        label: '🇰🇭 Battambang' },
-  { value: 'Angkor',            label: '🇰🇭 Angkor' },
-  { value: 'Bayon',             label: '🇰🇭 Bayon' },
-  { value: 'Chenla',            label: '🇰🇭 Chenla' },
-  { value: 'Kantumruy Pro',     label: '🇰🇭 Kantumruy Pro' },
-  { value: 'Koulen',            label: '🇰🇭 Koulen' },
-  { value: 'Moulpali',          label: '🇰🇭 Moulpali' },
-  { value: 'Preahvihear',       label: '🇰🇭 Preahvihear' },
-  { value: 'Siemreap',          label: '🇰🇭 Siemreap' },
-  { value: 'AKbalthom KhmerLer',label: '🇰🇭 AKbalthom KhmerLer' },
-  { value: 'Kh BL LazyOutline', label: '🇰🇭 Kh BL LazyOutline' },
+  { value: 'Battambang',        label: 'Battambang' },
+  { value: 'Angkor',            label: 'Angkor' },
+  { value: 'Bayon',             label: 'Bayon' },
+  { value: 'Chenla',            label: 'Chenla' },
+  { value: 'Kantumruy Pro',     label: 'Kantumruy Pro' },
+  { value: 'Koulen',            label: 'Koulen' },
+  { value: 'Moulpali',          label: 'Moulpali' },
+  { value: 'Preahvihear',       label: 'Preahvihear' },
+  { value: 'Siemreap',          label: 'Siemreap' },
+  { value: 'AKbalthom KhmerLer',label: 'AKbalthom KhmerLer' },
+  { value: 'Kh BL LazyOutline', label: 'Kh BL LazyOutline' },
   // ── Khmer (Google Fonts) ──
-  { value: 'Moul',              label: '🇰🇭 Moul (Google)' },
-  { value: 'Noto Sans Khmer',   label: '🇰🇭 Noto Sans Khmer' },
-  { value: 'Noto Serif Khmer',  label: '🇰🇭 Noto Serif Khmer' },
-  { value: 'Hanuman',           label: '🇰🇭 Hanuman' },
-  { value: 'Koh Santepheap',    label: '🇰🇭 Koh Santepheap' },
+  { value: 'Moul',              label: 'Moul (Google)' },
+  { value: 'Noto Sans Khmer',   label: 'Noto Sans Khmer' },
+  { value: 'Noto Serif Khmer',  label: 'Noto Serif Khmer' },
+  { value: 'Hanuman',           label: 'Hanuman' },
+  { value: 'Koh Santepheap',    label: 'Koh Santepheap' },
   // ── Latin ──
-  { value: 'Cormorant Garamond',label: '🔤 Cormorant Garamond' },
-  { value: 'Playfair Display',  label: '🔤 Playfair Display' },
-  { value: 'Great Vibes',       label: '✍️ Great Vibes (script)' },
-  { value: 'Dancing Script',    label: '✍️ Dancing Script' },
-  { value: 'Cinzel',            label: '🔤 Cinzel (caps)' },
-  { value: 'Lora',              label: '🔤 Lora' },
+  { value: 'Cormorant Garamond',label: 'Cormorant Garamond' },
+  { value: 'Playfair Display',  label: 'Playfair Display' },
+  { value: 'Great Vibes',       label: 'Great Vibes (script)' },
+  { value: 'Dancing Script',    label: 'Dancing Script' },
+  { value: 'Cinzel',            label: 'Cinzel (caps)' },
+  { value: 'Lora',              label: 'Lora' },
 ];
 
 const AMBIANCE_OPTIONS = [
   { value: 'none',         label: 'None' },
-  { value: 'flowers',      label: '🌸 Cherry Blossoms' },
-  { value: 'roses',        label: '🌹 Roses' },
-  { value: 'hearts',       label: '💕 Hearts' },
-  { value: 'butterflies',  label: '🦋 Butterflies' },
-  { value: 'sparkles',     label: '✨ Sparkles' },
-  { value: 'stars',        label: '⭐ Stars' },
-  { value: 'diamonds',     label: '💎 Diamonds' },
-  { value: 'bokeh',        label: '🔮 Bokeh Glow' },
+  { value: 'flowers',      label: 'Cherry Blossoms' },
+  { value: 'roses',        label: 'Roses' },
+  { value: 'hearts',       label: 'Hearts' },
+  { value: 'butterflies',  label: 'Butterflies' },
+  { value: 'sparkles',     label: 'Sparkles' },
+  { value: 'stars',        label: 'Stars' },
+  { value: 'diamonds',     label: 'Diamonds' },
+  { value: 'bokeh',        label: 'Bokeh Glow' },
 ];
 
 const STICKER_OPTIONS = [
@@ -362,11 +363,54 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
 
   return (
     <div className="space-y-8">
+
+      {/* ── QUICK SETTINGS: NAV ICON STYLE ─────────────────────────────────── */}
+      <div className="pt-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="font-display text-base font-bold text-[#2C2620] flex items-center gap-2">
+              <Layout className="w-4 h-4 text-[#B89047]" />
+              Navigation Icon Style
+            </h3>
+            <p className="text-xs text-[#8C7A6B] mt-0.5">Choose how icons appear in the navigation bar for guests and admin.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {(['outline', 'emoji'] as const).map((style) => {
+            const active = (cfg.navIconStyle || 'outline') === style;
+            return (
+              <button
+                key={style}
+                type="button"
+                onClick={() => patch({ navIconStyle: style })}
+                className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                  active
+                    ? 'border-[#D4AF37] bg-[#FDFBF7] shadow-sm ring-1 ring-[#D4AF37]/30'
+                    : 'border-[#E6DFD3] bg-white hover:border-[#D4AF37]/60'
+                }`}
+              >
+                <span className="text-2xl select-none">{style === 'outline' ? '🎨' : '😊'}</span>
+                <div>
+                  <p className="text-xs font-bold text-[#2C2620]">{style === 'outline' ? 'Outline SVGs' : 'Classic Emojis'}</p>
+                  <p className="text-[10px] text-[#8C7A6B]">{style === 'outline' ? 'Premium vector icons' : 'Familiar emoji icons'}</p>
+                </div>
+                <div className={`ml-auto w-4 h-4 rounded-full border flex items-center justify-center text-[8px] flex-shrink-0 ${
+                  active ? 'border-[#B89047] bg-[#B89047] text-white' : 'border-[#E6DFD3]'
+                }`}>
+                  {active && '✓'}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* FONT LIBRARY — ENGLISH + KHMER */}
-      <div className="space-y-4 pt-4">
+      <div className="space-y-4 pt-2 border-t border-[#E6DFD3]">
         <div>
-          <h3 className="font-display text-xl font-semibold text-[#2C2620] mb-1">
-            📝 Primary Font Library
+          <h3 className="font-display text-xl font-semibold text-[#2C2620] mb-1 flex items-center gap-2.5">
+            <BookOpen className="w-5 h-5 text-[#B89047]" />
+            Primary Font Library
           </h3>
           <p className="text-xs text-[#8C7A6B]">Select the font pairing style for body text and headers across your invitation.</p>
         </div>
@@ -382,8 +426,9 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
           {/* LEFT COLUMN: SETTINGS PANEL */}
           <div className="lg:col-span-7 bg-[#FDFBF7] border border-[#E9E1D5] rounded-3xl p-6 shadow-sm space-y-6">
             <div>
-              <h3 className="font-display text-lg font-bold text-[#2C2620] mb-1">
-                💑 Couple Card Customize
+              <h3 className="font-display text-lg font-bold text-[#2C2620] mb-1 flex items-center gap-2">
+                <Settings className="w-4.5 h-4.5 text-[#B89047]" />
+                Couple Card Customize
               </h3>
               <p className="text-xs text-[#8C7A6B]">Redesign and style the interactive couple names badge in detail.</p>
             </div>
@@ -412,115 +457,130 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
             </div>
 
             {/* TAB CONTENT: TYPOGRAPHY & LAYOUT */}
-            {activeSubTab === 'typography' && (
-              <div className="space-y-5 animate-fadeIn">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>Groom Name Preview Override</label>
-                    <input
-                      type="text"
-                      value={previewGroom}
-                      onChange={e => setPreviewGroom(e.target.value)}
-                      placeholder={defaultGroom || "Groom name..."}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Bride Name Preview Override</label>
-                    <input
-                      type="text"
-                      value={previewBride}
-                      onChange={e => setPreviewBride(e.target.value)}
-                      placeholder={defaultBride || "Bride name..."}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <PremiumFontSelect
-                    label="Groom Name Font"
-                    value={cfg.groomFont}
-                    onChange={(val) => patch({ groomFont: val })}
-                  />
-                  <PremiumFontSelect
-                    label="Bride Name Font"
-                    value={cfg.brideFont}
-                    onChange={(val) => patch({ brideFont: val })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className={labelClass}>Connector</label>
-                    <select
-                      value={cfg.connector}
-                      onChange={e => patch({ connector: e.target.value as any })}
-                      className={`${inputClass} py-2 cursor-pointer bg-white`}
-                    >
-                      <option value="hearts">💗 Hearts</option>
-                      <option value="ampersand">&amp; Ampersand</option>
-                      <option value="ning">និង (ning)</option>
-                      <option value="pjuab">ប្ដីប្រពន្ធ</option>
-                    </select>
-                  </div>
-                  
-                  <div className="md:col-span-2">
-                    <label className={labelClass}>Card Layout</label>
-                    <div className="grid grid-cols-2 gap-2 p-1 bg-[#FAF6EE] rounded-xl border border-[#E6DFD3]">
-                      <button
-                        type="button"
-                        onClick={() => patch({ layout: 'vertical' })}
-                        className={`py-2 rounded-lg text-xs font-semibold transition-all ${
-                          cfg.layout === 'vertical'
-                            ? 'bg-white text-[#B89047] shadow-sm'
-                            : 'text-[#8C7A6B] hover:text-[#2C2620]'
-                        }`}
-                      >
-                        ↕ Vertical (Stacked)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => patch({ layout: 'horizontal' })}
-                        className={`py-2 rounded-lg text-xs font-semibold transition-all ${
-                          cfg.layout === 'horizontal'
-                            ? 'bg-white text-[#B89047] shadow-sm'
-                            : 'text-[#8C7A6B] hover:text-[#2C2620]'
-                        }`}
-                      >
-                        ↔ Horizontal (Side-by-side)
-                      </button>
+            <AnimatePresence mode="wait">
+              {activeSubTab === 'typography' && (
+                <motion.div
+                  key="typography"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className="space-y-5"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClass}>Groom Name Preview Override</label>
+                      <input
+                        type="text"
+                        value={previewGroom}
+                        onChange={e => setPreviewGroom(e.target.value)}
+                        placeholder={defaultGroom || "Groom name..."}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Bride Name Preview Override</label>
+                      <input
+                        type="text"
+                        value={previewBride}
+                        onChange={e => setPreviewBride(e.target.value)}
+                        placeholder={defaultBride || "Bride name..."}
+                        className={inputClass}
+                      />
                     </div>
                   </div>
-                </div>
 
-                {/* Font size slider */}
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-xs font-semibold text-[#8C7A6B] uppercase tracking-wider">Font Size</label>
-                    <span className="text-xs font-bold text-[#B89047]">{Math.round((cfg.fontSize ?? 1.0) * 100)}%</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <PremiumFontSelect
+                      label="Groom Name Font"
+                      value={cfg.groomFont}
+                      onChange={(val) => patch({ groomFont: val })}
+                    />
+                    <PremiumFontSelect
+                      label="Bride Name Font"
+                      value={cfg.brideFont}
+                      onChange={(val) => patch({ brideFont: val })}
+                    />
                   </div>
-                  <input
-                    type="range"
-                    min="0.6"
-                    max="2.0"
-                    step="0.05"
-                    value={cfg.fontSize ?? 1.0}
-                    onChange={e => patch({ fontSize: parseFloat(e.target.value) })}
-                    className="w-full h-1.5 bg-[#E6DFD3] rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
-                  />
-                  <div className="flex justify-between text-[10px] text-[#8C7A6B] mt-1 font-medium">
-                    <span>COMPACT (60%)</span>
-                    <span>STANDARD (100%)</span>
-                    <span>LARGE (200%)</span>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className={labelClass}>Connector</label>
+                      <select
+                        value={cfg.connector}
+                        onChange={e => patch({ connector: e.target.value as any })}
+                        className={`${inputClass} py-2 cursor-pointer bg-white`}
+                      >
+                        <option value="hearts">Hearts</option>
+                        <option value="ampersand">&amp; Ampersand</option>
+                        <option value="ning">និង (Khmer "ning")</option>
+                        <option value="pjuab">ភ្ជាប់ពាក្យ (Engagement)</option>
+                      </select>
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <label className={labelClass}>Card Layout</label>
+                      <div className="grid grid-cols-2 gap-2 p-1 bg-[#FAF6EE] rounded-xl border border-[#E6DFD3]">
+                        <button
+                          type="button"
+                          onClick={() => patch({ layout: 'vertical' })}
+                          className={`py-2 rounded-lg text-xs font-semibold transition-all ${
+                            cfg.layout === 'vertical'
+                              ? 'bg-white text-[#B89047] shadow-sm'
+                              : 'text-[#8C7A6B] hover:text-[#2C2620]'
+                          }`}
+                        >
+                          Vertical (Stacked)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => patch({ layout: 'horizontal' })}
+                          className={`py-2 rounded-lg text-xs font-semibold transition-all ${
+                            cfg.layout === 'horizontal'
+                              ? 'bg-white text-[#B89047] shadow-sm'
+                              : 'text-[#8C7A6B] hover:text-[#2C2620]'
+                          }`}
+                        >
+                          Horizontal (Side-by-side)
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+
+                  {/* Font size slider */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs font-semibold text-[#8C7A6B] uppercase tracking-wider">Font Size</label>
+                      <span className="text-xs font-bold text-[#B89047]">{Math.round((cfg.fontSize ?? 1.0) * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.6"
+                      max="2.0"
+                      step="0.05"
+                      value={cfg.fontSize ?? 1.0}
+                      onChange={e => patch({ fontSize: parseFloat(e.target.value) })}
+                      className="w-full h-1.5 bg-[#E6DFD3] rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
+                    />
+                    <div className="flex justify-between text-[10px] text-[#8C7A6B] mt-1 font-medium">
+                      <span>COMPACT (60%)</span>
+                      <span>STANDARD (100%)</span>
+                      <span>LARGE (200%)</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
             {/* TAB CONTENT: KBACH & ORNAMENTS */}
             {activeSubTab === 'ornaments' && (
-              <div className="space-y-5 animate-fadeIn">
+              <motion.div
+                key="ornaments"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="space-y-5"
+              >
                 <div>
                   <label className={labelClass}>Ornament Border Frame</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -583,12 +643,19 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                     className="w-full h-1.5 bg-[#E6DFD3] rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
                   />
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* TAB CONTENT: STICKERS & BADGES */}
             {activeSubTab === 'stickers' && (
-              <div className="space-y-5 animate-fadeIn">
+              <motion.div
+                key="stickers"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="space-y-5"
+              >
                 <div>
                   <label className={labelClass}>Overlay Stickers Grid</label>
                   <div className="grid grid-cols-2 gap-3">
@@ -597,8 +664,8 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                       const selected = activeStickers.includes(opt.id);
                       const handleToggle = () => {
                         const next = selected
-                          ? activeStickers.filter(id => id !== opt.id)
-                          : [...activeStickers, opt.id];
+                           ? activeStickers.filter(id => id !== opt.id)
+                           : [...activeStickers, opt.id];
                         patch({ stickers: next });
                       };
 
@@ -634,7 +701,7 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                 <div>
                   <label className={labelClass}>Stickers Placement Position</label>
                   <div className="grid grid-cols-3 gap-2 p-1 bg-[#FAF6EE] rounded-xl border border-[#E6DFD3]">
-                    {(['top-corners', 'center-floating', 'bottom-accent'] as const).map((pos) => (
+                    {(['top-corners', 'top-center', 'bottom-accent'] as const).map((pos) => (
                       <button
                         key={pos}
                         type="button"
@@ -650,15 +717,22 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                     ))}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* TAB CONTENT: EFFECTS & AMBIANCE */}
             {activeSubTab === 'effects' && (
-              <div className="space-y-5 animate-fadeIn">
+              <motion.div
+                key="effects"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="space-y-5"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className={labelClass}>🎨 Ambiance Particle Effect</label>
+                    <label className={labelClass}>Ambiance Particle Effect</label>
                     <select
                       value={cfg.ambiance}
                       onChange={e => patch({ ambiance: e.target.value as any })}
@@ -671,36 +745,36 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                   </div>
 
                   <div>
-                    <label className={labelClass}>✨ Name Text Effect</label>
+                    <label className={labelClass}>Name Text Effect</label>
                     <select
                       value={cfg.textEffect || 'none'}
                       onChange={e => patch({ textEffect: e.target.value as any })}
                       className={`${inputClass} py-2 cursor-pointer bg-white`}
                     >
                       <option value="none">Standard Text</option>
-                      <option value="gold-foil">🏆 Gold Foil Metallic</option>
-                      <option value="soft-glow">💡 Soft Accent Glow</option>
-                      <option value="letterpress">🖨️ Letterpress Engraved</option>
-                      <option value="embossed">🏛️ Embossed Raised</option>
+                      <option value="gold-foil">Gold Foil Metallic</option>
+                      <option value="soft-glow">Soft Accent Glow</option>
+                      <option value="letterpress">Letterpress Engraved</option>
+                      <option value="embossed">Embossed Raised</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className={labelClass}>🖼️ Card Frame Theme</label>
+                    <label className={labelClass}>Card Frame Theme</label>
                     <select
                       value={cfg.cardStyle || 'dark-glass'}
                       onChange={e => patch({ cardStyle: e.target.value as any })}
                       className={`${inputClass} py-2 cursor-pointer bg-white`}
                     >
-                      <option value="dark-glass">🌑 Dark Glassmorphism</option>
-                      <option value="light-glass">☀️ Light Glassmorphism</option>
-                      <option value="royal-gold">👑 Royal Palace Gold</option>
-                      <option value="romantic-blush">💖 Romantic Blush Pink</option>
-                      <option value="emerald-luxury">💚 Emerald Luxury</option>
-                      <option value="vintage-parchment">📜 Vintage Parchment</option>
-                      <option value="minimal-clean">✨ Minimal Clean</option>
+                      <option value="dark-glass">Dark Glassmorphism</option>
+                      <option value="light-glass">Light Glassmorphism</option>
+                      <option value="royal-gold">Royal Palace Gold</option>
+                      <option value="romantic-blush">Romantic Blush Pink</option>
+                      <option value="emerald-luxury">Emerald Luxury</option>
+                      <option value="vintage-parchment">Vintage Parchment</option>
+                      <option value="minimal-clean">Minimal Clean</option>
                     </select>
                   </div>
 
@@ -723,6 +797,43 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                         placeholder="#D4AF37"
                       />
                     </div>
+                  </div>
+                </div>
+
+
+
+                {/* Opacity & Blur Controls */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs font-semibold text-[#8C7A6B] uppercase tracking-wider">Card Frame Opacity</label>
+                      <span className="text-xs font-bold text-[#B89047]">{Math.round((cfg.bgOpacity ?? 0.38) * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.0"
+                      max="1.0"
+                      step="0.05"
+                      value={cfg.bgOpacity ?? 0.38}
+                      onChange={e => patch({ bgOpacity: parseFloat(e.target.value) })}
+                      className="w-full h-1.5 bg-[#E6DFD3] rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs font-semibold text-[#8C7A6B] uppercase tracking-wider">Glass Blur Strength</label>
+                      <span className="text-xs font-bold text-[#B89047]">{cfg.bgBlur ?? 14}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="24"
+                      step="1"
+                      value={cfg.bgBlur ?? 14}
+                      onChange={e => patch({ bgBlur: parseInt(e.target.value) })}
+                      className="w-full h-1.5 bg-[#E6DFD3] rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
+                    />
                   </div>
                 </div>
 
@@ -774,15 +885,19 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                     })}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
+          </AnimatePresence>
           </div>
 
           {/* RIGHT COLUMN: STICKY LIVE PREVIEW */}
           <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-[#8C7A6B] uppercase tracking-wider flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-[#B89047] animate-ping" />
+              <h4 className="text-xs font-semibold text-[#8C7A6B] uppercase tracking-wider flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B89047] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#B89047]"></span>
+                </span>
                 Interactive Live Preview
               </h4>
               
@@ -839,6 +954,8 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                     ornamentScale={cfg.ornamentScale}
                     stickers={cfg.stickers}
                     stickerPosition={cfg.stickerPosition}
+                    bgOpacity={cfg.bgOpacity}
+                    bgBlur={cfg.bgBlur}
                   />
                 ) : (
                   <div className="w-full scale-90 sm:scale-95 origin-center">
@@ -854,13 +971,38 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
             </div>
 
             {/* SPEC SUMMARY */}
-            <div className="bg-[#FAF6EE] border border-[#E6DFD3] rounded-2xl p-4 text-[10px] text-[#8C7A6B] font-medium space-y-1.5">
-              <p className="text-xs font-semibold text-[#2C2620] mb-1">Active Design Tokens</p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-left">
-                <div>🎨 Accent: <span className="font-bold text-[#B89047]">{cfg.accentColor}</span></div>
-                <div>🖼️ Frame Theme: <span className="font-bold text-[#2C2620]">{cfg.cardStyle || 'dark-glass'}</span></div>
-                <div>✨ Text Effect: <span className="font-bold text-[#2C2620]">{cfg.textEffect || 'none'}</span></div>
-                <div>🍂 Ambiance: <span className="font-bold text-[#2C2620]">{cfg.ambiance}</span></div>
+            <div className="bg-[#FAF6EE] border border-[#E6DFD3] rounded-2xl p-4 space-y-2.5 shadow-inner">
+              <p className="text-[10px] font-bold text-[#2C2620] uppercase tracking-wider">Active Design Tokens</p>
+              <div className="grid grid-cols-2 gap-3 text-left">
+                <div className="flex items-center gap-2 text-[10px] text-[#8C7A6B] font-medium">
+                  <SwatchBook className="w-3.5 h-3.5 text-[#B89047]" />
+                  <span>Accent:</span>
+                  <span className="flex items-center gap-1.5 font-bold text-[#2C2620]">
+                    <span className="w-2.5 h-2.5 rounded-full border border-black/10 inline-block shadow-sm" style={{ backgroundColor: cfg.accentColor }} />
+                    {cfg.accentColor}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-[#8C7A6B] font-medium">
+                  <Layout className="w-3.5 h-3.5 text-[#B89047]" />
+                  <span>Theme:</span>
+                  <span className="px-2 py-0.5 rounded-full bg-white border border-[#E6DFD3] text-[9px] font-bold text-[#2C2620] capitalize shadow-sm">
+                    {(cfg.cardStyle || 'dark-glass').replace('-', ' ')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-[#8C7A6B] font-medium">
+                  <Sparkles className="w-3.5 h-3.5 text-[#B89047]" />
+                  <span>Text Effect:</span>
+                  <span className="px-2 py-0.5 rounded-full bg-white border border-[#E6DFD3] text-[9px] font-bold text-[#2C2620] capitalize shadow-sm">
+                    {(cfg.textEffect || 'none').replace('-', ' ')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-[#8C7A6B] font-medium">
+                  <Sliders className="w-3.5 h-3.5 text-[#B89047]" />
+                  <span>Ambiance:</span>
+                  <span className="px-2 py-0.5 rounded-full bg-white border border-[#E6DFD3] text-[9px] font-bold text-[#2C2620] capitalize shadow-sm">
+                    {cfg.ambiance}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -3,11 +3,20 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 
-const spring = { type: "spring" as const, duration: 0.8, bounce: 0.08 };
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+function Diamond() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+      <rect x="7" y="0.7" width="9" height="9" rx="0.5" transform="rotate(45 7 0.7)"
+        fill="hsl(var(--accent) / 0.2)" stroke="hsl(var(--accent))" strokeWidth="1.2" />
+    </svg>
+  );
+}
 
 export default function TimelineSection() {
   const { t, lang } = useLanguage();
-  const { programSchedule } = useWeddingData();
+  const { settings, programSchedule } = useWeddingData();
   const fontClass = lang === 'km' ? 'font-khmer' : '';
 
   const items = programSchedule
@@ -17,72 +26,131 @@ export default function TimelineSection() {
   const isEmpty = items.length === 0;
 
   return (
-    <motion.section
-      className="py-14 sm:py-20 px-5 bg-champagne/30"
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={spring}
-    >
-      <div className="max-w-2xl mx-auto text-center">
-        <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
-          {t('timeline.title')}
-        </h2>
-        <div className="section-divider mb-10" />
+    <section className={`py-8 sm:py-12 px-5 sm:px-8 ${fontClass}`}>
 
-        {isEmpty ? (
-          <div className="luxury-card rounded-xl p-5 text-center">
-            <p className={`text-sm text-muted-foreground ${fontClass}`}>
-              {lang === 'km'
-                ? 'មិនទាន់មានដំណើរកម្មវិធីនៅឡើយទេ។'
-                : 'Program schedule has not been published yet.'}
-            </p>
-          </div>
-        ) : (
-          <div className="max-h-[62vh] overflow-y-auto pr-1">
-            <ul className="timeline timeline-vertical timeline-snap-icon max-md:timeline-compact w-full text-left">
-              {items.map((item, i) => {
+      {/* ── Heading ─────────────────────────────────────────────── */}
+      <motion.div
+        className="text-center mb-8 sm:mb-10"
+        initial={{ opacity: 0, y: 14 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: 0.6, ease: EASE }}
+      >
+        <h2
+          className={`text-3xl sm:text-4xl font-bold mb-3 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}
+          style={{
+            color: 'hsl(var(--foreground))',
+            fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-display)',
+          }}
+        >
+          {lang === 'km'
+            ? settings.timelineTitleKm || t('timeline.title')
+            : settings.timelineTitleEn || t('timeline.title')}
+        </h2>
+        {/* Ornament */}
+        <div className="flex items-center justify-center gap-3">
+          <div className="h-px w-14" style={{ background: 'linear-gradient(to right, transparent, hsl(var(--accent) / 0.6))' }} />
+          <Diamond />
+          <div className="h-px w-14" style={{ background: 'linear-gradient(to left, transparent, hsl(var(--accent) / 0.6))' }} />
+        </div>
+      </motion.div>
+
+      {/* ── Empty state ─────────────────────────────────────────── */}
+      {isEmpty ? (
+        <p
+          className={`text-center text-base ${fontClass}`}
+          style={{ color: 'hsl(var(--muted-foreground))' }}
+        >
+          {lang === 'km' ? 'មិនទាន់មានដំណើរកម្មវិធីនៅឡើយទេ។' : 'Program schedule has not been published yet.'}
+        </p>
+      ) : (
+        /* ── Timeline rows ────────────────────────────────────── */
+        <div className="relative max-w-lg mx-auto">
+
+          {/* Vertical spine */}
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: 0,
+              bottom: 0,
+              width: '1px',
+              transform: 'translateX(-50%)',
+              background: 'linear-gradient(to bottom, transparent, hsl(var(--accent) / 0.4) 5%, hsl(var(--accent) / 0.4) 95%, transparent)',
+            }}
+          />
+
+          <ul>
+            {items.map((item, i) => {
               const time = (lang === 'km' ? item.time_km || item.time_en : item.time_en || item.time_km) || '';
               const title = (lang === 'km' ? item.title_km || item.title_en : item.title_en || item.title_km) || '';
-              const isEven = i % 2 === 0;
+              const isLast = i === items.length - 1;
 
               return (
-                <li key={item.id || i}>
-                  {/* Left part: Time on desktop, else placeholder */}
-                  <div className={`timeline-start md:text-end mb-1 text-sm font-bold text-gold ${fontClass} ${isEven ? '' : 'md:text-right'}`}>
-                    {isEven ? time : <span className="md:hidden">{time}</span>}
-                  </div>
-
-                  {/* Middle part: Circle indicator */}
-                  <div className="timeline-middle text-accent hover:scale-125 transition-transform cursor-pointer">
-                    <span className="w-7 h-7 rounded-full bg-champagne border-2 border-gold-light flex items-center justify-center text-xs shadow-glow">
-                      ✦
+                <motion.li
+                  key={item.id || i}
+                  className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-x-4"
+                  style={{
+                    paddingTop: '1rem',
+                    paddingBottom: '1rem',
+                    borderBottom: isLast ? 'none' : '1px solid hsl(var(--accent) / 0.18)',
+                  }}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.5, delay: i * 0.07, ease: EASE }}
+                >
+                  {/* Time — left, right-aligned */}
+                  <div className="text-right pr-2">
+                    <span
+                      className="font-bold leading-tight"
+                      style={{
+                        fontSize: 'clamp(0.95rem, 3.5vw, 1.15rem)',
+                        color: 'hsl(var(--accent))',
+                        fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-display)',
+                      }}
+                    >
+                      {time}
                     </span>
                   </div>
 
-                  {/* Right part: Card box */}
-                  <div className={`timeline-end timeline-box mb-6 w-full ${isEven ? '' : 'md:timeline-start md:text-right'}`}>
-                    <motion.div
-                      className="luxury-card rounded-2xl p-4 shadow-surface border border-border/30"
-                      initial={{ opacity: 0, x: isEven ? 20 : -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ ...spring, delay: i * 0.05 }}
-                    >
-                      {!isEven && <p className={`hidden md:block text-xs font-bold text-gold mb-1 ${fontClass}`}>{time}</p>}
-                      {isEven && <p className={`md:hidden text-xs font-bold text-gold mb-1 ${fontClass}`}>{time}</p>}
-                      <h3 className={`font-semibold text-foreground text-sm sm:text-base leading-snug ${fontClass}`}>{title}</h3>
+                  {/* Diamond center node */}
+                  <div className="relative z-10 flex items-center justify-center">
+                    <motion.div whileHover={{ scale: 1.4 }} transition={{ duration: 0.2 }}>
+                      <Diamond />
                     </motion.div>
                   </div>
 
-                  {i < items.length - 1 && <hr className="bg-gradient-to-b from-gold-light/80 to-transparent" />}
-                </li>
+                  {/* Title — right, left-aligned */}
+                  <div className="pl-2">
+                    <span
+                      className="font-semibold leading-snug"
+                      style={{
+                        fontSize: 'clamp(1rem, 4vw, 1.25rem)',
+                        color: 'hsl(var(--foreground))',
+                        fontFamily: lang === 'km' ? 'var(--font-khmer)' : 'var(--font-body)',
+                      }}
+                    >
+                      {title}
+                    </span>
+                  </div>
+                </motion.li>
               );
             })}
+
+            {/* Closing heart */}
+            <motion.li
+              className="flex justify-center pt-4"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: items.length * 0.07 }}
+            >
+              <span style={{ color: 'hsl(var(--accent) / 0.6)', fontSize: '16px' }}>♡</span>
+            </motion.li>
           </ul>
-          </div>
-        )}
-      </div>
-    </motion.section>
+        </div>
+      )}
+    </section>
   );
 }

@@ -26,7 +26,7 @@ export default function ContactSection() {
     >
       <div className="max-w-md mx-auto text-center">
         <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
-          {t('contact.title')}
+          {lang === 'km' ? (settings.contactTitleKm || t('contact.title')) : (settings.contactTitleEn || t('contact.title'))}
         </h2>
         <div className="section-divider mb-8" />
 

@@ -5,7 +5,7 @@ const VALID_THEMES: ThemeName[] = ALL_INVITATION_THEME_NAMES as ThemeName[];
 
 /** Map legacy DB values (e.g. classic-elegant-khmer) to app themes */
 export function normalizeTheme(value: string | null | undefined): ThemeName {
-  if (!value) return 'elegant-gold';
+  if (!value) return 'gold';
   const v = value.toLowerCase().replace(/\s+/g, '-');
   if (VALID_THEMES.includes(v as ThemeName)) return v as ThemeName;
 

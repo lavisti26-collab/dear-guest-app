@@ -3,7 +3,7 @@ import { ThemeContext } from '@/contexts/ThemeContext';
 
 interface ParticleBackgroundProps {
   enabled?: boolean;
-  effect?: 'petal-fall' | 'butterfly-float' | 'sparkle';
+  effect?: 'petal-fall' | 'butterfly-float' | 'sparkle' | 'confetti' | 'fireflies' | 'stars';
   intensity?: 'low' | 'medium' | 'high';
   className?: string;
 }
@@ -11,7 +11,7 @@ interface ParticleBackgroundProps {
 /**
  * Particle Background Component
  * Creates beautiful ambient particle effects with toggleable animations
- * Effects: petal-fall, butterfly-float, sparkle
+ * Effects: petal-fall, butterfly-float, sparkle (+ confetti/fireflies/stars fallback to sparkle)
  * Automatically adjusts opacity based on light/dark theme
  */
 export default function ParticleBackground({
@@ -40,6 +40,12 @@ export default function ParticleBackground({
     high: isDark ? 'opacity-50' : 'opacity-35',
   };
 
+  // Map extended effect names to supported CSS animation classes
+  const resolvedEffect: 'petal-fall' | 'butterfly-float' | 'sparkle' =
+    effect === 'confetti' || effect === 'stars' ? 'sparkle'
+    : effect === 'fireflies' ? 'butterfly-float'
+    : (effect as 'petal-fall' | 'butterfly-float' | 'sparkle');
+
   const animationClass = {
     'petal-fall': `animate-petal-fall`,
     'butterfly-float': `animate-butterfly-float`,
@@ -58,7 +64,7 @@ export default function ParticleBackground({
       <div
         className={`
           absolute inset-0 
-          ${animationClass[effect]}
+          ${animationClass[resolvedEffect]}
           ${intensityOpacity[intensity]}
           transition-opacity duration-500
         `}
@@ -69,12 +75,12 @@ export default function ParticleBackground({
         }}
       >
         {/* Particle dots for visual richness */}
-        {effect !== 'sparkle' && (
+        {resolvedEffect !== 'sparkle' && (
           <>
-            <div className={`absolute top-10 left-1/4 w-2 h-2 rounded-full bg-accent ${animationClass[effect]}`} />
-            <div className={`absolute top-1/3 left-1/3 w-1 h-1 rounded-full bg-primary ${animationClass[effect]}`} style={{ animationDelay: '1s' }} />
-            <div className={`absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-accent/50 ${animationClass[effect]}`} style={{ animationDelay: '2s' }} />
-            <div className={`absolute top-2/3 left-1/2 w-1 h-1 rounded-full bg-primary/70 ${animationClass[effect]}`} style={{ animationDelay: '0.5s' }} />
+            <div className={`absolute top-10 left-1/4 w-2 h-2 rounded-full bg-accent ${animationClass[resolvedEffect]}`} />
+            <div className={`absolute top-1/3 left-1/3 w-1 h-1 rounded-full bg-primary ${animationClass[resolvedEffect]}`} style={{ animationDelay: '1s' }} />
+            <div className={`absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-accent/50 ${animationClass[resolvedEffect]}`} style={{ animationDelay: '2s' }} />
+            <div className={`absolute top-2/3 left-1/2 w-1 h-1 rounded-full bg-primary/70 ${animationClass[resolvedEffect]}`} style={{ animationDelay: '0.5s' }} />
           </>
         )}
       </div>

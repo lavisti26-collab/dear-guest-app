@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -129,7 +129,7 @@ function Inner() {
     }
   };
 
-  const loadCouples = async () => {
+  const loadCouples = useCallback(async () => {
     const [{ data: cps }, { count: gc }, { count: wc }, { count: rc }] = await Promise.all([
       supabase.from('profiles').select('user_id, slug, display_name, email, created_at, theme').order('created_at', { ascending: false }),
       supabase.from('guests').select('*', { count: 'exact', head: true }),
@@ -146,7 +146,7 @@ function Inner() {
       wishCount: coupleStats[c.user_id]?.wishes || 0,
     })));
     setStats({ guests: gc || 0, wishes: wc || 0, rsvps: rc || 0, totalCouples: couplesData.length });
-  };
+  }, []);
 
   useEffect(() => {
     (async () => {

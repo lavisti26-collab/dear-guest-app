@@ -6,7 +6,7 @@ import { useTheme } from '@/theme/ThemeEngine';
 import confetti from 'canvas-confetti';
 import { requestPlayMusic } from '@/lib/wedding-music';
 import injectFontFaces from '@/lib/font-loader';
-import { getTextStyle } from './CoupleCard';
+import { getTextStyle } from '../CoupleCard';
 
 // ── Font stack mapping identical to CoupleCard.tsx ──
 const FONT_MAP = {
@@ -511,6 +511,36 @@ const getThemeCardStyles = (_themeId: string) => ({
   staticCardClass: 'bg-[#FAF8F5] border border-[#D4AF37]/35 rounded-2xl',
 });
 
+const KhmerCorner = ({ strokeColor }: { strokeColor: string }) => (
+  <svg width="60" height="60" viewBox="0 0 60 60" className="opacity-40">
+    <path d="M4 4 Q30 4 30 30 Q4 30 4 4Z" fill="none" stroke={strokeColor} strokeWidth="1" />
+    <path d="M4 4 L22 4 M4 4 L4 22" stroke={strokeColor} strokeWidth="1.6" strokeLinecap="round" />
+    <circle cx="8" cy="8" r="1.8" fill={strokeColor} />
+    <path d="M12 4 Q28 4 28 20" fill="none" stroke={strokeColor} strokeWidth="0.6" opacity="0.7" />
+  </svg>
+);
+
+const RomanticCorner = ({ strokeColor }: { strokeColor: string }) => (
+  <svg width="60" height="60" viewBox="0 0 60 60" className="opacity-35">
+    <path d="M 4,4 C 18,4 28,14 28,28" fill="none" stroke={strokeColor} strokeWidth="1" />
+    <path d="M 4,4 C 4,18 14,28 28,28" fill="none" stroke={strokeColor} strokeWidth="0.8" strokeDasharray="2,2" />
+    <path d="M 4,4 C 8,14 14,18 20,20" fill="none" stroke={strokeColor} strokeWidth="0.8" />
+    <circle cx="8" cy="8" r="2.2" fill={strokeColor} />
+    <circle cx="15" cy="15" r="1.8" fill={strokeColor} />
+    <circle cx="21" cy="21" r="1.2" fill={strokeColor} />
+    <path d="M 11,5 Q 13,8 11,10 Q 9,8 11,5 Z" fill={strokeColor} />
+    <path d="M 5,11 Q 8,13 10,11 Q 8,9 5,11 Z" fill={strokeColor} />
+  </svg>
+);
+
+const MinimalCorner = ({ strokeColor }: { strokeColor: string }) => (
+  <svg width="45" height="45" viewBox="0 0 45 45" className="opacity-30">
+    <line x1="4" y1="4" x2="35" y2="4" stroke={strokeColor} strokeWidth="1" />
+    <line x1="4" y1="4" x2="4" y2="35" stroke={strokeColor} strokeWidth="1" />
+    <circle cx="4" cy="4" r="1.5" fill={strokeColor} />
+  </svg>
+);
+
 function StaticPeekContent({
   guestName, fontFamily, textEffectStyle, lang, t
 }: { guestName: string; fontFamily: string; textEffectStyle: React.CSSProperties; lang: string; t: (k: string) => string }) {
@@ -526,6 +556,40 @@ function StaticPeekContent({
   );
 }
 
+const EVENT_TITLE_FONT_MAP: Record<string, string> = {
+  'Moul': "'Moul', serif",
+  'Koulen': "'Koulen', sans-serif",
+  'Hanuman': "'Hanuman', serif",
+  'Kantumruy Pro': "'Kantumruy Pro', sans-serif",
+  'Playfair Display': "'Playfair Display', serif",
+  'Great Vibes': "'Great Vibes', cursive",
+  'Cinzel': "'Cinzel', serif",
+  'Inter': "'Inter', sans-serif"
+};
+
+function getEventTitleFontFamily(fontName?: string) {
+  if (!fontName) return '';
+  return EVENT_TITLE_FONT_MAP[fontName] || fontName;
+}
+
+const getEventTitleAnimationProps = (anim?: string, targetOpacity = 1): any => {
+  switch (anim) {
+    case 'none':
+      return { initial: { opacity: targetOpacity }, animate: { opacity: targetOpacity } };
+    case 'fade':
+      return { initial: { opacity: 0 }, animate: { opacity: targetOpacity }, transition: { duration: 1.2 } };
+    case 'zoom':
+      return { initial: { opacity: 0, scale: 0.8 }, animate: { opacity: targetOpacity, scale: 1 }, transition: { duration: 1.0, ease: 'easeOut' } };
+    case 'bounce':
+      return { initial: { y: -40, opacity: 0 }, animate: { y: 0, opacity: targetOpacity }, transition: { type: 'spring', stiffness: 120, damping: 12 } };
+    case 'shimmer':
+      return { initial: { opacity: targetOpacity * 0.4 }, animate: { opacity: [targetOpacity * 0.4, targetOpacity, targetOpacity * 0.4] }, transition: { repeat: Infinity, duration: 2.5, ease: 'easeInOut' } };
+    case 'fade-up':
+    default:
+      return { initial: { y: 20, opacity: 0 }, animate: { y: 0, opacity: targetOpacity }, transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1] } };
+  }
+};
+
 // ── Main component ────────────────────────────────────────────────────────────
 export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePreview = false }: EnvelopeProps) {
   const { t, lang } = useLanguage();
@@ -533,6 +597,17 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
   const { theme, isDark } = useTheme();
   const themeStyle = getThemeStyleType(theme.id);
   const envStyles = getEnvelopeStyles(themeStyle, isDark);
+
+  const renderCorner = () => {
+    const strokeColor = envStyles.accentStarsColor || '#D4AF37';
+    if (themeStyle === 'khmer') {
+      return <KhmerCorner strokeColor={strokeColor} />;
+    }
+    if (themeStyle === 'romantic') {
+      return <RomanticCorner strokeColor={strokeColor} />;
+    }
+    return <MinimalCorner strokeColor={strokeColor} />;
+  };
   const [flapOpen, setFlapOpen] = useState(false);
   const [cardRising, setCardRising] = useState(false);
   const [sealPopping, setSealPopping] = useState(false);
@@ -635,7 +710,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
           transition={{ duration: 0.9, ease: 'easeInOut' }}
         >
           {/* ── Layered ambient background ── */}
-          <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {/* Large warm glow */}
             {envStyles.glowOpacity > 0 && (
               <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full"
@@ -647,9 +722,35 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
             )}
             {/* Rose corner glow */}
             {themeStyle === 'romantic' && (
-              <div className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-30"
-                style={{ background: 'radial-gradient(ellipse, rgba(240,180,165,0.35) 0%, transparent 70%)' }} />
+              <div className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-35"
+                style={{ background: 'radial-gradient(ellipse, rgba(244,114,182,0.3) 0%, transparent 70%)' }} />
             )}
+
+            {/* Drifting Bokeh Circles for Luxury feel */}
+            {!inlinePreview && Array.from({ length: 6 }).map((_, i) => (
+              <motion.div
+                key={`bokeh-${i}`}
+                className="absolute rounded-full bg-amber-400/5 blur-xl pointer-events-none"
+                style={{
+                  width: 120 + i * 40,
+                  height: 120 + i * 40,
+                  left: `${10 + i * 15}%`,
+                  top: `${15 + i * 10}%`,
+                }}
+                animate={{
+                  y: [0, -35, 0],
+                  x: [0, 20, 0],
+                  scale: [1, 1.15, 1],
+                  opacity: [0.1, 0.3, 0.1],
+                }}
+                transition={{
+                  duration: 9 + i * 2,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: i * 0.4,
+                }}
+              />
+            ))}
           </div>
 
           {/* ── Floating petals ── */}
@@ -657,26 +758,34 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
             {petals.map((p) => <Petal key={p.id} delay={p.delay} x={p.x} size={p.size} />)}
           </div>
 
+          {/* ── Luxury border frame ── */}
+          {!inlinePreview && (
+            <div 
+              className="absolute inset-4 border rounded-[2rem] pointer-events-none z-10"
+              style={{ borderColor: `${envStyles.accentStarsColor}35` }}
+            >
+              <div 
+                className="absolute inset-1 border rounded-[1.8rem] pointer-events-none opacity-50"
+                style={{ borderColor: `${envStyles.accentStarsColor}15` }}
+              />
+            </div>
+          )}
+
           {/* ── Ornate corner decorations ── */}
-          {themeStyle === 'khmer' && [
-            'top-3 left-3',
-            'top-3 right-3 scale-x-[-1]',
-            'bottom-3 left-3 scale-y-[-1]',
-            'bottom-3 right-3 scale-[-1]',
+          {!inlinePreview && [
+            'top-4 left-4',
+            'top-4 right-4 scale-x-[-1]',
+            'bottom-4 left-4 scale-y-[-1]',
+            'bottom-4 right-4 scale-[-1]',
           ].map((pos, i) => (
             <motion.div
               key={i}
-              className={`absolute ${pos} pointer-events-none`}
+              className={`absolute ${pos} pointer-events-none z-20`}
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + i * 0.12, ...spring }}
+              transition={{ delay: 0.4 + i * 0.1, ...spring }}
             >
-              <svg width="60" height="60" viewBox="0 0 60 60" className="opacity-25">
-                <path d="M4 4 Q30 4 30 30 Q4 30 4 4Z" fill="none" stroke={envStyles.accentStarsColor} strokeWidth="0.8" />
-                <path d="M4 4 L20 4 M4 4 L4 20" stroke={envStyles.accentStarsColor} strokeWidth="1.2" strokeLinecap="round" />
-                <circle cx="8" cy="8" r="1.5" fill={envStyles.accentStarsColor} />
-                <path d="M12 4 Q28 4 28 20" fill="none" stroke={envStyles.accentStarsColor} strokeWidth="0.5" opacity="0.6" />
-              </svg>
+              {renderCorner()}
             </motion.div>
           ))}
 
@@ -689,13 +798,27 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
           >
             <motion.div
               className="w-full max-w-[420px]"
-              initial={{ opacity: 0, y: -14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
             >
-              <p className={`mx-auto max-w-full uppercase text-amber-800/80 text-xl sm:text-2xl md:text-3xl ${lang === 'km' ? 'font-khmer font-semibold tracking-normal' : 'tracking-[0.24em] font-sans font-semibold'}`}>
+              <motion.p
+                className={`mx-auto max-w-full uppercase ${
+                  settings.eventTitleSize || 'text-xl sm:text-2xl md:text-3xl'
+                } ${
+                  (!settings.eventTitleFont || settings.eventTitleFont === 'Moul' || settings.eventTitleFont === 'Koulen') && lang === 'km' 
+                    ? 'font-khmer font-bold tracking-normal' 
+                    : 'font-sans font-bold'
+                }`}
+                style={{
+                  fontFamily: settings.eventTitleFont ? getEventTitleFontFamily(settings.eventTitleFont) : undefined,
+                  letterSpacing: settings.eventTitleFont && settings.eventTitleFont !== 'Moul' && settings.eventTitleFont !== 'Koulen' ? '0.12em' : undefined,
+                  background: 'linear-gradient(135deg, #B8893E 0%, #F0C97A 40%, #C9913A 70%, #B8893E 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  filter: 'drop-shadow(0px 2px 3px rgba(184, 137, 62, 0.25))',
+                }}
+                {...getEventTitleAnimationProps(settings.eventTitleAnimation || 'fade-up', settings.eventTitleOpacity !== undefined ? settings.eventTitleOpacity : 1.0)}
+              >
                 {eventTitle}
-              </p>
+              </motion.p>
             </motion.div>
             {/* Orbiting sparkles around envelope */}
             <div className="absolute inset-0 pointer-events-none">
@@ -722,9 +845,9 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
               >
                 {/* ─ Envelope body shadow ─ */}
                 <motion.div
-                  className="absolute -bottom-3 left-4 right-4 h-6 rounded-full blur-xl opacity-30"
-                  style={{ background: envStyles.isDark ? 'rgba(0,0,0,0.8)' : 'rgba(100,60,20,0.35)' }}
-                  animate={{ scaleX: [1, 1.04, 1], opacity: [0.3, 0.22, 0.3] }}
+                  className="absolute -bottom-4 left-4 right-4 h-8 rounded-full blur-2xl opacity-40"
+                  style={{ background: envStyles.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(100,60,20,0.45)' }}
+                  animate={{ scaleX: [1, 1.04, 1], opacity: [0.4, 0.3, 0.4] }}
                   transition={{ duration: 3, repeat: Infinity }}
                 />
 

@@ -56,8 +56,13 @@ export interface CoupleCardConfig {
   ornamentOpacity?: number;
   ornamentScale?: number;
   stickers?: string[];
-  stickerPosition?: 'top-corners' | 'center-floating' | 'bottom-accent';
+  stickerPosition?: 'top-corners' | 'top-center' | 'bottom-accent';
   galleryLayout?: 'scroll' | 'grid' | 'masonry' | 'stack';
+  bgOpacity?: number;
+  bgBlur?: number;
+  navIconStyle?: 'emoji' | 'outline';
+  giftEnvelopeCover?: 'red' | 'khmer' | 'dark' | 'blue';
+  inviteTemplate?: string;
 }
 
 export const DEFAULT_COUPLE_CARD_CONFIG: CoupleCardConfig = {
@@ -74,8 +79,11 @@ export const DEFAULT_COUPLE_CARD_CONFIG: CoupleCardConfig = {
   ornamentOpacity: 0.9,
   ornamentScale: 1.0,
   stickers: [],
-  stickerPosition: 'center-floating',
+  stickerPosition: 'top-center',
   galleryLayout: 'scroll',
+  bgOpacity: 0.38,
+  bgBlur: 14,
+  navIconStyle: 'outline',
 };
 
 export interface WeddingSettings {
@@ -99,11 +107,34 @@ export interface WeddingSettings {
   musicUrl: string;
   musicFile: string;
   heroImage: string;
+  heroImageOpacity?: number;
   weddingDescription: string;
   weddingDescriptionKm: string;
   /** Hero subtitle — e.g. Wedding / Engagement (EN & KM) */
   eventTitleEn: string;
   eventTitleKm: string;
+  /** Event Title style customization */
+  eventTitleFont?: string;
+  eventTitleSize?: string;
+  eventTitleAnimation?: string;
+  eventTitleOpacity?: number;
+  /** Custom section titles */
+  detailsTitleEn?: string;
+  detailsTitleKm?: string;
+  giftTitleEn?: string;
+  giftTitleKm?: string;
+  greetingTitleEn?: string;
+  greetingTitleKm?: string;
+  timelineTitleEn?: string;
+  timelineTitleKm?: string;
+  galleryTitleEn?: string;
+  galleryTitleKm?: string;
+  rsvpTitleEn?: string;
+  rsvpTitleKm?: string;
+  wishesTitleEn?: string;
+  wishesTitleKm?: string;
+  contactTitleEn?: string;
+  contactTitleKm?: string;
   layoutTemplate?: string;
   fontPair?: string;
   animationStyle?: string;
@@ -180,9 +211,11 @@ interface ProviderProps {
   children: ReactNode;
   ownerUserId: string | null;
   publicProfile?: DbProfile | null;
+  guestName?: string;
+  guestId?: string;
 }
 
-export function WeddingDataProvider({ children, ownerUserId, publicProfile }: ProviderProps) {
+export function WeddingDataProvider({ children, ownerUserId, publicProfile, guestName, guestId }: ProviderProps) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -261,170 +294,269 @@ export function WeddingDataProvider({ children, ownerUserId, publicProfile }: Pr
     setGiftEnabledState(m.giftEnabled);
   }, []);
 
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  const normalizeGuestNameLocal = (rawName?: string) => {
+    if (!rawName) return '';
+    try {
+      return decodeURIComponent(rawName).replace(/[-_]+/g, ' ').trim();
+    } catch {
+      return rawName.replace(/[-_]+/g, ' ').trim();
+    }
+  };
+
+  const fetchAll = useCallback(async () => {
+    if (!supabase || !ownerUserId) return;
+    try {
+      // SECURITY: Public invites fetch target guest only via a secure SECURITY DEFINER RPC.
+      // Admin dashboard fetches all guests using the raw table query.
+      let guestsPromise: any;
+      
+      if (isPublicInvite) {
+        if (guestId || guestName) {
+          guestsPromise = (supabase as any)
+            .rpc('get_public_guest_by_id_or_name', {
+              p_user_id: ownerUserId,
+              p_name: guestName || null,
+              p_id: guestId || null,
+            })
+            .then((res: any) => ({
+              data: Array.isArray(res.data) ? res.data : res.data ? [res.data] : [],
+              error: res.error,
+            }));
+        } else {
+          guestsPromise = Promise.resolve({ data: [], error: null });
+        }
+      } else {
+        guestsPromise = supabase.from('guests').select('*').eq('user_id', ownerUserId);
+      }
+
+      const [guestsRes, wishesRes, photosRes, settingsRes, programRes, profileRes] = await Promise.all([
+        guestsPromise,
+        supabase.from('wishes').select('*').eq('user_id', ownerUserId).order('created_at', { ascending: false }),
+        supabase.from('photos').select('*').eq('user_id', ownerUserId).order('created_at', { ascending: true }),
+        supabase.from('settings').select('*').eq('user_id', ownerUserId).maybeSingle(),
+        supabase.from('program_schedule').select('*').eq('user_id', ownerUserId).order('order_index', { ascending: true }),
+        publicProfileRef.current
+          ? Promise.resolve({ data: publicProfileRef.current, error: null })
+          : supabase.from('profiles').select('groom_name, bride_name, wedding_date, background_music_url, bank_qr_url, display_name').eq('user_id', ownerUserId).maybeSingle(),
+      ]);
+
+      if (!isMountedRef.current) return;
+
+      const profile = (publicProfileRef.current ?? profileRes.data) as (DbProfile & { display_name?: string | null }) | null;
+
+      if (isPublicInvite) {
+        const bootstrap = settingsFromDb(null, profile, defaultSettings);
+        setSettings(bootstrap.settings);
+        setBankName(bootstrap.bankName);
+        setBankAccount(bootstrap.bankAccount);
+        setBankQR(bootstrap.bankQR);
+        setGiftEnabledState(bootstrap.giftEnabled);
+      }
+
+      if (guestsRes.error) {
+        console.warn('guests load:', guestsRes.error.message);
+        setGuests([]);
+      } else {
+        setGuests((guestsRes.data || []).map((r) => guestFromDb(r as Record<string, unknown>)));
+      }
+      if (!wishesRes.error) setWishes((wishesRes.data || []).map((r) => wishFromDb(r as Record<string, unknown>)));
+      if (!photosRes.error) {
+        setPhotos((photosRes.data || []).map((p: any) => ({
+          id: p.id,
+          url: p.url,
+          caption: p.caption ?? null
+        })));
+      }
+      if (!programRes.error) {
+        setProgramSchedule((programRes.data || []).map((r) => programFromDb(r as Record<string, unknown>)));
+      }
+
+      const applySettings = (row: Record<string, unknown> | null) => {
+        const m = settingsFromDb(row, profile, defaultSettings);
+        setSettings(m.settings);
+        setBankName(m.bankName);
+        setBankAccount(m.bankAccount);
+        setBankQR(m.bankQR);
+        setGiftEnabledState(m.giftEnabled);
+        if (row?.id) setSettingsId(String(row.id));
+      };
+
+      if (settingsRes.data) {
+        applySettings(settingsRes.data as Record<string, unknown>);
+      } else if (isPublicInvite) {
+        applySettings(null);
+      } else {
+        const names = coupleNamesFromProfile(profile);
+        const { data: created } = await supabase
+          .from('settings')
+          .insert({
+            id: crypto.randomUUID(),
+            user_id: ownerUserId,
+            created_by: ownerUserId,
+            couple_names: names?.en || defaultSettings.coupleNames,
+            couple_names_km: names?.km || defaultSettings.coupleNamesKm,
+            venue: defaultSettings.venueName,
+            gift_enabled: true,
+          } as any)
+          .select('*')
+          .maybeSingle();
+        applySettings(created as Record<string, unknown> | null);
+      }
+    } catch (e) {
+      console.error('WeddingDataProvider fetch:', e);
+    } finally {
+      if (isMountedRef.current) {
+        if (!isPublicInvite && ownerUserId) {
+          setCachedAdminData(ownerUserId, {
+            guests: guestsRef.current,
+            wishes: wishesRef.current,
+            photos: photosRef.current,
+            programSchedule: programScheduleRef.current,
+            settings: settingsRef.current,
+            bankName: bankNameRef.current,
+            bankAccount: bankAccountRef.current,
+            bankQR: bankQRRef.current,
+            giftEnabled: giftEnabledRef.current,
+            settingsId: settingsIdRef.current,
+          });
+        }
+        setReady(true);
+      }
+    }
+  }, [ownerUserId, isPublicInvite, guestName, guestId]);
+
+  // Initial mount load
   useEffect(() => {
     if (!ownerUserId) { setReady(false); return; }
-    let cancelled = false;
-    // Only show a loading spinner when there is NO cached data at all.
-    // If we already have cached data (cachedInitial != null), the UI stays
-    // visible and the Supabase fetch runs silently in the background.
     if (!isPublicInvite && !cachedInitial) setReady(false);
-    const fetchAll = async () => {
-      if (!supabase) {
-        // If Supabase is not configured, set ready to true so the fallback layout displays
-        setReady(true);
-        return;
-      }
-      try {
-        const [guestsRes, wishesRes, photosRes, settingsRes, programRes, profileRes] = await Promise.all([
-          supabase.from('guests').select('*').eq('user_id', ownerUserId),
-          supabase.from('wishes').select('*').eq('user_id', ownerUserId).order('created_at', { ascending: false }),
-          supabase.from('photos').select('*').eq('user_id', ownerUserId).order('created_at', { ascending: true }),
-          supabase.from('settings').select('*').eq('user_id', ownerUserId).maybeSingle(),
-          supabase.from('program_schedule').select('*').eq('user_id', ownerUserId).order('order_index', { ascending: true }),
-          publicProfileRef.current
-            ? Promise.resolve({ data: publicProfileRef.current, error: null })
-            : supabase.from('profiles').select('groom_name, bride_name, wedding_date, background_music_url, bank_qr_url, display_name').eq('user_id', ownerUserId).maybeSingle(),
-        ]);
-        if (cancelled) return;
+    fetchAll();
+  }, [ownerUserId, isPublicInvite, fetchAll]);
 
-        const profile = (publicProfileRef.current ?? profileRes.data) as (DbProfile & { display_name?: string | null }) | null;
-
-        if (isPublicInvite) {
-          const bootstrap = settingsFromDb(null, profile, defaultSettings);
-          setSettings(bootstrap.settings);
-          setBankName(bootstrap.bankName);
-          setBankAccount(bootstrap.bankAccount);
-          setBankQR(bootstrap.bankQR);
-          setGiftEnabledState(bootstrap.giftEnabled);
-        }
-
-        if (guestsRes.error) {
-          console.warn('guests load:', guestsRes.error.message);
-          setGuests([]);
-        } else {
-          setGuests((guestsRes.data || []).map((r) => guestFromDb(r as Record<string, unknown>)));
-        }
-        if (!wishesRes.error) setWishes((wishesRes.data || []).map((r) => wishFromDb(r as Record<string, unknown>)));
-        if (!photosRes.error) {
-          setPhotos((photosRes.data || []).map((p: any) => ({
-            id: p.id,
-            url: p.url,
-            caption: p.caption ?? null
-          })));
-        }
-        if (!programRes.error) {
-          setProgramSchedule((programRes.data || []).map((r) => programFromDb(r as Record<string, unknown>)));
-        }
-
-        const applySettings = (row: Record<string, unknown> | null) => {
-          const m = settingsFromDb(row, profile, defaultSettings);
-          setSettings(m.settings);
-          setBankName(m.bankName);
-          setBankAccount(m.bankAccount);
-          setBankQR(m.bankQR);
-          setGiftEnabledState(m.giftEnabled);
-          if (row?.id) setSettingsId(String(row.id));
-        };
-
-        if (settingsRes.data) {
-          applySettings(settingsRes.data as Record<string, unknown>);
-        } else if (isPublicInvite) {
-          applySettings(null);
-        } else {
-          const names = coupleNamesFromProfile(profile);
-          const { data: created } = await supabase
-            .from('settings')
-            .insert({
-              id: crypto.randomUUID(),
-              user_id: ownerUserId,
-              created_by: ownerUserId,
-              couple_names: names?.en || defaultSettings.coupleNames,
-              couple_names_km: names?.km || defaultSettings.coupleNamesKm,
-              venue: defaultSettings.venueName,
-              gift_enabled: true,
-            } as any)
-            .select('*')
-            .maybeSingle();
-          applySettings(created as Record<string, unknown> | null);
-        }
-      } catch (e) {
-        console.error('WeddingDataProvider fetch:', e);
-      } finally {
-        if (!cancelled) {
-          // Store fetched data in cache so returning to admin page is instant
-          if (!isPublicInvite && ownerUserId) {
-            setCachedAdminData(ownerUserId, {
-              guests: guestsRef.current,
-              wishes: wishesRef.current,
-              photos: photosRef.current,
-              programSchedule: programScheduleRef.current,
-              settings: settingsRef.current,
-              bankName: bankNameRef.current,
-              bankAccount: bankAccountRef.current,
-              bankQR: bankQRRef.current,
-              giftEnabled: giftEnabledRef.current,
-              settingsId: settingsIdRef.current,
-            });
-          }
-          setReady(true);
-        }
+  // Static Data Refresh Strategy: Pull fresh data silently on window focus/tab activation
+  useEffect(() => {
+    if (!isPublicInvite || !ownerUserId) return;
+    const handleFocus = () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine) {
+        fetchAll();
       }
     };
-    fetchAll();
-    return () => { cancelled = true; };
-  }, [ownerUserId, isPublicInvite]);
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [isPublicInvite, ownerUserId, fetchAll]);
 
+  /**
+   * =========================================================================
+   * REALTIME CHANNELS & SCALABILITY DESIGN NOTES
+   * =========================================================================
+   * 1. CONNECTION LIMITS: Supabase Free Tier caps concurrent connections at 200.
+   *    If every guest opened 5 tables, 40 active guests would exhaust the pool.
+   *    Therefore, guest-facing pages ONLY subscribe to the 'wishes' feed.
+   * 2. STATIC CONTENT: Settings, program schedule, photos, and general guest lists
+   *    are static for invitation visitors. They are pulled once on load and fresh
+   *    data is silently loaded when window focus changes (tab re-activated).
+   * 3. PRIVACY: Broadcasting the entire guests table publicly over WebSockets
+   *    exposes guest lists. Guests table realtime is restricted to Admin dashboard only.
+   * =========================================================================
+   */
   useEffect(() => {
     if (!ownerUserId || !supabase) return;
-    const channel = supabase
-      .channel(`wedding-${ownerUserId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'guests', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') setGuests(p => p.find(g => g.id === payload.new.id) ? p : [...p, guestFromDb(payload.new as Record<string, unknown>)]);
-        else if (payload.eventType === 'UPDATE') setGuests(p => p.map(g => g.id === payload.new.id ? guestFromDb(payload.new as Record<string, unknown>) : g));
-        else if (payload.eventType === 'DELETE') setGuests(p => p.filter(g => g.id !== payload.old.id));
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+
+    let channel = supabase.channel(`wedding-${ownerUserId}`);
+    let pollingIntervalId: any = null;
+
+    const startWishesPolling = () => {
+      if (pollingIntervalId) return;
+      console.warn('Realtime fallback: Starting HTTP polling for wishes...');
+      pollingIntervalId = setInterval(async () => {
+        try {
+          const { data: list, error } = await supabase
+            .from('wishes')
+            .select('*')
+            .eq('user_id', ownerUserId)
+            .order('created_at', { ascending: false });
+          if (!error && list && isMountedRef.current) {
+            setWishes(list.map((r) => wishFromDb(r as Record<string, unknown>)));
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      }, 30000); // Poll every 30 seconds
+    };
+
+    if (isPublicInvite) {
+      // Public pages only listen to new wishes (messages wall)
+      channel = channel.on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
         if (payload.eventType === 'INSERT') setWishes(p => p.find(w => w.id === payload.new.id) ? p : [wishFromDb(payload.new as Record<string, unknown>), ...p]);
         else if (payload.eventType === 'UPDATE') setWishes(p => p.map(w => w.id === payload.new.id ? wishFromDb(payload.new as Record<string, unknown>) : w));
         else if (payload.eventType === 'DELETE') setWishes(p => p.filter(w => w.id !== payload.old.id));
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'photos', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') setPhotos(p => p.find(ph => ph.id === payload.new.id) ? p : [...p, { id: payload.new.id, url: payload.new.url, caption: payload.new.caption ?? null }]);
-        else if (payload.eventType === 'DELETE') setPhotos(p => p.filter(ph => ph.id !== payload.old.id));
-        else if (payload.eventType === 'UPDATE') setPhotos(p => p.map(ph => ph.id === payload.new.id ? { id: payload.new.id, url: payload.new.url, caption: payload.new.caption ?? null } : ph));
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
-        if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-          const row = payload.new as Record<string, unknown> | null;
-          if (!row) return;
-          const pendingKeys = Object.keys(pendingSettingsRef.current);
-          const remoteSettings = settingsFromDb(row, publicProfileRef.current, defaultSettings).settings;
-          const hasConflict = pendingKeys.some((key) => remoteSettings[key as keyof WeddingSettings] !== pendingSettingsRef.current[key]);
-          if (hasConflict) {
-            console.warn('Realtime settings conflict detected, applying server values for stable sync');
-          }
-          applyRemoteSettings(row);
-          // Only remove keys from pendingSettingsRef if they match the server state (i.e. successfully synced)
-          pendingKeys.forEach((key) => {
-            if (remoteSettings[key as keyof WeddingSettings] === pendingSettingsRef.current[key]) {
-              delete pendingSettingsRef.current[key];
+      });
+    } else {
+      // Admin dashboard gets full real-time updates for all tables
+      channel = channel
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'guests', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+          if (payload.eventType === 'INSERT') setGuests(p => p.find(g => g.id === payload.new.id) ? p : [...p, guestFromDb(payload.new as Record<string, unknown>)]);
+          else if (payload.eventType === 'UPDATE') setGuests(p => p.map(g => g.id === payload.new.id ? guestFromDb(payload.new as Record<string, unknown>) : g));
+          else if (payload.eventType === 'DELETE') setGuests(p => p.filter(g => g.id !== payload.old.id));
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+          if (payload.eventType === 'INSERT') setWishes(p => p.find(w => w.id === payload.new.id) ? p : [wishFromDb(payload.new as Record<string, unknown>), ...p]);
+          else if (payload.eventType === 'UPDATE') setWishes(p => p.map(w => w.id === payload.new.id ? wishFromDb(payload.new as Record<string, unknown>) : w));
+          else if (payload.eventType === 'DELETE') setWishes(p => p.filter(w => w.id !== payload.old.id));
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'photos', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+          if (payload.eventType === 'INSERT') setPhotos(p => p.find(ph => ph.id === payload.new.id) ? p : [...p, { id: payload.new.id, url: payload.new.url, caption: payload.new.caption ?? null }]);
+          else if (payload.eventType === 'DELETE') setPhotos(p => p.filter(ph => ph.id !== payload.old.id));
+          else if (payload.eventType === 'UPDATE') setPhotos(p => p.map(ph => ph.id === payload.new.id ? { id: payload.new.id, url: payload.new.url, caption: payload.new.caption ?? null } : ph));
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+            const row = payload.new as Record<string, unknown> | null;
+            if (!row) return;
+            const pendingKeys = Object.keys(pendingSettingsRef.current);
+            const remoteSettings = settingsFromDb(row, publicProfileRef.current, defaultSettings).settings;
+            const hasConflict = pendingKeys.some((key) => remoteSettings[key as keyof WeddingSettings] !== pendingSettingsRef.current[key]);
+            if (hasConflict) {
+              console.warn('Realtime settings conflict detected, applying server values for stable sync');
             }
-          });
-        }
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'program_schedule', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          const item = programFromDb(payload.new as Record<string, unknown>);
-          setProgramSchedule(p => p.find(x => x.id === item.id) ? p : [...p, item].sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
-        } else if (payload.eventType === 'UPDATE') {
-          const item = programFromDb(payload.new as Record<string, unknown>);
-          setProgramSchedule(p => p.map(x => x.id === item.id ? item : x).sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
-        }
-        else if (payload.eventType === 'DELETE') setProgramSchedule(p => p.filter(x => x.id !== payload.old.id));
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [ownerUserId]);
+            applyRemoteSettings(row);
+            pendingKeys.forEach((key) => {
+              if (remoteSettings[key as keyof WeddingSettings] === pendingSettingsRef.current[key]) {
+                delete pendingSettingsRef.current[key];
+              }
+            });
+          }
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'program_schedule', filter: `user_id=eq.${ownerUserId}` }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const item = programFromDb(payload.new as Record<string, unknown>);
+            setProgramSchedule(p => p.find(x => x.id === item.id) ? p : [...p, item].sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
+          } else if (payload.eventType === 'UPDATE') {
+            const item = programFromDb(payload.new as Record<string, unknown>);
+            setProgramSchedule(p => p.map(x => x.id === item.id ? item : x).sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
+          }
+          else if (payload.eventType === 'DELETE') setProgramSchedule(p => p.filter(x => x.id !== payload.old.id));
+        });
+    }
+
+    channel.subscribe((status) => {
+      // SCALABILITY SAFETY NET: If the realtime connection drops, times out, or fails due to limits,
+      // fall back to polling so the guest doesn't experience broken wish feed components.
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        startWishesPolling();
+      }
+    });
+
+    return () => {
+      supabase.removeChannel(channel);
+      if (pollingIntervalId) clearInterval(pollingIntervalId);
+    };
+  }, [ownerUserId, isPublicInvite]);
 
   const requireOwner = () => {
     if (!ownerUserId) throw new Error('No wedding owner set');
@@ -478,11 +610,10 @@ export function WeddingDataProvider({ children, ownerUserId, publicProfile }: Pr
     let existingId: string | null = null;
     
     if (id) {
-      const { data } = await client.from('guests').select('id').eq('id', id).eq('user_id', uid).limit(1).maybeSingle();
-      if (data) {
-        existingId = data.id;
-      }
+      // ID is already known — skip the SELECT round-trip and go straight to UPDATE
+      existingId = id;
     } else {
+      // No ID provided — look up by name
       const { data } = await client.from('guests').select('id').eq('user_id', uid).eq('guest_name', name).limit(1).maybeSingle();
       if (data) {
         existingId = data.id;

@@ -75,30 +75,30 @@ function splitCoupleNames(names: string): { groom: string; bride: string } {
   return { groom: cleanNames.trim(), bride: '' };
 }
 
-// ── Resolve hero overlay tint per visual style ────────────────────────────────
+// ── Resolve hero overlay tint per visual style ────────────────────────────────────
 function getHeroOverlay(visualStyle: string) {
   switch (visualStyle) {
     case 'neo-brutalism':
-      return { overlay: 'bg-white/75', titleColor: '#0a0a0a', subtitleColor: '#333333', dateColor: '#555555' };
+      return { overlay: 'bg-white/55', titleColor: '#0a0a0a', subtitleColor: '#333333', dateColor: '#555555' };
     case 'minimalist':
     case 'white-minimal':
-      return { overlay: 'bg-white/60', titleColor: '#111111', subtitleColor: '#444444', dateColor: '#666666' };
+      return { overlay: 'bg-white/40', titleColor: '#111111', subtitleColor: '#444444', dateColor: '#666666' };
     case 'romantic':
     case 'romantic-floral':
     case 'japanese-sakura':
-      return { overlay: 'bg-pink-950/40', titleColor: '#ffffff', subtitleColor: '#fce7f3', dateColor: '#fbcfe8' };
+      return { overlay: 'bg-pink-950/10', titleColor: '#ffffff', subtitleColor: '#fce7f3', dateColor: '#fbcfe8' };
     case 'elegant':
     case 'royal-khmer':
     case 'modern-khmer':
     case 'luxury-gold':
     case 'black-gold':
-      return { overlay: 'bg-amber-950/55', titleColor: '#ffffff', subtitleColor: '#fef3c7', dateColor: '#fde68a' };
+      return { overlay: 'bg-amber-950/10', titleColor: '#ffffff', subtitleColor: '#fef3c7', dateColor: '#fde68a' };
     case 'editorial':
-      return { overlay: 'bg-stone-100/80', titleColor: '#0a0a0a', subtitleColor: '#1c1917', dateColor: '#44403c' };
+      return { overlay: 'bg-stone-100/55', titleColor: '#0a0a0a', subtitleColor: '#1c1917', dateColor: '#44403c' };
     case 'glassmorphism':
     case 'cinematic-dark':
     default:
-      return { overlay: 'bg-black/50', titleColor: '#ffffff', subtitleColor: '#f8fafc', dateColor: '#e2e8f0' };
+      return { overlay: 'bg-black/10', titleColor: '#ffffff', subtitleColor: '#f8fafc', dateColor: '#e2e8f0' };
   }
 }
 
@@ -173,13 +173,13 @@ export default function HeroSection({ guestName }: HeroSectionProps = {}) {
       {/* ── Background image + overlays ── */}
       <motion.div className="absolute inset-0 will-change-transform" style={{ y: bgY, scale: bgScale }}>
         <img src={bgImage} alt="Wedding hero background" className="h-full w-full object-cover" />
-        {/* Dynamic overlay per visual style */}
+        {/* Thin flat tint — keeps photo vivid but tones colour cast slightly */}
         <div className={`absolute inset-0 ${overlay}`} />
-        {/* Gradient — lighter for neo/editorial, darker for dark themes */}
+        {/* Bottom scrim only — text area darkens, top stays clear */}
         {!isLight && (
           <>
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/55 to-black/75" />
-            <div className="absolute inset-0 bg-gradient-to-b from-amber-950/25 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% via-black/20 via-60% to-black/55" />
+            <div className="absolute inset-0 bg-gradient-to-b from-amber-950/10 via-transparent to-transparent" />
           </>
         )}
         {isLight && (
@@ -239,6 +239,8 @@ export default function HeroSection({ guestName }: HeroSectionProps = {}) {
             ornamentScale={cardConfig?.ornamentScale}
             stickers={cardConfig?.stickers}
             stickerPosition={cardConfig?.stickerPosition}
+            bgOpacity={cardConfig?.bgOpacity}
+            bgBlur={cardConfig?.bgBlur}
           />
         </motion.div>
 

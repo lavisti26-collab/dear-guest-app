@@ -1,8 +1,8 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
-import EnvelopeAnimation from '@/components/wedding/EnvelopeAnimation';
+import EnvelopeAnimation from '@/components/wedding/envelope/EnvelopeAnimation';
 import FallingPetals from '@/components/wedding/FallingPetals';
 import FloatingHearts from '@/components/wedding/FloatingHearts';
 import FloatingDaisies from '@/components/wedding/FloatingDaisies';
@@ -13,7 +13,7 @@ import ThemeAnimations from '@/components/wedding/ThemeAnimations';
 import LanguageSwitcher from '@/components/wedding/LanguageSwitcher';
 import MusicToggle from '@/components/wedding/MusicToggle';
 import FloatingNavBar from '@/components/wedding/FloatingNavBar';
-import HeroSection from '@/components/wedding/HeroSection';
+import HeroSection from '@/components/wedding/hero/HeroSection';
 import GreetingSection from '@/components/wedding/GreetingSection';
 import TimelineSection from '@/components/wedding/TimelineSection';
 import GallerySection from '@/components/wedding/GallerySection';
@@ -32,9 +32,9 @@ import KhmerTraditionalLayout from '@/layouts/KhmerTraditionalLayout';
 import CardStackLayout from '@/layouts/CardStackLayout';
 import NewspaperLayout from '@/layouts/NewspaperLayout';
 import AppleProductLayout from '@/layouts/AppleProductLayout';
-import injectFontFaces from '@/lib/font-loader';
+import injectFontFaces, { injectCustomFont } from '@/lib/font-loader';
 
-function normalizeGuestName(rawName?: string) {
+export function normalizeGuestName(rawName?: string) {
   if (!rawName) return '';
   try {
     return decodeURIComponent(rawName).replace(/[-_]+/g, ' ').trim();
@@ -43,20 +43,49 @@ function normalizeGuestName(rawName?: string) {
   }
 }
 
-function InvitationContent({ initialGuestName }: { initialGuestName?: string }) {
+function InvitationContent({ initialGuestName, initialGuestId }: { initialGuestName?: string; initialGuestId?: string }) {
   const [searchParams] = useSearchParams();
+  const { ready, settings, guests } = useWeddingData();
 
+  // Find guest name if guestId is provided in URL path or query params
   const rawGuestName = (searchParams.get('guest')?.trim() || initialGuestName || '').trim();
   const guestName = normalizeGuestName(rawGuestName);
+
+  // Look up guest ID by matching normalized guest names
+  const dbGuest = guestName ? guests.find(g => normalizeGuestName(g.name) === guestName) : null;
+  const guestId = dbGuest?.id || (initialGuestId || searchParams.get('id') || '').trim();
+
   const showEnvelope = searchParams.get('envelope') !== '0';
-  const { ready, settings } = useWeddingData();
   const [envelopeOpen, setEnvelopeOpen] = useState(false);
   const hideMain = showEnvelope && !envelopeOpen;
 
   useEffect(() => {
     const pair = settings?.fontPair || 'elegant-serif';
-    try { injectFontFaces(pair); } catch (e) { /* ignore */ }
-  }, [settings?.fontPair]);
+    try { 
+      injectFontFaces(pair); 
+      if (settings?.eventTitleFont) {
+        injectCustomFont(settings.eventTitleFont);
+      }
+    } catch (e) { /* ignore */ }
+  }, [settings?.fontPair, settings?.eventTitleFont]);
+
+  useEffect(() => {
+    if (settings) {
+      document.title = `${settings.coupleNames || 'Wedding'} Invitation | សំបុត្រមង្គលការ`;
+      const desc = settings.weddingDescriptionKm || settings.weddingDescription || 'You are warmly invited to celebrate our special day. RSVP online.';
+      document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+      document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+      document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
+      if (settings.heroImage) {
+        document.querySelector('meta[property="og:image"]')?.setAttribute('content', settings.heroImage);
+        document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', settings.heroImage);
+        const preload = document.querySelector('link[rel="preload"][as="image"]');
+        if (preload) {
+          preload.setAttribute('href', settings.heroImage);
+        }
+      }
+    }
+  }, [settings]);
 
   if (!ready) {
     return (
@@ -102,7 +131,7 @@ function InvitationContent({ initialGuestName }: { initialGuestName?: string }) 
             <MusicToggle />
             <FloatingNavBar />
 
-            <main className="relative z-[1]">
+            <main className="relative z-[1] pb-32">
               {
                 (() => {
                   const layoutKey = settings?.layoutTemplate || 'classic-scroll';
@@ -120,6 +149,13 @@ function InvitationContent({ initialGuestName }: { initialGuestName?: string }) 
                   return <Chosen initialGuestName={guestName} />;
                 })()
               }
+              
+              {/* Center-aligned tiny credit footer */}
+              <div className="mt-12 flex justify-center select-none pointer-events-none">
+                <span className="text-[10px] tracking-[0.35em] uppercase opacity-60 font-sans font-semibold text-foreground">
+                  LAVIS
+                </span>
+              </div>
             </main>
           </>
       </div>
@@ -127,10 +163,10 @@ function InvitationContent({ initialGuestName }: { initialGuestName?: string }) 
   );
 }
 
-export default function InvitationPage({ initialGuestName }: { initialGuestName?: string }) {
+export default function InvitationPage({ initialGuestName, initialGuestId }: { initialGuestName?: string; initialGuestId?: string }) {
   return (
     <LanguageProvider>
-      <InvitationContent initialGuestName={initialGuestName} />
+      <InvitationContent initialGuestName={initialGuestName} initialGuestId={initialGuestId} />
     </LanguageProvider>
   );
 }

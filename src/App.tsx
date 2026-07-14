@@ -36,7 +36,7 @@ const App = () => (
           />
           <Route path="/invite" element={<Navigate to="/" replace />} />
           <Route path="/invite/:slug" element={<PublicInvitationPage />} />
-          <Route path="/invite/:slug/guest/:guestName" element={<PublicInvitationPage />} />
+          <Route path="/invite/:slug/to/:guestName" element={<PublicInvitationPage />} />
           <Route path="/admin" element={<AdminRoute />} />
           <Route path="/admin/super" element={<SuperAdminPage />} />
           <Route path="*" element={<NotFound />} />

@@ -77,7 +77,9 @@ interface CoupleCardProps {
   ornamentOpacity?: number;
   ornamentScale?: number;
   stickers?: string[];
-  stickerPosition?: 'top-corners' | 'center-floating' | 'bottom-accent';
+  stickerPosition?: 'top-corners' | 'top-center' | 'bottom-accent';
+  bgOpacity?: number;
+  bgBlur?: number;
 }
 
 // Helper to resolve font name safely — fixes: 'Moul' and 'Kantumruy Pro' must
@@ -169,13 +171,37 @@ const MinimalOrnament = ({ color }: { color: string }) => (
 
 // ── Connectors ───────────────────────────────────────────────────────────────
 
-const HeartsConnector = ({ color }: { color?: string }) => (
-  <div className="flex items-center justify-center gap-1.5 py-1 z-10 relative">
-    <span className="text-lg animate-pulse" style={{ color: color || '#f43f5e', filter: 'drop-shadow(0 0 6px rgba(244,63,94,0.7))' }}>💗</span>
-    <span className="text-sm" style={{ color: color || '#f472b6', filter: 'drop-shadow(0 0 4px rgba(244,114,182,0.5))' }}>💗</span>
-    <span className="text-lg animate-pulse" style={{ color: color || '#f43f5e', animationDelay: '0.3s', filter: 'drop-shadow(0 0 6px rgba(244,63,94,0.7))' }}>💗</span>
-  </div>
-);
+const HeartsConnector = ({ color }: { color?: string }) => {
+  const activeColor = color || '#f43f5e';
+  return (
+    <div className="flex items-center justify-center gap-2 py-1.5 z-10 relative">
+      <motion.svg
+        animate={{ scale: [0.9, 1.1, 0.9] }}
+        transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+        viewBox="0 0 24 24"
+        className="w-4 h-4 drop-shadow-[0_0_4px_rgba(244,63,94,0.5)]"
+      >
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill={activeColor} />
+      </motion.svg>
+      <motion.svg
+        animate={{ scale: [1.1, 0.9, 1.1] }}
+        transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut', delay: 0.2 }}
+        viewBox="0 0 24 24"
+        className="w-3 h-3 opacity-80"
+      >
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill={activeColor} />
+      </motion.svg>
+      <motion.svg
+        animate={{ scale: [0.9, 1.1, 0.9] }}
+        transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut', delay: 0.4 }}
+        viewBox="0 0 24 24"
+        className="w-4 h-4 drop-shadow-[0_0_4px_rgba(244,63,94,0.5)]"
+      >
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill={activeColor} />
+      </motion.svg>
+    </div>
+  );
+};
 
 const AmpersandConnector = ({ font, color }: { font: string; color?: string }) => (
   <div className="flex items-center justify-center py-1 z-10 relative">
@@ -202,13 +228,13 @@ const PjuabConnector = ({ color }: { color?: string }) => (
 );
 
 // ── Premium Card frame themes ──
-function getCardFrame(style: string, accentColor: string) {
+function getCardFrame(style: string, accentColor: string, customOpacity?: number, customBlur?: number) {
   switch (style) {
     case 'light-glass':
       return {
-        background: 'rgba(255, 255, 255, 0.45)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
+        background: `rgba(255, 255, 255, ${customOpacity !== undefined ? customOpacity : 0.45})`,
+        backdropFilter: `blur(${customBlur !== undefined ? customBlur : 16}px)`,
+        WebkitBackdropFilter: `blur(${customBlur !== undefined ? customBlur : 16}px)`,
         border: '1px solid rgba(255, 255, 255, 0.4)',
         boxShadow: '0 10px 40px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
         borderRadius: '1.5rem',
@@ -228,9 +254,9 @@ function getCardFrame(style: string, accentColor: string) {
       };
     case 'romantic-blush':
       return {
-        background: 'linear-gradient(135deg, rgba(253, 244, 245, 0.7) 0%, rgba(252, 231, 235, 0.7) 100%)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        background: `linear-gradient(135deg, rgba(253, 244, 245, ${customOpacity !== undefined ? customOpacity : 0.7}) 0%, rgba(252, 231, 235, ${customOpacity !== undefined ? customOpacity : 0.7}) 100%)`,
+        backdropFilter: `blur(${customBlur !== undefined ? customBlur : 12}px)`,
+        WebkitBackdropFilter: `blur(${customBlur !== undefined ? customBlur : 12}px)`,
         border: '1px solid rgba(244, 114, 182, 0.35)',
         boxShadow: '0 10px 42px rgba(120, 40, 60, 0.06)',
         borderRadius: '1.5rem',
@@ -272,9 +298,9 @@ function getCardFrame(style: string, accentColor: string) {
     case 'dark-glass':
     default:
       return {
-        background: 'rgba(0, 0, 0, 0.38)',
-        backdropFilter: 'blur(14px)',
-        WebkitBackdropFilter: 'blur(14px)',
+        background: `rgba(0, 0, 0, ${customOpacity !== undefined ? customOpacity : 0.38})`,
+        backdropFilter: `blur(${customBlur !== undefined ? customBlur : 14}px)`,
+        WebkitBackdropFilter: `blur(${customBlur !== undefined ? customBlur : 14}px)`,
         border: '1px solid rgba(255,255,255,0.08)',
         boxShadow: '0 12px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)',
         borderRadius: '1.5rem',
@@ -436,9 +462,11 @@ export default function CoupleCard({
   ornamentOpacity = 0.9,
   ornamentScale = 1.0,
   stickers = [],
-  stickerPosition = 'center-floating',
+  stickerPosition = 'top-center',
+  bgOpacity,
+  bgBlur,
 }: CoupleCardProps) {
-  const frame = getCardFrame(cardStyle, accentColor || '#D4AF37');
+  const frame = getCardFrame(cardStyle, accentColor || '#D4AF37', bgOpacity, bgBlur);
   const activeColor = frame.accentColor;
 
   const [particles] = React.useState(() =>
@@ -657,8 +685,8 @@ const GoldKbachIcon = () => (
     } else if (stickerPosition === 'bottom-accent') {
       posClass += ' inset-x-4 bottom-4 justify-between';
     } else {
-      // center-floating
-      posClass = 'absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-20';
+      // top-center
+      posClass += ' inset-x-4 top-3.5 justify-center';
     }
 
     return (
@@ -694,7 +722,7 @@ const GoldKbachIcon = () => (
             <motion.div
               key={idx}
               initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: stickerPosition === 'center-floating' ? 0.35 : 1.0 }}
+              animate={{ scale: 1, opacity: 1.0 }}
               transition={{ duration: 0.4, delay: idx * 0.05 }}
               className="flex items-center justify-center"
             >

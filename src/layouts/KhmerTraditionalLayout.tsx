@@ -23,7 +23,7 @@ import React, { useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { applyVisualStyle } from '@/contexts/VisualStyleContext';
-import HeroSection from '@/components/wedding/HeroSection';
+import HeroSection from '@/components/wedding/hero/HeroSection';
 import GreetingSection from '@/components/wedding/GreetingSection';
 import DetailsSection from '@/components/wedding/DetailsSection';
 import TimelineSection from '@/components/wedding/TimelineSection';

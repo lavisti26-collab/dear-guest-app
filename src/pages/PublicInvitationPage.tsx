@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { WeddingDataProvider } from '@/contexts/WeddingDataContext';
 import { ThemeProvider } from '@/theme/ThemeEngine';
 import { resolveLegacyTheme } from '@/theme/legacy-migration';
@@ -10,6 +10,8 @@ import InvitationPage from './InvitationPage';
 
 export default function PublicInvitationPage() {
   const { slug, guestName } = useParams<{ slug: string; guestName?: string }>();
+  const [searchParams] = useSearchParams();
+  const guestId = searchParams.get('id') || undefined;
   const [profile, setProfile] = useState<PublicInviteProfile | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -143,7 +145,7 @@ export default function PublicInvitationPage() {
   return (
     <VisualStyleProvider initialStyle={visualStyle as any} readOnly>
       <ThemeProvider initialTheme={resolveLegacyTheme(profile.theme)}>
-        <WeddingDataProvider ownerUserId={profile.user_id} publicProfile={profile}>
+        <WeddingDataProvider ownerUserId={profile.user_id} publicProfile={profile} guestName={guestName} guestId={guestId}>
           <InvitationPage initialGuestName={guestName} />
         </WeddingDataProvider>
       </ThemeProvider>

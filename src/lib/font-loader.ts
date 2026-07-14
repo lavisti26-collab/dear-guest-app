@@ -224,6 +224,22 @@ export function injectFontFaces(
   }
 }
 
+export function injectCustomFont(fontName: string) {
+  if (typeof document === 'undefined' || !fontName) return;
+  const id = `custom-font-${fontName.replace(/\s+/g, '-').toLowerCase()}`;
+  if (document.getElementById(id)) return;
+
+  const style = document.createElement('style');
+  style.id = id;
+
+  if (GOOGLE_FONT_FAMILIES.has(fontName)) {
+    loadGoogleFontFamily(fontName, [400, 700]);
+  } else if (KHMER_FONT_STORAGE_MAP[fontName]) {
+    style.textContent = buildStorageFontFace(fontName) + '\n' + buildStorageFontFace(fontName, 700);
+    document.head.appendChild(style);
+  }
+}
+
 export function injectFontPairByKey(pairKey: string) {
   let resolvedPairKey = pairKey;
   const v2MappedKey = V2_FONT_STYLE_MAP[pairKey];

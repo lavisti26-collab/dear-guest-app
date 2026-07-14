@@ -92,7 +92,7 @@ export default function GallerySection() {
     >
       <div className="max-w-5xl mx-auto text-center relative z-10">
         <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
-          {t('gallery.title')}
+          {lang === 'km' ? (settings.galleryTitleKm || t('gallery.title')) : (settings.galleryTitleEn || t('gallery.title'))}
         </h2>
         <div className="section-divider mb-6" />
 

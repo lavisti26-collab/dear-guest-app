@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 28 28">
+  <g clip-path="url(#clip0_2329_90468)">
+    <g clip-path="url(#clip1_2329_90468)">
+      <path fill="currentColor" fill-opacity=".2" d="M0 14C0 2.471 2.471 0 14 0C25.529 0 28 2.471 28 14C28 25.529 25.529 28 14 28C2.471 28 0 25.529 0 14Z"/>
+      <g filter="url(#filter0_f_2329_90468)" opacity=".6">
+        <ellipse cx="14" cy="22" fill="currentColor" rx="10" ry="3"/>
+      </g>
+    </g>
+    <path fill="currentColor" d="M9.83366 5.6665H8.16699C6.79199 5.6665 5.66699 6.7915 5.66699 8.1665V19.8332C5.66699 21.2082 6.79199 22.3332 8.16699 22.3332H9.83366C11.2087 22.3332 12.3337 21.2082 12.3337 19.8332V8.1665C12.3337 6.7915 11.2087 5.6665 9.83366 5.6665ZM9.00033 18.9998C8.54199 18.9998 8.16699 18.6248 8.16699 18.1665C8.16699 17.7082 8.54199 17.3332 9.00033 17.3332C9.45866 17.3332 9.83366 17.7082 9.83366 18.1665C9.83366 18.6248 9.45866 18.9998 9.00033 18.9998ZM14.0003 16.6998V9.63317C14.0003 9.40817 14.092 9.19984 14.242 9.0415L16.6003 6.68317C17.5753 5.70817 19.167 5.70817 20.142 6.68317L21.317 7.85817C22.292 8.83317 22.292 10.4248 21.317 11.3998L15.4253 17.2915C14.9087 17.8082 14.0003 17.4415 14.0003 16.6998ZM22.3337 18.1665V19.8332C22.3337 21.2082 21.2087 22.3332 19.8337 22.3332H14.417C14.0837 22.3332 13.7753 22.1332 13.6503 21.8165C13.517 21.5082 13.592 21.1498 13.8253 20.9082L18.8253 15.9082C19.6087 15.1665 22.3337 15.9082 22.3337 18.1665Z"/>
+  </g>
+  <defs>
+    <clipPath id="clip0_2329_90468">
+      <rect width="28" height="28" fill="currentColor"/>
+    </clipPath>
+    <clipPath id="clip1_2329_90468">
+      <rect width="28" height="28" fill="currentColor"/>
+    </clipPath>
+    <radialGradient id="paint1_radial_2329_90468" cx="0" cy="0" r="1" gradientTransform="rotate(44.569 -4.08 9.747)scale(23.3948 14.7076)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F79B9C"/>
+      <stop offset=".5" stop-color="#EF3739"/>
+    </radialGradient>
+    <linearGradient id="paint0_linear_2329_90468" x1="14" x2="14" y1="19" y2="25" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EF3739" stop-opacity="0"/>
+      <stop offset="1" stop-color="#EF3739"/>
+    </linearGradient>
+    <filter id="filter0_f_2329_90468" width="28" height="14" x="0" y="15" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur result="effect1_foregroundBlur_2329_90468" stdDeviation="2"/>
+    </filter>
+  </defs>
+</svg>

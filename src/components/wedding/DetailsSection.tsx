@@ -12,14 +12,14 @@ function useCountdown(dateStr: string) {
     if (!dateStr || dateStr.trim() === '') {
       return;
     }
-    
+
     const target = new Date(dateStr).getTime();
-    
+
     // Return early if date is invalid
     if (isNaN(target)) {
       return;
     }
-    
+
     const tick = () => {
       const diff = Math.max(0, target - Date.now());
       setTime({
@@ -41,14 +41,14 @@ function generateICSUrl(settings: { weddingDateTime: string; coupleNames: string
   if (!settings.weddingDateTime || settings.weddingDateTime.trim() === '') {
     return null;
   }
-  
+
   const start = new Date(settings.weddingDateTime);
-  
+
   // Check if the date is valid
   if (isNaN(start.getTime())) {
     return null;
   }
-  
+
   const end = new Date(start.getTime() + 4 * 3600000);
   const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const ics = [
@@ -91,20 +91,20 @@ export default function DetailsSection() {
     >
       <div className="max-w-lg mx-auto text-center">
         <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
-          {lang === 'km' 
-            ? (settings.eventTitleKm ? (settings.eventTitleKm.startsWith('ព័ត៌មាន') ? settings.eventTitleKm : `ព័ត៌មាន${settings.eventTitleKm}`) : t('details.title'))
-            : (settings.eventTitleEn 
-                ? (settings.eventTitleEn.toLowerCase().includes('engagement') 
-                    ? 'Engagement Details' 
-                    : settings.eventTitleEn.toLowerCase().includes('wedding') 
-                      ? 'Wedding Details' 
-                      : (() => {
-                          const cleaned = settings.eventTitleEn.replace(/[✦✧\s\-_]+/g, ' ').replace(/\bof\b/gi, '').trim();
-                          return cleaned ? `${cleaned} Details` : 'Event Details';
-                        })()
-                  )
-                : t('details.title')
+          {lang === 'km'
+            ? (settings.detailsTitleKm || (settings.eventTitleKm ? (settings.eventTitleKm.startsWith('ព័ត៌មាន') ? settings.eventTitleKm : `ព័ត៌មាន${settings.eventTitleKm}`) : t('details.title')))
+            : (settings.detailsTitleEn || (settings.eventTitleEn
+              ? (settings.eventTitleEn.toLowerCase().includes('engagement')
+                ? 'Engagement Details'
+                : settings.eventTitleEn.toLowerCase().includes('wedding')
+                  ? 'Wedding Details'
+                  : (() => {
+                    const cleaned = settings.eventTitleEn.replace(/[✦✧\s\-_]+/g, ' ').replace(/\bof\b/gi, '').trim();
+                    return cleaned ? `${cleaned} Details` : 'Event Details';
+                  })()
               )
+              : t('details.title')
+            ))
           }
         </h2>
         <div className="section-divider mb-8" />

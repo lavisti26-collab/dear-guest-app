@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
+import NavIcon from '@/components/ui/NavIcon';
 
 interface NavItem {
   id: string;
@@ -29,7 +30,7 @@ export default function FloatingNavBar() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      
+
       // Only show the floating nav bar after scrolling past the first 300px of Hero
       setVisible(scrollY > 300);
 
@@ -50,7 +51,7 @@ export default function FloatingNavBar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     // Run once on mount to set initial state
     handleScroll();
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, [giftEnabled]);
 
@@ -63,6 +64,7 @@ export default function FloatingNavBar() {
   };
 
   const fontClass = lang === 'km' ? 'font-khmer' : 'font-sans';
+  const navIconStyle = settings.coupleCardConfig?.navIconStyle || 'outline';
 
   return (
     <AnimatePresence>
@@ -87,16 +89,27 @@ export default function FloatingNavBar() {
                   className="relative flex flex-col items-center justify-center min-h-[44px] min-w-[50px] sm:min-w-[60px] rounded-full transition-all group focus:outline-none"
                 >
                   {/* Icon */}
-                  <span className={`text-lg sm:text-xl transition-transform duration-200 group-hover:scale-110 ${
-                    isActive ? 'scale-110' : 'opacity-70 group-hover:opacity-100'
-                  }`}>
-                    {item.icon}
-                  </span>
+                  {navIconStyle === 'emoji' ? (
+                    <span
+                      className={`text-xl transition-transform duration-200 group-hover:scale-110 ${
+                        isActive ? 'scale-110 filter drop-shadow' : 'opacity-70 group-hover:opacity-100'
+                      }`}
+                    >
+                      {item.icon}
+                    </span>
+                  ) : (
+                    <NavIcon
+                      name={item.id === 'hero' ? 'home' : item.id}
+                      className={`transition-transform duration-200 group-hover:scale-110 ${
+                        isActive ? 'scale-110 text-gold' : 'opacity-70 group-hover:opacity-100 text-foreground dark:text-white'
+                      }`}
+                      size={22}
+                    />
+                  )}
 
                   {/* Label (small, below the icon) */}
-                  <span className={`text-[9px] sm:text-[10px] font-semibold mt-0.5 tracking-wider uppercase transition-all duration-200 ${fontClass} ${
-                    isActive ? 'text-gold opacity-100 scale-105' : 'text-foreground/60 opacity-0 group-hover:opacity-100 group-hover:scale-100'
-                  }`}>
+                  <span className={`text-[9px] sm:text-[10px] font-semibold mt-0.5 tracking-wider uppercase transition-all duration-200 ${fontClass} ${isActive ? 'text-gold opacity-100 scale-105' : 'text-foreground/60 opacity-0 group-hover:opacity-100 group-hover:scale-100'
+                    }`}>
                     {label}
                   </span>
 
