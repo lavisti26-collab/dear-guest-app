@@ -7,11 +7,11 @@ headers = []
 [functions."*"]
 
 [build]
-publish = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\WDV3\\dear-guest-app\\dist"
+publish = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\WDLAST(0711)\\dear-guest-app\\dist"
 publishOrigin = "config"
 commandOrigin = "config"
 command = "npm run build"
-base = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\WDV3\\dear-guest-app"
+base = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\WDLAST(0711)\\dear-guest-app"
 
 [build.environment]
 

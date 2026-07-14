@@ -10,3 +10,8 @@
   status = 200
   force = true
 
+# Dynamic social previews: run edge function on invite paths
+[[edge_functions]]
+  path = "/invite/*"
+  function = "og-meta"
+
