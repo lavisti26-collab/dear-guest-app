@@ -1,0 +1,447 @@
+/*
+ * layout-khmer.css
+ *
+ * Scoped design tokens and structural overrides for the
+ * [data-layout="khmer-traditional"] layout.
+ *
+ * DESIGN REFERENCE:
+ * Real Khmer wedding invitations: heavyweight matte stock, debossed
+ * gold foil borders, 4–6 panel fold-out. Colors are temple gold,
+ * deep lacquer red, ceremonial ivory, and ink-warm black.
+ *
+ * ARCHITECTURE:
+ * All rules are scoped to [data-layout="khmer-traditional"].
+ * Nothing here affects ClassicScrollLayout or any other layout.
+ *
+ * COLOR PALETTE (named tokens):
+ *   --kt-gold:   #C9932A  — Temple Gold
+ *   --kt-ivory:  #FDF6EC  — Ceremonial Ivory (page base)
+ *   --kt-red:    #8B1A1A  — Lacquer Red (accent)
+ *   --kt-cream:  #F7EDD8  — Lotus Cream (panel fill)
+ *   --kt-ink:    #1A0A00  — Royal Ink (body text)
+ *   --kt-muted:  #B8892A  — Aged Gold (muted elements)
+ *
+ * SPACING SCALE: 8px base
+ *   --kt-space-1: 8px
+ *   --kt-space-2: 16px
+ *   --kt-space-3: 24px
+ *   --kt-space-4: 40px
+ *   --kt-space-5: 80px  (section separation)
+ * ==========================================================================
+ */
+
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+[data-layout="khmer-traditional"] {
+  --kt-gold:  #C9932A;
+  --kt-ivory: #FDF6EC;
+  --kt-red:   #8B1A1A;
+  --kt-cream: #F7EDD8;
+  --kt-ink:   #1A0A00;
+  --kt-muted: #B8892A;
+
+  --kt-space-1: 8px;
+  --kt-space-2: 16px;
+  --kt-space-3: 24px;
+  --kt-space-4: 40px;
+  --kt-space-5: 80px;
+
+  /* Override Tailwind CSS vars to match the Khmer palette */
+  --background:           40 60% 98%;   /* ~#FDF6EC */
+  --foreground:           20 96% 5%;    /* ~#1A0A00 */
+  --card:                 38 60% 96%;   /* ~#F7EDD8 */
+  --card-foreground:      20 96% 5%;
+  --border:               38 40% 75%;   /* warm gold-adjacent border */
+  --muted:                38 30% 90%;
+  --muted-foreground:     38 40% 45%;   /* ~#B8892A range */
+  --accent:               38 68% 47%;   /* ~#C9932A */
+  --accent-foreground:    40 60% 98%;
+
+  /* Shadows — warm, tactile, paper-like */
+  --shadow-surface: 0 2px 8px 0 rgba(26, 10, 0, 0.06), 0 0 0 1px rgba(201,147,42,0.12);
+  --shadow-luxury:
+    0 6px 24px 0 rgba(26, 10, 0, 0.10),
+    0 1px 0 0 rgba(201,147,42,0.25) inset,
+    0 -1px 0 0 rgba(26, 10, 0, 0.08) inset;
+  --shadow-glow:    0 0 20px 4px rgba(201, 147, 42, 0.15);
+}
+
+/* ── Page canvas ────────────────────────────────────────────────────────── */
+[data-layout="khmer-traditional"] {
+  background-color: var(--kt-ivory);
+  color: var(--kt-ink);
+
+  /* Subtle texture — thin diagonal weave, like laid paper */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 27px,
+      rgba(201, 147, 42, 0.03) 28px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 27px,
+      rgba(201, 147, 42, 0.02) 28px
+    );
+}
+
+/* ── Outer wrapper (the scroll) ─────────────────────────────────────────── */
+[data-layout="khmer-traditional"] .kt-scroll-wrapper {
+  max-width: 780px;
+  margin-inline: auto;
+  padding-inline: 20px;
+  padding-block: var(--kt-space-5);
+}
+
+/* ── Section panels ─────────────────────────────────────────────────────── */
+[data-layout="khmer-traditional"] .kt-panel {
+  position: relative;
+  background-color: var(--kt-cream);
+  margin-block: var(--kt-space-5);
+  padding-inline: var(--kt-space-4);
+  padding-block: var(--kt-space-4);
+
+  /* Letterpress-style inset gold highlight — simulates debossed foil */
+  box-shadow:
+    0 6px 28px rgba(26, 10, 0, 0.10),
+    0 1px 0 rgba(201, 147, 42, 0.30) inset,
+    0 -1px 0 rgba(26, 10, 0, 0.06) inset,
+    2px 0 0 rgba(201, 147, 42, 0.12) inset,
+    -2px 0 0 rgba(201, 147, 42, 0.12) inset;
+}
+
+/* No rounded corners — physical invitation panels have crisp edges */
+[data-layout="khmer-traditional"] .kt-panel,
+[data-layout="khmer-traditional"] .luxury-card,
+[data-layout="khmer-traditional"] .glass-card,
+[data-layout="khmer-traditional"] .glass-strong {
+  border-radius: 0 !important;
+}
+
+/* ── Typography — Khmer Traditional ────────────────────────────────────── */
+
+/* Couple names — largest element, Moul for Khmer, Playfair for Latin */
+[data-layout="khmer-traditional"] [class*="couple-name"],
+[data-layout="khmer-traditional"] .kt-couple-name {
+  font-family: 'Moul', 'Playfair Display', serif;
+  color: var(--kt-ink);
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+}
+
+/* Section headings — gold treatment, not oversized */
+[data-layout="khmer-traditional"] section h2,
+[data-layout="khmer-traditional"] .kt-section-heading {
+  font-family: 'Moul', 'Playfair Display', serif;
+  color: var(--kt-gold);
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  letter-spacing: 0.06em;
+  text-transform: none;
+  margin-bottom: var(--kt-space-3);
+}
+
+/* Latin section labels — Playfair Display SC caps, tracked wide */
+[data-layout="khmer-traditional"] .kt-section-label {
+  font-family: 'Playfair Display', serif;
+  font-variant: small-caps;
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--kt-red);
+  margin-bottom: var(--kt-space-1);
+}
+
+/* Body text — Battambang for Khmer, Georgia-style for Latin */
+[data-layout="khmer-traditional"] p,
+[data-layout="khmer-traditional"] .kt-body {
+  font-family: 'Battambang', 'Garamond', 'Georgia', serif;
+  font-size: 0.975rem;
+  line-height: 2;
+  color: var(--kt-ink);
+}
+
+/* Times/data — Kantumruy Pro, legible and clean */
+[data-layout="khmer-traditional"] time,
+[data-layout="khmer-traditional"] .kt-data {
+  font-family: 'Kantumruy Pro', sans-serif;
+  color: var(--kt-gold);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ── Section dividers ───────────────────────────────────────────────────── */
+
+/* Override the default .section-divider CSS background-image */
+[data-layout="khmer-traditional"] .section-divider {
+  /* Let the KbachDivider React component take over instead */
+  background-image: none !important;
+  height: auto !important;
+  width: auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--kt-gold);
+}
+
+/* ── Timeline section ───────────────────────────────────────────────────── */
+
+[data-layout="khmer-traditional"] .timeline-middle span {
+  background-color: var(--kt-cream) !important;
+  border-color: var(--kt-gold) !important;
+  box-shadow: 0 0 0 4px rgba(201, 147, 42, 0.12), 0 2px 8px rgba(26, 10, 0, 0.15);
+  color: var(--kt-gold);
+  font-size: 0.65rem;
+}
+
+[data-layout="khmer-traditional"] .timeline-box {
+  background-color: var(--kt-cream) !important;
+  border-color: rgba(201, 147, 42, 0.25) !important;
+}
+
+/* ── Card / luxury-card overrides ───────────────────────────────────────── */
+
+/* The glassmorphism luxury-card diagonal gradient is wrong for this theme.
+   Override with matte ivory + letterpress shadow. */
+[data-layout="khmer-traditional"] .luxury-card {
+  background: var(--kt-cream) !important;
+  border: 1px solid rgba(201, 147, 42, 0.22) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    0 4px 20px rgba(26, 10, 0, 0.08),
+    0 1px 0 rgba(201, 147, 42, 0.22) inset !important;
+}
+
+/* ── Greeting section card ──────────────────────────────────────────────── */
+
+[data-layout="khmer-traditional"] .kt-greeting-card {
+  background: var(--kt-cream) !important;
+  border: 1px solid rgba(201, 147, 42, 0.22);
+  box-shadow:
+    0 4px 20px rgba(26, 10, 0, 0.08),
+    0 1px 0 rgba(201, 147, 42, 0.22) inset;
+}
+
+/* Guest name in greeting — this is a headline, not an afterthought */
+[data-layout="khmer-traditional"] .kt-guest-name {
+  font-family: 'Moul', 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 5vw, 2.5rem);
+  color: var(--kt-ink);
+  margin-block: var(--kt-space-2);
+}
+
+/* ── RSVP section — full-width wax-seal CTA ─────────────────────────────── */
+
+[data-layout="khmer-traditional"] .kt-rsvp-wrapper {
+  position: relative;
+  padding: var(--kt-space-5) var(--kt-space-4);
+  text-align: center;
+  background: var(--kt-cream);
+  box-shadow:
+    0 6px 28px rgba(26, 10, 0, 0.10),
+    0 1px 0 rgba(201, 147, 42, 0.30) inset;
+}
+
+[data-layout="khmer-traditional"] .kt-rsvp-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 64px;
+  padding-inline: var(--kt-space-4);
+  padding-block: var(--kt-space-3);
+
+  background-color: var(--kt-red);
+  color: var(--kt-ivory);
+
+  /* Gold border — outer ring + inner highlight = wax seal effect */
+  border: 2px solid var(--kt-gold);
+  outline: 1px solid rgba(201, 147, 42, 0.25);
+  outline-offset: 4px;
+
+  box-shadow:
+    /* Outer gold glow */
+    0 0 0 1px rgba(201, 147, 42, 0.15),
+    /* Depth shadow */
+    0 4px 16px rgba(139, 26, 26, 0.35),
+    /* Inner top gold highlight — simulates letterpress emboss */
+    0 1px 0 rgba(201, 147, 42, 0.45) inset;
+
+  font-family: 'Moul', 'Playfair Display', serif;
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+
+  /* No border-radius — invitation CTAs are rectilinear */
+  border-radius: 0;
+}
+
+[data-layout="khmer-traditional"] .kt-rsvp-cta:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(201, 147, 42, 0.22),
+    0 6px 24px rgba(139, 26, 26, 0.4),
+    0 1px 0 rgba(201, 147, 42, 0.50) inset;
+}
+
+[data-layout="khmer-traditional"] .kt-rsvp-cta:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow:
+    0 0 0 1px rgba(201, 147, 42, 0.15),
+    0 2px 8px rgba(139, 26, 26, 0.30),
+    0 1px 0 rgba(201, 147, 42, 0.20) inset;
+}
+
+/* ── Contact section ────────────────────────────────────────────────────── */
+
+/* Contact cards — no rounded corners, clean icon + label grid */
+[data-layout="khmer-traditional"] .kt-contact-card {
+  background: var(--kt-cream);
+  border: 1px solid rgba(201, 147, 42, 0.20);
+  padding: var(--kt-space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--kt-space-1);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  border-radius: 0;
+}
+
+[data-layout="khmer-traditional"] .kt-contact-card:hover {
+  box-shadow: 0 4px 16px rgba(26, 10, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+[data-layout="khmer-traditional"] .kt-contact-card svg {
+  color: var(--kt-gold);
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 1.4;
+}
+
+/* ── Gold text utility — scoped to this layout ──────────────────────────── */
+[data-layout="khmer-traditional"] .kt-gold-text {
+  color: var(--kt-gold);
+}
+
+/* ── Shimmer animation override — this layout doesn't use shimmer ────────── */
+[data-layout="khmer-traditional"] .shimmer {
+  animation: none !important;
+  background: transparent !important;
+}
+
+/* ── Scroll-entry animation — ceremony pace ─────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  [data-layout="khmer-traditional"] .kt-reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  [data-layout="khmer-traditional"] .kt-reveal.kt-reveal--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Opening ceremony masthead ──────────────────────────────────────────── */
+
+[data-layout="khmer-traditional"] .kt-masthead {
+  text-align: center;
+  padding-block: var(--kt-space-4);
+  margin-bottom: var(--kt-space-5);
+}
+
+[data-layout="khmer-traditional"] .kt-masthead__eyebrow {
+  font-family: 'Playfair Display', serif;
+  font-variant: small-caps;
+  font-size: 0.65rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--kt-red);
+  margin-bottom: var(--kt-space-2);
+}
+
+[data-layout="khmer-traditional"] .kt-masthead__title {
+  font-family: 'Moul', 'Playfair Display', serif;
+  font-size: clamp(1rem, 4vw, 1.3rem);
+  color: var(--kt-muted);
+  letter-spacing: 0.1em;
+}
+
+/* ── Map section ────────────────────────────────────────────────────────── */
+
+[data-layout="khmer-traditional"] .kt-map-embed {
+  border: 2px solid rgba(201, 147, 42, 0.22);
+  box-shadow: 0 4px 16px rgba(26, 10, 0, 0.08);
+}
+
+/* ── Gift / QR section ──────────────────────────────────────────────────── */
+
+[data-layout="khmer-traditional"] .kt-qr-panel {
+  background: var(--kt-cream);
+  border: 1px solid rgba(201, 147, 42, 0.22);
+  padding: var(--kt-space-4);
+  box-shadow:
+    0 4px 20px rgba(26, 10, 0, 0.08),
+    0 1px 0 rgba(201, 147, 42, 0.22) inset;
+}
+
+/* ── Wishes section ─────────────────────────────────────────────────────── */
+
+[data-layout="khmer-traditional"] .kt-wish-card {
+  background: var(--kt-ivory);
+  border-left: 3px solid var(--kt-gold);
+  padding: var(--kt-space-3) var(--kt-space-3) var(--kt-space-3) var(--kt-space-4);
+  box-shadow: 0 2px 8px rgba(26, 10, 0, 0.05);
+  border-radius: 0;
+}
+
+[data-layout="khmer-traditional"] .kt-wish-author {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--kt-gold);
+  margin-top: var(--kt-space-1);
+}
+
+/* ── Gallery section ────────────────────────────────────────────────────── */
+
+[data-layout="khmer-traditional"] .kt-gallery-img {
+  border: 2px solid rgba(201, 147, 42, 0.20);
+  box-shadow: 0 4px 16px rgba(26, 10, 0, 0.10);
+  border-radius: 0 !important;
+}
+
+/* ── HeroSection overlay patch ──────────────────────────────────────────── */
+/* The data-layout value will be used alongside data-visual-style=royal-khmer
+   which already sets the correct overlay. This block ensures the kt-specific
+   amber/ivory text shadow reads clearly. */
+[data-layout="khmer-traditional"] #hero .hero-glass-card {
+  background: rgba(253, 246, 236, 0.08);
+  border: 1px solid rgba(201, 147, 42, 0.22);
+  box-shadow: 0 34px 120px rgba(26, 10, 0, 0.40);
+}
+
+/* ── Closing seal ────────────────────────────────────────────────────────── */
+
+[data-layout="khmer-traditional"] .kt-closing-seal {
+  text-align: center;
+  padding-block: var(--kt-space-5);
+  color: var(--kt-gold);
+}
+
+[data-layout="khmer-traditional"] .kt-closing-seal__text {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: var(--kt-muted);
+  margin-top: var(--kt-space-3);
+}

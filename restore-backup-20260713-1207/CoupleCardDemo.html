@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="km" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Couple Card Demo — Khmer Wedding</title>
+
+<!-- Google Fonts — Khmer + Latin -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Moul&family=Koulen&family=Kantumruy+Pro:wght@400;600;700&family=Siemreap&family=Hanuman:wght@400;700&family=Koh+Santepheap:wght@400;700&family=Battambang:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  /* ── Reset & Base ───────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --sidebar: 260px;
+    --bg: #0e0c1a;
+    --card-bg: rgba(0,0,0,0.32);
+    --gold: #D4AF37;
+    --rose: #f472b6;
+    --sidebar-bg: #1a1830;
+    --sidebar-border: rgba(255,255,255,0.08);
+    --label: rgba(255,255,255,0.5);
+    --text: #ffffff;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  #sidebar {
+    width: var(--sidebar);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    padding: 1.5rem 1rem;
+    overflow-y: auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    z-index: 10;
+  }
+  #sidebar h2 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    font-weight: 700;
+    border-bottom: 1px solid var(--sidebar-border);
+    padding-bottom: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .ctrl { display: flex; flex-direction: column; gap: 0.35rem; }
+  .ctrl label { font-size: 0.7rem; color: var(--label); text-transform: uppercase; letter-spacing: 0.1em; }
+  .ctrl select, .ctrl input[type=text] {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    width: 100%;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .ctrl select:hover, .ctrl select:focus { border-color: var(--gold); }
+  .radio-group { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .radio-group label {
+    display: flex; align-items: center; gap: 0.3rem;
+    font-size: 0.72rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.4rem;
+    padding: 0.3rem 0.55rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .radio-group input[type=radio] { display: none; }
+  .radio-group input[type=radio]:checked + span { color: var(--gold); font-weight: 600; }
+  .radio-group label:has(input:checked) { border-color: var(--gold); background: rgba(212,175,55,0.12); }
+  .logo { font-size: 1rem; font-weight: 700; color: var(--gold); letter-spacing: 0.05em; }
+  .logo span { color: rgba(255,255,255,0.6); font-weight: 400; }
+
+  /* ── Main canvas ─────────────────────────────────────────── */
+  #canvas {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Particle layers */
+  #particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: float-up linear infinite;
+  }
+  @keyframes float-up {
+    0%   { transform: translateY(100vh) scale(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.8; }
+    100% { transform: translateY(-10vh) scale(1) rotate(360deg); opacity: 0; }
+  }
+  .petal {
+    position: absolute;
+    animation: petal-fall linear infinite;
+    transform-origin: center;
+  }
+  @keyframes petal-fall {
+    0%   { transform: translateY(-40px) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.9; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+  .sparkle {
+    position: absolute;
+    animation: sparkle-life ease-in-out infinite;
+    font-size: 1rem;
+    user-select: none;
+  }
+  @keyframes sparkle-life {
+    0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+    50%  { opacity: 1; transform: scale(1) rotate(180deg); }
+  }
+
+  /* ── Couple Card ─────────────────────────────────────────── */
+  #card-wrap {
+    position: relative;
+    z-index: 5;
+    width: min(420px, 88vw);
+    padding: 0 1rem;
+    animation: card-appear 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  @keyframes card-appear {
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  #couple-card {
+    position: relative;
+    padding: 1.75rem 2rem;
+    border-radius: 1.25rem;
+    text-align: center;
+    transition: all 0.35s cubic-bezier(0.22,1,0.36,1);
+    overflow: hidden;
+  }
+
+  /* ── Card Styles ─────────────────────────────────────────── */
+  #couple-card.style-glass {
+    background: rgba(0,0,0,0.32);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+  }
+  #couple-card.style-romantic {
+    background: linear-gradient(145deg, rgba(255,228,230,0.93), rgba(253,242,248,0.96));
+    border: 1px solid rgba(244,114,182,0.4);
+    box-shadow: 0 8px 32px rgba(219,39,119,0.2);
+  }
+  #couple-card.style-neo {
+    background: #fff;
+    border: 3px solid #0a0a0a;
+    box-shadow: 5px 5px 0 #0a0a0a;
+    border-radius: 0;
+  }
+  #couple-card.style-khmer {
+    background: linear-gradient(145deg, #FAF8F5, #F5EFE6);
+    border: 1px solid rgba(212,167,106,0.45);
+    box-shadow: 0 8px 40px rgba(180,130,60,0.18);
+    border-radius: 0.875rem;
+  }
+  #couple-card.style-minimal {
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  /* Inner double border for khmer */
+  #couple-card.style-khmer::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1.5px double rgba(212,175,55,0.55);
+    border-radius: 0.6rem;
+    pointer-events: none;
+  }
+  #couple-card.style-khmer::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 0.75rem;
+    pointer-events: none;
+  }
+  /* Neo-brutalism texture */
+  #couple-card.style-neo .neo-lines {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, #000 0, #000 1px, transparent 1px, transparent 8px);
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  /* ── Name Elements ─────────────────────────────────────────── */
+  .names-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+  .names-wrap.layout-vertical { flex-direction: column; }
+  .names-wrap.layout-horizontal { flex-direction: row; flex-wrap: wrap; }
+
+  .name-block {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    padding-block: 0.6rem;
+    text-align: center;
+  }
+  .name-text {
+    font-weight: 700;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    display: block;
+    font-size: clamp(1.2rem, 6vw, 2.1rem);
+    transition: font-family 0.3s, color 0.3s, font-size 0.3s;
+  }
+
+  /* Connector */
+  .connector { padding: 0.25rem 0.5rem; flex-shrink: 0; }
+  .connector-hearts span { animation: pulse 1s ease-in-out infinite; display: inline-block; font-size: 1.1rem; }
+  .connector-hearts span:nth-child(2) { animation-delay: 0.3s; font-size: 0.9rem; }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.2);} }
+
+  /* Dividers */
+  .kbach-divider {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; padding: 0.5rem 0;
+  }
+  .kbach-divider svg { width: 100%; max-width: 220px; height: 22px; }
+  .minimal-divider {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.5rem; width: 100%; padding: 0.5rem 0;
+  }
+  .minimal-divider hr { flex: 1; max-width: 60px; border: none; height: 1px; background: rgba(255,255,255,0.25); }
+  .minimal-divider-dark hr { background: rgba(0,0,0,0.15); }
+  .minimal-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+  .minimal-dot-dark { background: rgba(0,0,0,0.25); }
+  .romantic-divider {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.4rem; width: 100%; padding: 0.4rem 0;
+  }
+  .romantic-divider hr { flex: 1; max-width: 50px; border: none; height: 1px; background: rgba(244,114,182,0.5); }
+  .neo-divider { width: 100%; height: 3px; background: #0a0a0a; margin: 0.4rem 0; }
+
+  /* ── Backgrounds ─────────────────────────────────────────── */
+  #bg-layer {
+    position: absolute; inset: 0;
+    z-index: 0;
+    transition: background 1s ease;
+  }
+  body.bg-dark    #bg-layer { background: radial-gradient(ellipse at 60% 40%, #1a0f2e 0%, #0a0818 100%); }
+  body.bg-romantic #bg-layer { background: radial-gradient(ellipse at 50% 30%, #5c0a2e 0%, #1a0718 100%); }
+  body.bg-light   #bg-layer { background: radial-gradient(ellipse at 50% 20%, #f5f0ea 0%, #e8dfd0 100%); }
+  body.bg-neo     #bg-layer { background: #f0ede6; }
+
+  /* ── Transitions ──────────────────────────────────────────── */
+  #couple-card, .name-text, .connector {
+    transition: all 0.35s cubic-bezier(0.22,1,0.36,1);
+  }
+</style>
+</head>
+<body class="bg-dark">
+
+<!-- Background -->
+<div id="bg-layer"></div>
+<div id="particles"></div>
+
+<!-- Sidebar -->
+<aside id="sidebar">
+  <div>
+    <div class="logo">CoupleCard <span>Demo</span></div>
+    <p style="font-size:0.65rem;color:rgba(255,255,255,0.35);margin-top:0.25rem">Live preview · Edit in real-time</p>
+  </div>
+
+  <!-- Names -->
+  <h2>👫 Names</h2>
+  <div class="ctrl"><label>Groom Name</label>
+    <input type="text" id="groomInput" value="ថតូ" oninput="update()" />
+  </div>
+  <div class="ctrl"><label>Bride Name</label>
+    <input type="text" id="brideInput" value="ស្រីនិច" oninput="update()" />
+  </div>
+
+  <!-- Font -->
+  <h2>🔤 Font</h2>
+  <div class="ctrl radio-group" id="fontGroup">
+    <label><input type="radio" name="font" value="Moul" checked onchange="update()"><span>Moul</span></label>
+    <label><input type="radio" name="font" value="Koulen" onchange="update()"><span>Koulen</span></label>
+    <label><input type="radio" name="font" value="Kantumruy Pro" onchange="update()"><span>Kantumruy</span></label>
+    <label><input type="radio" name="font" value="Siemreap" onchange="update()"><span>Siemreap</span></label>
+    <label><input type="radio" name="font" value="Hanuman" onchange="update()"><span>Hanuman</span></label>
+    <label><input type="radio" name="font" value="Koh Santepheap" onchange="update()"><span>KohSan</span></label>
+    <label><input type="radio" name="font" value="Battambang" onchange="update()"><span>Battambang</span></label>
+  </div>
+
+  <!-- Layout -->
+  <h2>📐 Layout</h2>
+  <div class="ctrl radio-group">
+    <label><input type="radio" name="layout" value="vertical" checked onchange="update()"><span>↕ Vertical</span></label>
+    <label><input type="radio" name="layout" value="horizontal" onchange="update()"><span>↔ Horizontal</span></label>
+  </div>
+
+  <!-- Connector -->
+  <h2>💞 Connector</h2>
+  <div class="ctrl radio-group">
+    <label><input type="radio" name="connector" value="hearts" checked onchange="update()"><span>💗 Hearts</span></label>
+    <label><input type="radio" name="connector" value="amp" onchange="update()"><span>& Amp</span></label>
+    <label><input type="radio" name="connector" value="ning" onchange="update()"><span>និង</span></label>
+    <label><input type="radio" name="connector" value="pjuab" onchange="update()"><span>ភ្ជាប់</span></label>
+  </div>
+
+  <!-- Divider -->
+  <h2>🌿 Divider</h2>
+  <div class="ctrl radio-group">
+    <label><input type="radio" name="divider" value="kbach" checked onchange="update()"><span>Gold Kbach</span></label>
+    <label><input type="radio" name="divider" value="minimal" onchange="update()"><span>Minimal</span></label>
+    <label><input type="radio" name="divider" value="romantic" onchange="update()"><span>Floral</span></label>
+    <label><input type="radio" name="divider" value="none" onchange="update()"><span>None</span></label>
+  </div>
+
+  <!-- Card Style -->
+  <h2>🪟 Card Style</h2>
+  <div class="ctrl radio-group">
+    <label><input type="radio" name="style" value="glass" checked onchange="update()"><span>Glass</span></label>
+    <label><input type="radio" name="style" value="khmer" onchange="update()"><span>Khmer</span></label>
+    <label><input type="radio" name="style" value="romantic" onchange="update()"><span>Romantic</span></label>
+    <label><input type="radio" name="style" value="neo" onchange="update()"><span>Neo</span></label>
+    <label><input type="radio" name="style" value="minimal" onchange="update()"><span>Minimal</span></label>
+  </div>
+
+  <!-- Particles -->
+  <h2>✨ Background</h2>
+  <div class="ctrl radio-group">
+    <label><input type="radio" name="particles" value="sparkles" checked onchange="updateParticles()"><span>✨ Sparkles</span></label>
+    <label><input type="radio" name="particles" value="petals" onchange="updateParticles()"><span>🌸 Petals</span></label>
+    <label><input type="radio" name="particles" value="bokeh" onchange="updateParticles()"><span>🔮 Bokeh</span></label>
+    <label><input type="radio" name="particles" value="none" onchange="updateParticles()"><span>None</span></label>
+  </div>
+</aside>
+
+<!-- Canvas -->
+<main id="canvas">
+  <div id="card-wrap">
+    <div id="couple-card" class="style-glass">
+      <div class="neo-lines"></div>
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</main>
+
+<script>
+// ── SVG templates ────────────────────────────────────────────────────────────
+const KbachSVG = `
+<div class="kbach-divider">
+  <svg viewBox="0 0 200 22" fill="none">
+    <path d="M100 1 C104 7,111 11,120 11 C111 11,104 15,100 21 C96 15,89 11,80 11 C89 11,96 7,100 1 Z" fill="#D4AF37" opacity="0.9"/>
+    <path d="M15 11 Q57 3 80 11 T120 11 T185 11" fill="none" stroke="#D4AF37" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/>
+    <circle cx="8" cy="11" r="2" fill="#D4AF37" opacity="0.7"/>
+    <circle cx="192" cy="11" r="2" fill="#D4AF37" opacity="0.7"/>
+  </svg>
+</div>`;
+
+function minimalDiv(dark) {
+  const hr = dark ? '<hr style="background:rgba(0,0,0,0.15)">' : '<hr>';
+  const dot = dark
+    ? '<div class="minimal-dot minimal-dot-dark"></div>'
+    : '<div class="minimal-dot"></div>';
+  return `<div class="minimal-divider ${dark?'minimal-divider-dark':''}">${hr}${dot}${hr}</div>`;
+}
+
+const RomanticDivider = `
+<div class="romantic-divider">
+  <hr/><span style="font-size:0.85rem">🌸</span><hr/>
+</div>`;
+
+// ── Connector HTML ───────────────────────────────────────────────────────────
+function connectorHTML(type, font, dark) {
+  const clr = dark ? '#0a0a0a' : '#ffffff';
+  switch(type) {
+    case 'hearts': return `<div class="connector connector-hearts"><span>💗</span><span>💗</span><span>💗</span></div>`;
+    case 'amp': return `<div class="connector" style="font-size:1.8rem;font-weight:900;color:${clr};opacity:0.6;font-family:'${font}'">&amp;</div>`;
+    case 'ning': return `<div class="connector" style="font-size:1rem;font-weight:700;color:#D4AF37;font-family:'Moul',serif;line-height:1.95">និង</div>`;
+    case 'pjuab': return `<div class="connector" style="font-size:0.8rem;font-weight:600;color:rgba(212,175,55,0.8);font-family:'Kantumruy Pro',sans-serif;letter-spacing:0.05em">ភ្ជាប់ពាក្យ</div>`;
+    default: return `<div class="connector connector-hearts"><span>💗</span><span>💗</span></div>`;
+  }
+}
+
+// ── Divider HTML ─────────────────────────────────────────────────────────────
+function dividerHTML(type, dark) {
+  switch(type) {
+    case 'kbach': return KbachSVG;
+    case 'minimal': return minimalDiv(dark);
+    case 'romantic': return RomanticDivider;
+    default: return '';
+  }
+}
+
+// ── Text color per style ─────────────────────────────────────────────────────
+function getColors(cardStyle) {
+  switch(cardStyle) {
+    case 'romantic': return { name: '#881337', label: 'rgba(136,19,55,0.6)', dark: true };
+    case 'neo':      return { name: '#0a0a0a', label: '#555555', dark: true };
+    case 'khmer':    return { name: '#8B0000', label: 'rgba(139,0,0,0.55)', dark: true };
+    case 'minimal':  return { name: '#111111', label: '#666666', dark: true };
+    default:         return { name: '#ffffff', label: 'rgba(255,255,255,0.55)', dark: false };
+  }
+}
+
+// ── Main update function ─────────────────────────────────────────────────────
+function update() {
+  const groom = document.getElementById('groomInput').value || 'ឈ្មោះប្ដី';
+  const bride = document.getElementById('brideInput').value || 'ឈ្មោះប្រពន្ធ';
+  const font = document.querySelector('[name=font]:checked')?.value || 'Moul';
+  const layout = document.querySelector('[name=layout]:checked')?.value || 'vertical';
+  const connector = document.querySelector('[name=connector]:checked')?.value || 'hearts';
+  const divider = document.querySelector('[name=divider]:checked')?.value || 'kbach';
+  const cardStyle = document.querySelector('[name=style]:checked')?.value || 'glass';
+
+  const card = document.getElementById('couple-card');
+  card.className = `style-${cardStyle}`;
+
+  const colors = getColors(cardStyle);
+  const isDark = !colors.dark; // text color is white = dark bg
+  const lineH = 1.95;
+
+  const fontStack = `'${font}', 'Kantumruy Pro', sans-serif`;
+
+  // Connector
+  const connH = connectorHTML(connector, font, colors.dark);
+  // Divider
+  const divH = dividerHTML(divider, colors.dark);
+  // Neo divider override
+  const neoDivH = cardStyle === 'neo' ? '<div class="neo-divider"></div>' : divH;
+
+  const usedDiv = cardStyle === 'neo' ? neoDivH : divH;
+
+  const nameBlock = (name) => `
+    <div class="name-block">
+      <span class="name-text" style="font-family:${fontStack};color:${colors.name};line-height:${lineH};padding-block:0.6rem">${name}</span>
+    </div>`;
+
+  const isHoriz = layout === 'horizontal';
+
+  let inner = `
+    <div class="neo-lines"></div>
+    ${usedDiv}
+    <div class="names-wrap layout-${layout}">
+      ${nameBlock(groom)}
+      ${isHoriz ? connH : ''}
+      ${nameBlock(bride)}
+    </div>
+    ${!isHoriz ? connH : ''}
+    ${usedDiv}`;
+
+  card.innerHTML = inner;
+
+  // Background sync
+  const bodyMap = { glass:'dark', minimal:'light', romantic:'romantic', neo:'neo', khmer:'light' };
+  document.body.className = `bg-${bodyMap[cardStyle] || 'dark'}`;
+
+  // Apply textFit
+  card.querySelectorAll('.name-text').forEach(el => {
+    const parent = el.parentElement;
+    if (!parent) return;
+    el.style.fontSize = '';
+    let size = 33;
+    let iter = 0;
+    while (el.scrollWidth > parent.clientWidth + 2 && size > 12 && iter < 30) {
+      size -= 1;
+      el.style.fontSize = size + 'px';
+      iter++;
+    }
+  });
+}
+
+// ── Particle system ───────────────────────────────────────────────────────────
+function updateParticles() {
+  const type = document.querySelector('[name=particles]:checked')?.value;
+  const container = document.getElementById('particles');
+  container.innerHTML = '';
+  if (type === 'none') return;
+
+  const count = type === 'bokeh' ? 20 : 30;
+
+  for (let i = 0; i < count; i++) {
+    let el;
+    const left = Math.random() * 100;
+    const delay = Math.random() * 10;
+    const dur = 8 + Math.random() * 10;
+
+    if (type === 'sparkles') {
+      el = document.createElement('span');
+      el.className = 'sparkle';
+      el.textContent = ['✦','✧','✨','⭐','💫'][Math.floor(Math.random()*5)];
+      el.style.cssText = `left:${left}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${delay}s;font-size:${0.6+Math.random()*1.2}rem;opacity:0;`;
+    } else if (type === 'petals') {
+      el = document.createElement('div');
+      el.className = 'petal';
+      el.innerHTML = `<svg width="${10+Math.random()*14}" height="${10+Math.random()*14}" viewBox="0 0 24 24" fill="rgba(244,114,182,0.65)"><path d="M12 2C12 2 4 10 4 15C4 18.87 7.13 22 11 22C11.55 22 12.08 21.94 12.59 21.82C16.89 20.82 20 17.03 20 12.5C20 6.5 12 2 12 2Z"/></svg>`;
+      el.style.cssText = `left:${left}%;top:-20px;animation-duration:${dur}s;animation-delay:${delay}s;opacity:0;`;
+    } else if (type === 'bokeh') {
+      el = document.createElement('div');
+      el.className = 'particle';
+      const size = 6 + Math.random() * 20;
+      const hue = Math.random() > 0.5 ? '280, 70%' : '340, 60%';
+      el.style.cssText = `left:${left}%;width:${size}px;height:${size}px;background:hsla(${hue},60%,0.25);animation-duration:${dur}s;animation-delay:${delay}s;filter:blur(${size/5}px);`;
+    }
+    if (el) container.appendChild(el);
+  }
+}
+
+// Init
+update();
+updateParticles();
+</script>
+</body>
+</html>

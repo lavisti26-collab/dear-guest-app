@@ -1,0 +1,32 @@
+<svg width="240" height="48" viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M8 24H72" stroke="hsl(38 65% 52%)" stroke-opacity="0.7" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M168 24H232" stroke="hsl(38 65% 52%)" stroke-opacity="0.7" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M24 24C34 24 38 19 42 14C46 19 50 24 60 24" stroke="hsl(15 50% 72%)" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M180 24C190 24 194 19 198 14C202 19 206 24 216 24" stroke="hsl(15 50% 72%)" stroke-width="1.2" stroke-linecap="round"/>
+  <g transform="translate(120 24)">
+    <circle r="4.5" fill="hsl(38 65% 52%)" fill-opacity="0.9"/>
+    <circle r="10" stroke="hsl(38 65% 52%)" stroke-opacity="0.45" stroke-width="1"/>
+    <path d="M0-16C2.8-12 2.8-7 0-3C-2.8-7-2.8-12 0-16Z" fill="hsl(345 40% 88%)" stroke="hsl(15 50% 72%)" stroke-width="1"/>
+    <path d="M16 0C12 2.8 7 2.8 3 0C7-2.8 12-2.8 16 0Z" fill="hsl(345 40% 88%)" stroke="hsl(15 50% 72%)" stroke-width="1"/>
+    <path d="M0 16C-2.8 12-2.8 7 0 3C2.8 7 2.8 12 0 16Z" fill="hsl(345 40% 88%)" stroke="hsl(15 50% 72%)" stroke-width="1"/>
+    <path d="M-16 0C-12-2.8-7-2.8-3 0C-7 2.8-12 2.8-16 0Z" fill="hsl(345 40% 88%)" stroke="hsl(15 50% 72%)" stroke-width="1"/>
+    <path d="M11.5-11.5C10-7.5 7.5-5 4-4C5-7.5 7.5-10 11.5-11.5Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.9"/>
+    <path d="M11.5 11.5C7.5 10 5 7.5 4 4C7.5 5 10 7.5 11.5 11.5Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.9"/>
+    <path d="M-11.5 11.5C-10 7.5-7.5 5-4 4C-5 7.5-7.5 10-11.5 11.5Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.9"/>
+    <path d="M-11.5-11.5C-7.5-10-5-7.5-4-4C-7.5-5-10-7.5-11.5-11.5Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.9"/>
+  </g>
+  <g transform="translate(82 24)">
+    <circle r="2.4" fill="hsl(345 40% 88%)" stroke="hsl(15 50% 72%)" stroke-width="0.8"/>
+    <path d="M0-7C1.6-5 1.6-3 0-1C-1.6-3-1.6-5 0-7Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.8"/>
+    <path d="M7 0C5 1.6 3 1.6 1 0C3-1.6 5-1.6 7 0Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.8"/>
+    <path d="M0 7C-1.6 5-1.6 3 0 1C1.6 3 1.6 5 0 7Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.8"/>
+    <path d="M-7 0C-5-1.6-3-1.6-1 0C-3 1.6-5 1.6-7 0Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.8"/>
+  </g>
+  <g transform="translate(158 24)">
+    <circle r="2.4" fill="hsl(345 40% 88%)" stroke="hsl(15 50% 72%)" stroke-width="0.8"/>
+    <path d="M0-7C1.6-5 1.6-3 0-1C-1.6-3-1.6-5 0-7Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.8"/>
+    <path d="M7 0C5 1.6 3 1.6 1 0C3-1.6 5-1.6 7 0Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.8"/>
+    <path d="M0 7C-1.6 5-1.6 3 0 1C1.6 3 1.6 5 0 7Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.8"/>
+    <path d="M-7 0C-5-1.6-3-1.6-1 0C-3 1.6-5 1.6-7 0Z" fill="hsl(36 45% 88%)" stroke="hsl(38 65% 52%)" stroke-width="0.8"/>
+  </g>
+</svg>

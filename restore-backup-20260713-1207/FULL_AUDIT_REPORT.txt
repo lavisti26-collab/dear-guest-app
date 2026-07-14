@@ -1,0 +1,77 @@
+================================================================================
+                              DEAR GUEST - AUDIT REPORT
+================================================================================
+Project: dear-guest-app
+Date: 2026-07-13
+Auditor Role: Senior Full-Stack Code Auditor + UX Reviewer
+Status: Complete (Investigation Only - No Code Fixes Applied)
+
+--------------------------------------------------------------------------------
+PART 1 — DETAILED AUDIT FINDINGS TABLE
+--------------------------------------------------------------------------------
+
+| # | File/Location | Category | Severity | Problem | Why it matters | Recommended fix |
+|---|---|---|---|---|---|---|
+| 1 | `src/layouts/` (Alternative Layouts) | Fake | Critical | All alternative layouts (`AppleProductLayout`, `CardStackLayout`, `CinematicLayout`, `KhmerTraditionalLayout`, `NewspaperLayout`, `MinimalEditorialLayout`, `RomanticBloomLayout`) are skeleton mockups that omit critical sections (Greeting, Timeline, Map, Gift, Wishes, Contacts) and lack the styling claimed. | If the admin selects an alternative layout, the public invitation breaks, silently hiding important user data (wishes, gift QR, map) with no warning. | Implement full visual styles and layout grids in each file, ensuring all layout options render all configured elements. Alternatively, merge all layout configurations into `ClassicScrollLayout` with CSS class switches, or hide the layout choices until implemented. |
+| 2 | `src/components/dashboard/SuperAdminDashboard.tsx` | Fake | High | The CPU, Memory, Database, and CDN edge gauges are hardcoded with static numbers (42, 68, 91, 88). | Misleads the super admin into thinking there is a live health telemetry integration when it is completely static. | Remove the gauges or connect them to real Supabase project metrics / Netlify analytics APIs. |
+| 3 | `src/components/dashboard/NotificationBroadcaster.tsx` & `SuperAdminDashboard.tsx` | Bug / Code | High | Code inserts/queries `notifications` and `super_admin_activity_log` tables, but these tables are completely missing from the Supabase `FULL-SETUP.sql` script. | Broadcast and activity feed features fail out-of-the-box with `42P01` database errors. | Add database migrations to create these tables, configure RLS, and add matching TypeScript definitions. |
+| 4 | `src/lib/access-requests.ts` | Fake | Medium | When the `access_requests` table is missing, requests are saved to the submitter's local browser `localStorage` and a fake `{ ok: true }` success is returned. | The submitter believes their request went through, but a super admin on another device will never see it, resulting in a silent failure of the access request. | Show a real connection error warning instead of silently caching in local storage. |
+| 5 | `src/components/wedding/WishesSection.tsx` | Bug | High | The wishes search input filter is placed inside the wish submission form (`<form onSubmit={handleSubmit}>`). | Pressing "Enter" in the search field triggers a form submission. If the guest name/message are filled, it posts a duplicate or partial wish; if empty, it triggers validation errors. | Move the search input outside the `<form>` element. |
+| 6 | `src/contexts/WeddingDataContext.tsx` (in `updateRSVP()`) | Bug | High | The RSVP update queries the database by `guest_name` when the `guest.id` is not supplied. | In Cambodia, common names (e.g. "Chan Sophea", "Pich Dara") are frequent. If multiple guests share a name, the query updates the first match, overwriting the RSVP of the wrong guest. | Require the URL to pass `guestId` (`guest.id`) and make it a primary key lookup for updates. |
+| 7 | `src/index.css` | Bug | High | No word-break or text-wrap styles are configured for Khmer script. | Khmer text contains no spaces. Without `word-break: break-all` or `overflow-wrap: break-word`, long text blocks (descriptions, wishes) overflow containers or clip on mobile. | Add global word-break and overflow-wrap properties to all container selectors that render user-supplied Khmer text. |
+| 8 | `src/pages/AdminDashboard.tsx` (in `downloadQR()`) | Bug | Medium | Sanitizing DOM IDs using `replace(/[^\w-]/g, '_')` might produce invalid query selectors if the guest name consists entirely of non-alphanumeric characters (like Khmer script, where `\w` doesn't match unicode characters). | The download QR card button fails silently for guests with Khmer-only names. | Use the guest's UUID (`guest.id`) as the DOM element ID instead of their name. |
+| 9 | `src/lib/font-loader.ts` | Bug | Medium | `SUPABASE_FONTS_URL` points to `${import.meta.env.VITE_SUPABASE_URL}/storage/...`. If `VITE_SUPABASE_URL` is undefined, it resolves to a relative path. | Prevents custom fonts from loading in local development unless a live Supabase server is connected. | Fall back to local path assets `/fonts/` if the environment variable is missing. |
+| 10 | `src/components/wedding/DetailsSection.tsx` | UX | Medium | Countdown flip-clock renders and freezes at `00:00:00:00` if the wedding date is unconfigured or in the past. | Looks broken and unprofessional to guests before the admin sets the date. | Conditionally hide the countdown or display a friendly placeholder if the date is not in the future. |
+| 11 | `src/components/dashboard/RoleElevator.tsx` | UX | Medium | Regular admins are allowed to select "Super Admin" and try to preview the portal, but will be hit with an "Access Denied" screen due to real security guards. | Confusing experience for users who expect a functional preview. | Disable or hide the "Super Admin" option for non-super admins. |
+| 12 | `src/pages/AdminLogin.tsx` | UX | Medium | Creating an admin account immediately logs the user out and forces them to sign in again. | Poor onboarding flow; they are redirected back to the login screen and have to type their credentials again. | Redirect the user to the `AccountStatusGate` directly without signing them out immediately. |
+| 13 | `src/pages/AdminDashboard.tsx` | Code | Medium | Extremely long monolithic dashboard file (1580 lines) managing all 11 tabs and their states. | Triggers large unnecessary React re-renders on minor tab updates and is difficult to maintain. | Refactor and split the tab contents into subcomponents (e.g., `GuestsTab`, `RSVPTab`, `WeddingInfoTab`). |
+| 14 | `src/components/wedding/MusicToggle.tsx` | UX / Code | Medium | Audio player instance is created and destroyed inside the component mount scope. | Audio pauses abruptly when navigating between views or toggling pages. | Move the Audio element state to a persistent global context or layout shell. |
+| 15 | `src/contexts/WeddingDataContext.tsx` | Perf | Low | Re-fetches profiles even if the `publicProfile` prop is already provided. | Generates redundant Supabase API queries on public page load. | Skip profile query if `publicProfile` is already provided. |
+| 16 | `.env.local` | Code | High | Exposes the highly sensitive `SUPABASE_SERVICE_ROLE_KEY` directly on disk. | Accidental commits to version control or local file access leak super admin credentials. | Remove the service role key from the frontend directory's `.env.local` file and place it in the `.gitignore` or secret vault. |
+| 17 | `src/components/dashboard/OnboardingSteps.tsx` | UX | Low | Walkthrough progress is not saved, resetting upon every page load. | Annoying for returning users who have to repeatedly click through or ignore it. | Add a flag in localStorage to hide the tour once completed. |
+
+--------------------------------------------------------------------------------
+PART 2 — TOP 5 CRITICAL ISSUES
+--------------------------------------------------------------------------------
+1. ALTERNATIVE LAYOUTS ARE SKELETON PLACEHOLDERS (Issue #1)
+   - Reason: Selecting layouts like "Apple Product", "Cinematic", or "Khmer Traditional" completely breaks the public-facing invitation, silently deleting critical sections (timeline, bank info, map, guest wishes). This invalidates the core product promise of custom templates.
+
+2. RSVP GUEST NAME COLLISION OVERWRITES DATA (Issue #6)
+   - Reason: Updating RSVPs by exact name matching instead of unique IDs will overwrite data if multiple guests share a common name (extremely common in Cambodia). One guest submitting an RSVP could overwrite another guest's attendance status.
+
+3. MISSING NOTIFICATION AND ACTIVITY LOG TABLES (Issue #3)
+   - Reason: The database schema is missing the `notifications` and `super_admin_activity_log` tables entirely. Any admin attempt to broadcast notifications or review super admin logs crashes or yields database errors.
+
+4. SEARCH ENTER COLLISION TRASHES GUEST WISHES (Issue #5)
+   - Reason: Because the wishes search bar is placed inside the wish creation `<form>`, typing a search query and pressing "Enter" will submit a partial or blank wish, triggering validation errors and locking the UI.
+
+5. KHMER SCRIPT OVERFLOW AND TEXT CLIPPING (Issue #7)
+   - Reason: Since Khmer script does not use spaces, browsers do not know where to wrap sentences. Without `word-break: break-all` or `overflow-wrap: break-word`, the Khmer invitation details, names, and messages clip or overflow on mobile screens.
+
+--------------------------------------------------------------------------------
+PART 3 — QUICK WINS (Low Effort, High Impact)
+--------------------------------------------------------------------------------
+1. Move the wishes search input outside the `<form>` tag in `WishesSection.tsx` (takes 1 minute, fixes the Enter form submission bug).
+2. Use the guest's unique ID (`guest.id`) instead of guest name in `AdminDashboard.tsx` `downloadQR()` for the DOM SVG element selector (prevents failure for Khmer script names).
+3. Hide the "Super Admin" option from the "Role Elevator" for regular admin accounts to prevent frustrating Access Denied redirection loops.
+4. Remove the `supabase.auth.signOut()` trigger immediately after signup in `AdminLogin.tsx` so users stay logged in and see the pending approval screen directly.
+5. Add `word-break: break-word` and `overflow-wrap: break-word` rules to primary text wrapper CSS classes in `index.css` to fix Khmer script mobile clipping.
+
+--------------------------------------------------------------------------------
+PART 4 — SUGGESTED FIX ORDER (Priority Sequence)
+--------------------------------------------------------------------------------
+1. SECURITY & DATABASE HEALTH:
+   - Remove `SUPABASE_SERVICE_ROLE_KEY` from `.env.local` to prevent leaks.
+   - Create migrations to define `notifications` and `super_admin_activity_log` tables in Supabase.
+2. CORE DATA SANITY & BUGS:
+   - Change RSVP updates to search and modify records exclusively by unique `guest.id`.
+   - Separate the wishes search input from the wish submission form.
+3. KHMER LANGUAGE FIXES:
+   - Apply word-breaking and wrapping configurations in `index.css` for Khmer script.
+   - Fix DOM element selectors in QR generation for Khmer names.
+4. PUBLIC TEMPLATE RESTORATION:
+   - Populate alternative layouts to ensure they render all sections (Greeting, Timeline, Map, Gift, Wishes, Contacts) instead of deleting them.
+5. UX IMPROVEMENTS:
+   - Smooth out the onboarding signup flow.
+   - Decouple the audio toggle state to keep music playing during page transitions.
+   - Refactor the 1580-line `AdminDashboard.tsx` into sub-components.
