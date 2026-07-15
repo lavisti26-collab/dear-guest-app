@@ -247,7 +247,7 @@ export default function HeroSection({ guestName }: HeroSectionProps = {}) {
       >
         {/* Event title */}
         <motion.p
-          className={`mb-5 uppercase font-bold ${
+          className={`mb-5 ${lang === 'km' ? '' : 'uppercase'} font-bold ${
             settings.eventTitleSize || (lang === 'km' ? 'text-base' : 'text-sm')
           } ${
             lang === 'km'

@@ -804,7 +804,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
               className="w-full max-w-[420px]"
             >
               <motion.p
-                className={`mx-auto max-w-full uppercase ${
+                className={`mx-auto max-w-full ${lang === 'km' ? '' : 'uppercase'} ${
                   settings.eventTitleSize || 'text-xl sm:text-2xl md:text-3xl'
                 } ${
                   lang === 'km' 
