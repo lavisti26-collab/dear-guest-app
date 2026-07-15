@@ -116,22 +116,13 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
           font-family: var(--font-body, Georgia, serif);
         }
 
-        /* ── Remove ALL card shadows, round corners, gradients ── */
-        [data-layout="newspaper-editorial"] *:not(button):not(input):not(select):not(textarea) {
+        /* ── Strip shadows from card-like containers ONLY — not floating UI ── */
+        /* Target semantic content blocks, not navigation or floating overlays   */
+        [data-layout="newspaper-editorial"] .card {
           border-radius: 0 !important;
           box-shadow: none !important;
-        }
-
-        /* ── Flatten all card/panel backgrounds ── */
-        [data-layout="newspaper-editorial"] .card,
-        [data-layout="newspaper-editorial"] [class*="rounded"],
-        [data-layout="newspaper-editorial"] [class*="shadow"],
-        [data-layout="newspaper-editorial"] [class*="bg-white"],
-        [data-layout="newspaper-editorial"] [class*="bg-card"] {
           background: var(--ne-card-bg) !important;
           border: 1px solid #c8c4b0 !important;
-          box-shadow: none !important;
-          border-radius: 0 !important;
         }
 
         /* ── Section headings inside child components ── */
@@ -142,45 +133,32 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
           letter-spacing: 0.02em;
         }
 
-        /* ── Strip coloured gradients from HeroSection ── */
-        [data-layout="newspaper-editorial"] .hero-section,
-        [data-layout="newspaper-editorial"] [class*="hero"] {
-          background: #222 !important;
-        }
-
-        /* ── Timeline items ── */
-        [data-layout="newspaper-editorial"] [class*="timeline"],
-        [data-layout="newspaper-editorial"] [class*="program"] {
-          border-left: 2px solid var(--ne-ink) !important;
-          background: transparent !important;
-        }
-
         /* ── Wish cards ── */
-        [data-layout="newspaper-editorial"] [class*="wish"] {
+        [data-layout="newspaper-editorial"] [class*="wish-card"] {
           border: 1px solid #c8c4b0 !important;
           background: var(--ne-card-bg) !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
         }
 
-        /* ── Buttons ── */
-        [data-layout="newspaper-editorial"] button[type="submit"],
-        [data-layout="newspaper-editorial"] .btn-primary {
-          background: var(--ne-ink) !important;
-          color: #F4F1E8 !important;
+        /* ── RSVP/Gift form inputs ── */
+        [data-layout="newspaper-editorial"] form input,
+        [data-layout="newspaper-editorial"] form select,
+        [data-layout="newspaper-editorial"] form textarea {
           border-radius: 0 !important;
+          background: #FDFBF5 !important;
+          border-color: #aaa !important;
+        }
+
+        /* ── Submit buttons inside forms ── */
+        [data-layout="newspaper-editorial"] form button[type="submit"] {
+          border-radius: 0 !important;
+          background: #111 !important;
+          color: #F4F1E8 !important;
           letter-spacing: 0.15em;
           text-transform: uppercase;
           font-size: 11px;
           font-weight: 700;
-        }
-
-        /* ── RSVP/Gift section containers ── */
-        [data-layout="newspaper-editorial"] form,
-        [data-layout="newspaper-editorial"] input,
-        [data-layout="newspaper-editorial"] select,
-        [data-layout="newspaper-editorial"] textarea {
-          border-radius: 0 !important;
-          background: #FDFBF5 !important;
-          border-color: #aaa !important;
         }
       `}</style>
 
