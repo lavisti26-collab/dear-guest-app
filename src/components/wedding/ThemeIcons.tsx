@@ -78,45 +78,195 @@ export function KbachDiamond({ className, ...props }: IconProps) {
  * Use instead of the section-divider CSS class in khmer-traditional layout.
  * Renders as: ——  ◆  ——  ✿  ——  ◆  ——
  */
-export function KbachDivider({ className }: { className?: string }) {
+export function KbachDivider({ className, ...props }: React.SVGProps<SVGSVGElement>) {
   return (
-    <div
-      className={`flex items-center justify-center gap-2 ${className ?? ''}`}
+    <svg
+      viewBox="0 0 800 130"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={`w-full h-auto ${className ?? ''}`}
       aria-hidden="true"
+      {...props}
     >
-      {/* Left line */}
-      <div
-        className="h-px flex-1 max-w-[60px]"
-        style={{ background: 'linear-gradient(to right, transparent, currentColor)' }}
-      />
-      {/* Left small petal node */}
-      <svg viewBox="0 0 12 12" fill="none" className="w-2 h-2 flex-shrink-0" aria-hidden="true">
-        <path d="M6 0C5.2 3 5.2 5 6 7C6.8 5 6.8 3 6 0Z" fill="currentColor" opacity="0.7" />
-        <path d="M6 12C6.8 9 6.8 7 6 5C5.2 7 5.2 9 6 12Z" fill="currentColor" opacity="0.7" />
-        <path d="M0 6C3 5.2 5 5.2 7 6C5 6.8 3 6.8 0 6Z" fill="currentColor" opacity="0.7" />
-        <path d="M12 6C9 6.8 7 6.8 5 6C7 5.2 9 5.2 12 6Z" fill="currentColor" opacity="0.7" />
-      </svg>
-      {/* Centre lotus rosette */}
-      <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4 flex-shrink-0" aria-hidden="true">
-        <path d="M10 1C9 4.5 9 7 10 9.5C11 7 11 4.5 10 1Z" fill="currentColor" opacity="0.8" />
-        <path d="M10 19C11 15.5 11 13 10 10.5C9 13 9 15.5 10 19Z" fill="currentColor" opacity="0.8" />
-        <path d="M1 10C4.5 9 7 9 9.5 10C7 11 4.5 11 1 10Z" fill="currentColor" opacity="0.8" />
-        <path d="M19 10C15.5 11 13 11 10.5 10C13 9 15.5 9 19 10Z" fill="currentColor" opacity="0.8" />
-        <circle cx="10" cy="10" r="2.5" fill="currentColor" />
-      </svg>
-      {/* Right small petal node */}
-      <svg viewBox="0 0 12 12" fill="none" className="w-2 h-2 flex-shrink-0" aria-hidden="true">
-        <path d="M6 0C5.2 3 5.2 5 6 7C6.8 5 6.8 3 6 0Z" fill="currentColor" opacity="0.7" />
-        <path d="M6 12C6.8 9 6.8 7 6 5C5.2 7 5.2 9 6 12Z" fill="currentColor" opacity="0.7" />
-        <path d="M0 6C3 5.2 5 5.2 7 6C5 6.8 3 6.8 0 6Z" fill="currentColor" opacity="0.7" />
-        <path d="M12 6C9 6.8 7 6.8 5 6C7 5.2 9 5.2 12 6Z" fill="currentColor" opacity="0.7" />
-      </svg>
-      {/* Right line */}
-      <div
-        className="h-px flex-1 max-w-[60px]"
-        style={{ background: 'linear-gradient(to left, transparent, currentColor)' }}
-      />
-    </div>
+      <defs>
+        {/* Metallic gold gradient for luxury debossed hot stamp foil effect */}
+        <linearGradient id="ktGoldFoil" x1="0" y1="0" x2="800" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#A8792A" />
+          <stop offset="15%" stopColor="#D9B468" />
+          <stop offset="30%" stopColor="#F5DF9E" />
+          <stop offset="50%" stopColor="#C59E4E" />
+          <stop offset="70%" stopColor="#F5DF9E" />
+          <stop offset="85%" stopColor="#D9B468" />
+          <stop offset="100%" stopColor="#A8792A" />
+        </linearGradient>
+        {/* Subtle drop shadow filter to give debossed depth */}
+        <filter id="ktDebossGlow" x="-5%" y="-5%" width="110%" height="110%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#1a0a00" floodOpacity="0.18" />
+        </filter>
+      </defs>
+
+      <g filter="url(#ktDebossGlow)">
+        {/* Horizontal boundary lines */}
+        <line x1="80" y1="28" x2="720" y2="28" stroke="url(#ktGoldFoil)" strokeWidth="1.6" />
+        <line x1="80" y1="33" x2="720" y2="33" stroke="url(#ktGoldFoil)" strokeWidth="0.8" />
+        <line x1="80" y1="97" x2="720" y2="97" stroke="url(#ktGoldFoil)" strokeWidth="1.6" />
+        <line x1="80" y1="102" x2="720" y2="102" stroke="url(#ktGoldFoil)" strokeWidth="0.8" />
+
+        {/* ─── CENTRAL LOTUS BLOSSOM (X=400, Y=65) ─── */}
+        {/* Main Central Vertical Petal / Bud */}
+        <path
+          d="M400 15 C391 32, 384 52, 384 75 C384 88, 391 98, 400 104 C409 98, 416 88, 416 75 C416 52, 409 32, 400 15 Z"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.8"
+          fill="#FAF3E3"
+        />
+        {/* Central Petal Inner Filigree */}
+        <path d="M400 32 C395 45, 390 60, 390 75 C390 85, 395 95, 400 98" stroke="url(#ktGoldFoil)" strokeWidth="0.8" />
+        <path d="M400 32 C405 45, 410 60, 410 75 C410 85, 405 95, 400 98" stroke="url(#ktGoldFoil)" strokeWidth="0.8" />
+        <path d="M400 48 V92" stroke="url(#ktGoldFoil)" strokeWidth="0.6" strokeDasharray="1,2" />
+
+        {/* Inner flame core of the bud */}
+        <path
+          d="M400 40 C397 50, 395 62, 400 70 C405 62, 403 50, 400 40 Z"
+          fill="url(#ktGoldFoil)"
+          opacity="0.8"
+        />
+
+        {/* First Outer Layer Petals (Left & Right) */}
+        <path
+          d="M386 52 C370 52, 355 68, 355 84 C355 96, 372 105, 400 108"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.5"
+          fill="none"
+        />
+        <path
+          d="M414 52 C430 52, 445 68, 445 84 C445 96, 428 105, 400 108"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.5"
+          fill="none"
+        />
+
+        {/* Second Outer Layer Petals (Left & Right) */}
+        <path
+          d="M384 68 C348 68, 335 82, 335 95 C335 104, 358 111, 400 114"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.3"
+          fill="none"
+        />
+        <path
+          d="M416 68 C452 68, 465 82, 465 95 C465 104, 442 111, 400 114"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.3"
+          fill="none"
+        />
+
+        {/* Flame Crown Tip (Topmost Ornament) */}
+        <path
+          d="M400 4 C397 9, 395 16, 400 20 C405 16, 403 9, 400 4 Z"
+          fill="url(#ktGoldFoil)"
+        />
+
+        {/* Bottom Sepals (Base Support) */}
+        <path
+          d="M372 90 C372 110, 386 122, 400 125 C414 122, 428 110, 428 90"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.8"
+          fill="none"
+        />
+        <path
+          d="M380 94 C380 108, 390 117, 400 119 C410 117, 420 108, 420 94"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="0.8"
+          fill="none"
+        />
+
+        {/* ─── LEFT SCROLLS (X < 330) ─── */}
+        {/* Main top curling branch */}
+        <path
+          d="M355 60 C315 36, 265 24, 215 36 C165 48, 135 68, 105 48"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.5"
+          fill="none"
+        />
+        {/* Main bottom curling branch */}
+        <path
+          d="M335 80 C290 95, 240 95, 190 85 C140 75, 110 85, 80 70"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.5"
+          fill="none"
+        />
+
+        {/* Outer scroll spiral 1 */}
+        <path
+          d="M310 52 C280 36, 250 42, 240 62 C230 82, 250 92, 265 82 C280 72, 275 58, 260 58 C250 58, 245 68, 252 72"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.2"
+          fill="none"
+        />
+        {/* Outer scroll spiral 2 */}
+        <path
+          d="M210 42 C180 32, 150 38, 140 58 C130 78, 150 88, 165 78 C180 68, 175 54, 160 54 C150 54, 145 64, 152 68"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.2"
+          fill="none"
+        />
+        {/* Outer scroll spiral 3 */}
+        <path
+          d="M110 48 C90 38, 70 48, 70 62 C70 76, 90 82, 100 72 C110 62, 105 52, 95 52"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.0"
+          fill="none"
+        />
+
+        {/* Small leafy flame details inside left scrolls */}
+        <path d="M280 38 C270 28, 260 28, 265 40 Z" fill="url(#ktGoldFoil)" opacity="0.7" />
+        <path d="M175 32 C165 22, 155 22, 160 34 Z" fill="url(#ktGoldFoil)" opacity="0.7" />
+        <path d="M232 78 C225 85, 220 80, 222 72 Z" fill="url(#ktGoldFoil)" opacity="0.7" />
+
+        {/* ─── RIGHT SCROLLS (X > 470) ─── */}
+        {/* Main top curling branch */}
+        <path
+          d="M445 60 C485 36, 535 24, 585 36 C635 48, 665 68, 695 48"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.5"
+          fill="none"
+        />
+        {/* Main bottom curling branch */}
+        <path
+          d="M465 80 C510 95, 560 95, 610 85 C660 75, 690 85, 720 70"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.5"
+          fill="none"
+        />
+
+        {/* Outer scroll spiral 1 */}
+        <path
+          d="M490 52 C520 36, 550 42, 560 62 C570 82, 550 92, 535 82 C520 72, 525 58, 540 58 C550 58, 555 68, 548 72"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.2"
+          fill="none"
+        />
+        {/* Outer scroll spiral 2 */}
+        <path
+          d="M590 42 C620 32, 650 38, 660 58 C670 78, 650 88, 635 78 C620 68, 625 54, 640 54 C650 54, 655 64, 648 68"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.2"
+          fill="none"
+        />
+        {/* Outer scroll spiral 3 */}
+        <path
+          d="M690 48 C710 38, 730 48, 730 62 C730 76, 710 82, 700 72 C690 62, 695 52, 705 52"
+          stroke="url(#ktGoldFoil)"
+          strokeWidth="1.0"
+          fill="none"
+        />
+
+        {/* Small leafy flame details inside right scrolls */}
+        <path d="M520 38 C530 28, 540 28, 535 40 Z" fill="url(#ktGoldFoil)" opacity="0.7" />
+        <path d="M625 32 C635 22, 645 22, 640 34 Z" fill="url(#ktGoldFoil)" opacity="0.7" />
+        <path d="M568 78 C575 85, 580 80, 578 72 Z" fill="url(#ktGoldFoil)" opacity="0.7" />
+      </g>
+    </svg>
   );
 }
 
