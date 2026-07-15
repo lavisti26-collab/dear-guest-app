@@ -104,6 +104,7 @@ function InvitationContent({ initialGuestName, initialGuestId }: { initialGuestN
           guestName={guestName}
           onOpen={() => setEnvelopeOpen(true)}
           isOpen={envelopeOpen}
+          layoutTemplate={settings?.layoutTemplate}
         />
       )}
 

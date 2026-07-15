@@ -87,6 +87,7 @@ interface EnvelopeProps {
   onOpen: () => void;
   isOpen: boolean;
   inlinePreview?: boolean;
+  layoutTemplate?: string;
 }
 
 const spring = { type: 'spring' as const, duration: 0.7, bounce: 0.1 };
@@ -145,7 +146,167 @@ function Sparkle({ angle, radius, delay, color }: { angle: number; radius: numbe
 }
 
 // ── Wax seal SVG ─────────────────────────────────────────────────────────────
-function WaxSeal({ popping, initials = '♡' }: { popping: boolean; initials?: string }) {
+function WaxSeal({ popping, initials = '♡', themeStyle }: { popping: boolean; initials?: string; themeStyle: ThemeStyleType }) {
+  // 1. Khmer Gold Lotus Seal
+  if (themeStyle === 'khmer') {
+    return (
+      <motion.div
+        className="absolute left-1/2 -translate-x-1/2 z-20 cursor-pointer"
+        style={{ bottom: '-18px' }}
+        animate={popping ? { scale: [1, 1.4, 0], opacity: [1, 1, 0] } : { scale: [1, 1.05, 1] }}
+        transition={popping ? { duration: 0.45, ease: 'easeOut' } : { duration: 2.5, repeat: Infinity }}
+      >
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full bg-amber-500/30 blur-md" />
+          <svg viewBox="0 0 48 48" className="w-12 h-12 drop-shadow-lg">
+            <defs>
+              <radialGradient id="khmerSealG" cx="40%" cy="35%">
+                <stop offset="0%" stopColor="#FAF0D7" />
+                <stop offset="45%" stopColor="#C9913A" />
+                <stop offset="100%" stopColor="#805615" />
+              </radialGradient>
+            </defs>
+            {/* Scalloped outer edge */}
+            {Array.from({ length: 12 }).map((_, i) => (
+              <circle
+                key={i}
+                cx={24 + 16 * Math.cos((i * 30 * Math.PI) / 180)}
+                cy={24 + 16 * Math.sin((i * 30 * Math.PI) / 180)}
+                r="4.5"
+                fill="url(#khmerSealG)"
+              />
+            ))}
+            <circle cx="24" cy="24" r="16" fill="url(#khmerSealG)" />
+            {/* Center lotus blossom emblem */}
+            <path
+              d="M24 13 C21.5 19, 20.5 22.5, 24 29 C27.5 22.5, 26.5 19, 24 13 Z"
+              fill="rgba(255,255,255,0.85)"
+              opacity="0.9"
+            />
+            <path
+              d="M24 17 C22.5 21, 22 23, 24 27 C26 23, 25.5 21, 24 17 Z"
+              fill="#805615"
+              opacity="0.3"
+            />
+            {/* Small side leaves */}
+            <path
+              d="M20 22 C17 21, 16 23, 20 25 Z"
+              fill="rgba(255,255,255,0.75)"
+            />
+            <path
+              d="M28 22 C31 21, 32 23, 28 25 Z"
+              fill="rgba(255,255,255,0.75)"
+            />
+          </svg>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // 2. Apple Metallic Silver Heart Medallion
+  if (themeStyle === 'apple') {
+    return (
+      <motion.div
+        className="absolute left-1/2 -translate-x-1/2 z-20 cursor-pointer"
+        style={{ bottom: '-18px' }}
+        animate={popping ? { scale: [1, 1.4, 0], opacity: [1, 1, 0] } : { scale: [1, 1.05, 1] }}
+        transition={popping ? { duration: 0.45, ease: 'easeOut' } : { duration: 2.5, repeat: Infinity }}
+      >
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full bg-white/30 blur-md" />
+          <svg viewBox="0 0 48 48" className="w-12 h-12 drop-shadow-md">
+            <defs>
+              <linearGradient id="silverG" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="35%" stopColor="#e2e8f0" />
+                <stop offset="70%" stopColor="#cbd5e1" />
+                <stop offset="100%" stopColor="#94a3b8" />
+              </linearGradient>
+            </defs>
+            <circle cx="24" cy="24" r="18" fill="url(#silverG)" />
+            <circle cx="24" cy="24" r="15" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="0.8" />
+            {/* Clean heart symbol */}
+            <path
+              d="M24 31 C24 31, 15 23.5, 15 18 C15 15, 17 13.5, 19.5 13.5 C21.5 13.5, 23 15, 24 16 C25 15, 26.5 13.5, 28.5 13.5 C31 13.5, 33 15, 33 18 C33 23.5, 24 31, 24 31 Z"
+              fill="#94a3b8"
+              opacity="0.85"
+            />
+          </svg>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // 3. Vintage Postage Stamp
+  if (themeStyle === 'vintage') {
+    return (
+      <motion.div
+        className="absolute left-1/2 -translate-x-1/2 z-20 cursor-pointer"
+        style={{ bottom: '-18px' }}
+        animate={popping ? { scale: [1, 1.4, 0], opacity: [1, 1, 0] } : { scale: [1, 1.05, 1] }}
+        transition={popping ? { duration: 0.45, ease: 'easeOut' } : { duration: 2.5, repeat: Infinity }}
+      >
+        <div className="relative w-12 h-14">
+          <div className="absolute inset-0 bg-neutral-900/10 blur-sm rounded-sm" />
+          <svg viewBox="0 0 40 48" className="w-10 h-12 drop-shadow-md">
+            {/* Serrated stamp background */}
+            <path
+              d="M2 2 L38 2 L38 46 L2 46 Z"
+              fill="#EADEC9"
+              stroke="#B3A389"
+              strokeWidth="1.5"
+              strokeDasharray="3,3"
+            />
+            {/* Inner picture border */}
+            <rect x="5" y="5" width="30" height="38" fill="#F4EDE0" stroke="#111111" strokeWidth="0.6" />
+            {/* Debossed Initials stamp */}
+            <text x="20" y="27" textAnchor="middle" fontSize="10" fill="#111111" fontFamily="serif" fontWeight="bold">
+              {initials}
+            </text>
+            {/* Circular Postmark overlay */}
+            <circle cx="28" cy="28" r="10" fill="none" stroke="#8B1E1E" strokeWidth="0.8" opacity="0.65" strokeDasharray="2,2" />
+          </svg>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // 4. Romantic Hearts Seal
+  if (themeStyle === 'romantic') {
+    return (
+      <motion.div
+        className="absolute left-1/2 -translate-x-1/2 z-20 cursor-pointer"
+        style={{ bottom: '-18px' }}
+        animate={popping ? { scale: [1, 1.4, 0], opacity: [1, 1, 0] } : { scale: [1, 1.05, 1] }}
+        transition={popping ? { duration: 0.45, ease: 'easeOut' } : { duration: 2.5, repeat: Infinity }}
+      >
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full bg-rose-500/25 blur-md" />
+          <svg viewBox="0 0 48 48" className="w-12 h-12 drop-shadow-lg">
+            <defs>
+              <radialGradient id="roseSealG" cx="40%" cy="35%">
+                <stop offset="0%" stopColor="#FFF0F2" />
+                <stop offset="60%" stopColor="#E11D48" />
+                <stop offset="100%" stopColor="#9F1239" />
+              </radialGradient>
+            </defs>
+            <circle cx="24" cy="24" r="18" fill="url(#roseSealG)" />
+            {/* Double hearts emblem */}
+            <path
+              d="M20 26 C20 26, 14 21, 14 17.5 C14 15.5, 15.5 14, 17.5 14 C19 14, 20 15, 20.5 16 C21 15, 22 14, 23.5 14 C25.5 14, 27 15.5, 27 17.5 C27 21, 20 26, 20 26 Z"
+              fill="rgba(255,255,255,0.9)"
+            />
+            <path
+              d="M28 28 C28 28, 23 23.5, 23 20 C23 18, 24.5 16.5, 26.5 16.5 C28 16.5, 29 17.5, 29.5 18.5 C30 17.5, 31 16.5, 32.5 16.5 C34.5 16.5, 36 18, 36 20 C36 23.5, 28 28, 28 28 Z"
+              fill="rgba(255,255,255,0.65)"
+            />
+          </svg>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // 5. Default Gold Wax Seal (Minimal/Glassmorphism/Others)
   return (
     <motion.div
       className="absolute left-1/2 -translate-x-1/2 z-20 cursor-pointer"
@@ -154,9 +315,7 @@ function WaxSeal({ popping, initials = '♡' }: { popping: boolean; initials?: s
       transition={popping ? { duration: 0.45, ease: 'easeOut' } : { duration: 2.5, repeat: Infinity }}
     >
       <div className="relative w-12 h-12">
-        {/* Glow ring */}
         <div className="absolute inset-0 rounded-full bg-amber-400/40 blur-md" />
-        {/* Seal body */}
         <svg viewBox="0 0 48 48" className="w-12 h-12 drop-shadow-lg">
           <defs>
             <radialGradient id="sealG" cx="40%" cy="35%">
@@ -169,7 +328,6 @@ function WaxSeal({ popping, initials = '♡' }: { popping: boolean; initials?: s
               <stop offset="100%" stopColor="rgba(255,255,255,0)" />
             </radialGradient>
           </defs>
-          {/* 12-point starburst */}
           {Array.from({ length: 12 }).map((_, i) => {
             const a = (i * 30 * Math.PI) / 180;
             const x1 = 24 + 21 * Math.cos(a);
@@ -195,9 +353,17 @@ type ThemeStyleType = 'apple' | 'khmer' | 'vintage' | 'romantic' | 'neo-brutalis
 
 function getThemeStyleType(themeId: string): ThemeStyleType {
   const id = themeId.toLowerCase();
+  
+  // Explicit overrides for layout templates
+  if (id.includes('minimal-editorial')) return 'minimalist';
+  if (id.includes('cinematic')) return 'glassmorphism';
+  if (id.includes('apple')) return 'apple';
+  if (id.includes('khmer')) return 'khmer';
+  if (id.includes('news') || id.includes('editorial')) return 'vintage';
+  if (id.includes('romantic') || id.includes('bloom')) return 'romantic';
+  
   // Khmer / gold / royal
   if (
-    id.includes('khmer') ||
     id.includes('gold') ||
     id.includes('emerald') ||
     id.includes('royal') ||
@@ -211,15 +377,11 @@ function getThemeStyleType(themeId: string): ThemeStyleType {
   if (
     id.includes('film') ||
     id.includes('vintage') ||
-    id.includes('news') ||
-    id.includes('editorial') ||
     id.includes('chronicle') ||
-    id.includes('fashion') ||
-    id.includes('cinematic')
+    id.includes('fashion')
   ) return 'vintage';
   // Romantic
   if (
-    id.includes('romantic') ||
     id.includes('rose') ||
     id.includes('sakura') ||
     id.includes('floral') ||
@@ -595,11 +757,11 @@ const getEventTitleAnimationProps = (anim?: string, targetOpacity = 1): any => {
 };
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePreview = false }: EnvelopeProps) {
+export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePreview = false, layoutTemplate }: EnvelopeProps) {
   const { t, lang } = useLanguage();
   const { settings } = useWeddingData();
   const { theme, isDark } = useTheme();
-  const themeStyle = getThemeStyleType(theme.id);
+  const themeStyle = getThemeStyleType(layoutTemplate || theme.id);
   const envStyles = getEnvelopeStyles(themeStyle, isDark);
 
   const renderCorner = () => {
@@ -965,7 +1127,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
                 </AnimatePresence>
 
                 {/* ─ Wax seal (on top of flap join) ─ */}
-                <WaxSeal popping={sealPopping} initials={initials} />
+                <WaxSeal popping={sealPopping} initials={initials} themeStyle={themeStyle} />
               </motion.div>
             </div>
 
