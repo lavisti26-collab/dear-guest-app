@@ -194,7 +194,21 @@ export function settingsFromDb(
       layoutTemplate: String(row?.layout_template ?? defaults.layoutTemplate),
       fontPair: String(row?.font_pair ?? defaults.fontPair),
       animationStyle: String(row?.animation_style ?? defaults.animationStyle),
-      coupleCardConfig: row?.couple_card_config ? (row.couple_card_config as any) : defaults.coupleCardConfig,
+      coupleCardConfig: (() => {
+        const raw = row?.couple_card_config ? (row.couple_card_config as any) : {};
+        const config = { ...raw };
+        delete config.envelopeConfig;
+        delete config.layoutCustomizations;
+        return Object.keys(config).length > 0 ? config : defaults.coupleCardConfig;
+      })(),
+      envelopeCardConfig: (() => {
+        const raw = row?.couple_card_config ? (row.couple_card_config as any) : {};
+        return raw.envelopeConfig || defaults.envelopeCardConfig || defaults.coupleCardConfig;
+      })(),
+      layoutCustomizations: (() => {
+        const raw = row?.couple_card_config ? (row.couple_card_config as any) : {};
+        return raw.layoutCustomizations || {};
+      })(),
     },
     bankName: String(row?.gift_bank_name ?? ''),
     bankAccount: String(row?.gift_account_number ?? ''),
@@ -255,12 +269,34 @@ export const SETTINGS_APP_TO_DB: Partial<Record<keyof WeddingSettings, string>> 
   coupleCardConfig: 'couple_card_config',
 };
 
-export function settingsUpdateToDb(s: Partial<WeddingSettings>): Record<string, unknown> {
+export function settingsUpdateToDb(s: Partial<WeddingSettings>, currentFullSettings?: WeddingSettings): Record<string, unknown> {
   const dbUpdate: Record<string, unknown> = {};
   for (const [k, col] of Object.entries(SETTINGS_APP_TO_DB)) {
     const v = s[k as keyof WeddingSettings];
     if (v !== undefined && col) dbUpdate[col] = v;
   }
+
+  // Pack nested configs into the couple_card_config JSONB column
+  if (s.coupleCardConfig !== undefined || s.envelopeCardConfig !== undefined || s.layoutCustomizations !== undefined) {
+    const prevConfig = currentFullSettings?.coupleCardConfig || {};
+    const prevEnvelope = currentFullSettings?.envelopeCardConfig || {};
+    const prevLayouts = currentFullSettings?.layoutCustomizations || {};
+
+    const nextConfig = s.coupleCardConfig !== undefined ? s.coupleCardConfig : prevConfig;
+    const nextEnvelope = s.envelopeCardConfig !== undefined ? s.envelopeCardConfig : prevEnvelope;
+    const nextLayouts = s.layoutCustomizations !== undefined ? s.layoutCustomizations : prevLayouts;
+
+    const cleanConfig = { ...nextConfig };
+    delete (cleanConfig as any).envelopeConfig;
+    delete (cleanConfig as any).layoutCustomizations;
+
+    dbUpdate.couple_card_config = {
+      ...cleanConfig,
+      envelopeConfig: nextEnvelope,
+      layoutCustomizations: nextLayouts,
+    };
+  }
+
   return dbUpdate;
 }
 

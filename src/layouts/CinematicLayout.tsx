@@ -143,13 +143,13 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
           box-shadow: 0 15px 50px -20px rgba(26, 10, 0, 0.15) !important;
         }
 
-        /* ── Re-skin standard layout cards into frosted white glass ── */
-        [data-layout="cinematic"] .card,
-        [data-layout="cinematic"] [class*="rounded-3xl"].p-6,
-        [data-layout="cinematic"] [class*="rounded-2xl"].p-6,
-        [data-layout="cinematic"] [class*="bg-white"],
-        [data-layout="cinematic"] [class*="bg-card"],
-        [data-layout="cinematic"] .luxury-card {
+        /* ── Re-skin standard layout cards into frosted white glass (excluding the Hero card) ── */
+        [data-layout="cinematic"] :not(#hero) .card,
+        [data-layout="cinematic"] :not(#hero) [class*="rounded-3xl"].p-6,
+        [data-layout="cinematic"] :not(#hero) [class*="rounded-2xl"].p-6,
+        [data-layout="cinematic"] :not(#hero) [class*="bg-white"],
+        [data-layout="cinematic"] :not(#hero) [class*="bg-card"],
+        [data-layout="cinematic"] :not(#hero) .luxury-card {
           background-color: var(--cl-card-bg) !important;
           backdrop-filter: blur(20px) saturate(125%) !important;
           -webkit-backdrop-filter: blur(20px) saturate(125%) !important;

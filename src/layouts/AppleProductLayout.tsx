@@ -69,13 +69,13 @@ export default function AppleProductLayout({ initialGuestName }: { initialGuestN
           color: var(--ap-text-primary);
         }
 
-        /* ── Re-skin standard layout cards into Apple gray blocks ── */
-        [data-layout="apple-product"] .card,
-        [data-layout="apple-product"] [class*="rounded-3xl"].p-6,
-        [data-layout="apple-product"] [class*="rounded-2xl"].p-6,
-        [data-layout="apple-product"] [class*="bg-white"],
-        [data-layout="apple-product"] [class*="bg-card"],
-        [data-layout="apple-product"] .luxury-card {
+        /* ── Re-skin standard layout cards into Apple gray blocks (excluding the Hero card) ── */
+        [data-layout="apple-product"] :not(#hero) .card,
+        [data-layout="apple-product"] :not(#hero) [class*="rounded-3xl"].p-6,
+        [data-layout="apple-product"] :not(#hero) [class*="rounded-2xl"].p-6,
+        [data-layout="apple-product"] :not(#hero) [class*="bg-white"],
+        [data-layout="apple-product"] :not(#hero) [class*="bg-card"],
+        [data-layout="apple-product"] :not(#hero) .luxury-card {
           background-color: var(--ap-card-bg) !important;
           border: 1px solid var(--ap-border) !important;
           color: var(--ap-text-primary) !important;

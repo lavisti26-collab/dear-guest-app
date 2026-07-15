@@ -142,6 +142,10 @@ export interface WeddingSettings {
   animationStyle?: string;
   /** Couple card visual customization saved from CoupleCardStudio */
   coupleCardConfig?: CoupleCardConfig;
+  /** Envelope card visual customization */
+  envelopeCardConfig?: CoupleCardConfig;
+  /** Layout-specific customization overrides */
+  layoutCustomizations?: Record<string, any>;
 }
 
 export interface Photo {
@@ -699,17 +703,202 @@ export function WeddingDataProvider({ children, ownerUserId, publicProfile, gues
     setGiftEnabledState(v);
   }, [settingsId, ownerUserId, ensureSettingsRow]);
 
+  // Helper function to return beautiful layout-specific default styles
+  const getLayoutDefaults = (layoutKey: string): Partial<WeddingSettings> => {
+    const base = {
+      fontPair: 'elegant-serif',
+      eventTitleFont: 'Moul',
+      coupleCardConfig: {
+        groomFont: 'Moul',
+        brideFont: 'Moul',
+        ambiance: 'flowers' as const,
+        ornament: 'kbach' as const,
+        accentColor: '#D4AF37',
+        fontSize: 1.0,
+        layout: 'vertical' as const,
+        connector: 'hearts' as const,
+        cardStyle: 'dark-glass' as const,
+        textEffect: 'none' as const,
+        bgOpacity: 0.38,
+        bgBlur: 14,
+      },
+      envelopeCardConfig: {
+        groomFont: 'Moul',
+        brideFont: 'Moul',
+        ambiance: 'flowers' as const,
+        ornament: 'kbach' as const,
+        accentColor: '#D4AF37',
+        fontSize: 1.0,
+        layout: 'vertical' as const,
+        connector: 'hearts' as const,
+        cardStyle: 'dark-glass' as const,
+        textEffect: 'none' as const,
+        bgOpacity: 0.38,
+        bgBlur: 14,
+      }
+    };
+
+    if (layoutKey === 'khmer-traditional') {
+      return {
+        fontPair: 'traditional-khmer',
+        eventTitleFont: 'Moul',
+        coupleCardConfig: {
+          ...base.coupleCardConfig,
+          groomFont: 'Moul',
+          brideFont: 'Moul',
+          accentColor: '#C9913A',
+          cardStyle: 'dark-glass',
+          ornament: 'kbach',
+        },
+        envelopeCardConfig: {
+          ...base.envelopeCardConfig,
+          groomFont: 'Moul',
+          brideFont: 'Moul',
+          accentColor: '#C9913A',
+          cardStyle: 'dark-glass',
+          ornament: 'kbach',
+        }
+      };
+    }
+
+    if (layoutKey === 'newspaper' || layoutKey === 'newspaper-editorial') {
+      return {
+        fontPair: 'classic-serif',
+        eventTitleFont: 'Playfair Display',
+        coupleCardConfig: {
+          ...base.coupleCardConfig,
+          groomFont: 'Playfair Display',
+          brideFont: 'Playfair Display',
+          accentColor: '#111111',
+          cardStyle: 'vintage-parchment',
+          ornament: 'none',
+        },
+        envelopeCardConfig: {
+          ...base.envelopeCardConfig,
+          groomFont: 'Playfair Display',
+          brideFont: 'Playfair Display',
+          accentColor: '#111111',
+          cardStyle: 'vintage-parchment',
+          ornament: 'none',
+        }
+      };
+    }
+
+    if (layoutKey === 'apple-product') {
+      return {
+        fontPair: 'modern-sans',
+        eventTitleFont: 'Inter',
+        coupleCardConfig: {
+          ...base.coupleCardConfig,
+          groomFont: 'Inter',
+          brideFont: 'Inter',
+          accentColor: '#2997ff',
+          cardStyle: 'minimal-clean',
+          ornament: 'none',
+        },
+        envelopeCardConfig: {
+          ...base.envelopeCardConfig,
+          groomFont: 'Inter',
+          brideFont: 'Inter',
+          accentColor: '#2997ff',
+          cardStyle: 'minimal-clean',
+          ornament: 'none',
+        }
+      };
+    }
+
+    if (layoutKey === 'cinematic') {
+      return {
+        fontPair: 'elegant-serif',
+        eventTitleFont: 'Cinzel',
+        coupleCardConfig: {
+          ...base.coupleCardConfig,
+          groomFont: 'Cinzel',
+          brideFont: 'Cinzel',
+          accentColor: '#ffffff',
+          cardStyle: 'light-glass',
+          ornament: 'none',
+        },
+        envelopeCardConfig: {
+          ...base.envelopeCardConfig,
+          groomFont: 'Cinzel',
+          brideFont: 'Cinzel',
+          accentColor: '#ffffff',
+          cardStyle: 'light-glass',
+          ornament: 'none',
+        }
+      };
+    }
+
+    return base;
+  };
+
   const updateSettings = useCallback(async (s: Partial<WeddingSettings>) => {
-    const dbUpdate = settingsUpdateToDb(s);
+    // 1. Resolve layout template changes to merge/load customizations
+    let nextSettings = { ...s };
+    if (s.layoutTemplate !== undefined && s.layoutTemplate !== settingsRef.current.layoutTemplate) {
+      const oldLayout = settingsRef.current.layoutTemplate || 'classic-scroll';
+      const newLayout = s.layoutTemplate;
+
+      // Save current active styling to the old layout slot
+      const currentLayouts = { ...(settingsRef.current.layoutCustomizations || {}) };
+      currentLayouts[oldLayout] = {
+        fontPair: settingsRef.current.fontPair,
+        eventTitleFont: settingsRef.current.eventTitleFont,
+        eventTitleSize: settingsRef.current.eventTitleSize,
+        eventTitleAnimation: settingsRef.current.eventTitleAnimation,
+        eventTitleOpacity: settingsRef.current.eventTitleOpacity,
+        coupleCardConfig: settingsRef.current.coupleCardConfig,
+        envelopeCardConfig: settingsRef.current.envelopeCardConfig,
+      };
+
+      // Load from the new layout slot
+      const savedForNew = currentLayouts[newLayout] || getLayoutDefaults(newLayout);
+      
+      nextSettings = {
+        ...nextSettings,
+        fontPair: savedForNew.fontPair !== undefined ? savedForNew.fontPair : nextSettings.fontPair,
+        eventTitleFont: savedForNew.eventTitleFont !== undefined ? savedForNew.eventTitleFont : nextSettings.eventTitleFont,
+        eventTitleSize: savedForNew.eventTitleSize !== undefined ? savedForNew.eventTitleSize : nextSettings.eventTitleSize,
+        eventTitleAnimation: savedForNew.eventTitleAnimation !== undefined ? savedForNew.eventTitleAnimation : nextSettings.eventTitleAnimation,
+        eventTitleOpacity: savedForNew.eventTitleOpacity !== undefined ? savedForNew.eventTitleOpacity : nextSettings.eventTitleOpacity,
+        coupleCardConfig: savedForNew.coupleCardConfig !== undefined ? savedForNew.coupleCardConfig : nextSettings.coupleCardConfig,
+        envelopeCardConfig: savedForNew.envelopeCardConfig !== undefined ? savedForNew.envelopeCardConfig : nextSettings.envelopeCardConfig,
+        layoutCustomizations: currentLayouts,
+      };
+    } else {
+      // If we are just editing style values for the active layout, save them under the active layout's slot
+      const activeLayout = settingsRef.current.layoutTemplate || 'classic-scroll';
+      const currentLayouts = { ...(settingsRef.current.layoutCustomizations || {}) };
+      const currentSaved = currentLayouts[activeLayout] || {};
+
+      const updatedSaved = {
+        ...currentSaved,
+        ...(s.fontPair !== undefined ? { fontPair: s.fontPair } : {}),
+        ...(s.eventTitleFont !== undefined ? { eventTitleFont: s.eventTitleFont } : {}),
+        ...(s.eventTitleSize !== undefined ? { eventTitleSize: s.eventTitleSize } : {}),
+        ...(s.eventTitleAnimation !== undefined ? { eventTitleAnimation: s.eventTitleAnimation } : {}),
+        ...(s.eventTitleOpacity !== undefined ? { eventTitleOpacity: s.eventTitleOpacity } : {}),
+        ...(s.coupleCardConfig !== undefined ? { coupleCardConfig: s.coupleCardConfig } : {}),
+        ...(s.envelopeCardConfig !== undefined ? { envelopeCardConfig: s.envelopeCardConfig } : {}),
+      };
+
+      if (Object.keys(updatedSaved).length > 0) {
+        currentLayouts[activeLayout] = updatedSaved;
+        nextSettings.layoutCustomizations = currentLayouts;
+      }
+    }
+
+    const dbUpdate = settingsUpdateToDb(nextSettings, settingsRef.current);
     if (Object.keys(dbUpdate).length === 0) return;
 
-    setSettings((prev) => ({ ...prev, ...s }));
-    Object.entries(s).forEach(([key, value]) => {
+    setSettings((prev) => ({ ...prev, ...nextSettings }));
+    Object.entries(nextSettings).forEach(([key, value]) => {
       if (value !== undefined) pendingSettingsRef.current[key] = value;
     });
 
     if (!isOnline) {
-      pendingSettingsQueueRef.current.push(s);
+      pendingSettingsQueueRef.current.push(nextSettings);
       return;
     }
 
@@ -718,11 +907,11 @@ export function WeddingDataProvider({ children, ownerUserId, publicProfile, gues
     const { error } = await client.from('settings').update(dbUpdate as any).eq('id', id);
     if (error) {
       console.warn('Settings update failed, queueing for retry', error.message);
-      pendingSettingsQueueRef.current.push(s);
+      pendingSettingsQueueRef.current.push(nextSettings);
       return;
     }
 
-    Object.keys(s).forEach((key) => {
+    Object.keys(nextSettings).forEach((key) => {
       delete pendingSettingsRef.current[key];
     });
   }, [ensureSettingsRow, isOnline]);

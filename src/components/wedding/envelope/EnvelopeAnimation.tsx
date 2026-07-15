@@ -815,8 +815,9 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
   const weddingDate  = lang === 'km' ? settings.weddingDateKm  : settings.weddingDate;
   const eventTitle   = lang === 'km' ? settings.eventTitleKm : settings.eventTitleEn;
 
-  // Resolve custom font from coupleCardConfig
-  const resolvedFont = settings?.coupleCardConfig?.groomFont || 'auto';
+  // Resolve custom font from envelopeCardConfig (fall back to coupleCardConfig if empty)
+  const envelopeConfig = settings?.envelopeCardConfig || settings?.coupleCardConfig;
+  const resolvedFont = envelopeConfig?.groomFont || 'auto';
   
   const fontFamily = resolvedFont && resolvedFont !== 'auto'
     ? getFontStack(resolvedFont)
@@ -827,9 +828,8 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
     : "'Kantumruy Pro', 'Noto Sans Khmer', sans-serif";
 
   // Resolve custom text effect
-  const cardConfig = settings?.coupleCardConfig;
-  const textEffect = cardConfig?.textEffect || 'none';
-  const textEffectStyle = getTextStyle(textEffect, '#8B0000', cardConfig?.accentColor || '#D4AF37');
+  const textEffect = envelopeConfig?.textEffect || 'none';
+  const textEffectStyle = getTextStyle(textEffect, '#8B0000', envelopeConfig?.accentColor || '#D4AF37');
 
   // Compute English initials for the wax seal
   const { groom: enGroom, bride: enBride } = splitCoupleNames(settings.coupleNames || '');

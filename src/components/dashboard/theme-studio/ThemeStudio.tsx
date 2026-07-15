@@ -341,9 +341,22 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
     }
   };
 
-  const cfg: CoupleCardConfig = { ...DEFAULT_COUPLE_CARD_CONFIG, ...(data.settings.coupleCardConfig || {}) };
-  const patch = (partial: Partial<CoupleCardConfig>) =>
-    data.updateSettings({ coupleCardConfig: { ...cfg, ...partial } });
+  const isEditingEnvelope = previewMode === 'envelope';
+  const cfg: CoupleCardConfig = {
+    ...DEFAULT_COUPLE_CARD_CONFIG,
+    ...(isEditingEnvelope
+      ? (data.settings.envelopeCardConfig || data.settings.coupleCardConfig || {})
+      : (data.settings.coupleCardConfig || {})
+    )
+  };
+  const patch = (partial: Partial<CoupleCardConfig>) => {
+    if (isEditingEnvelope) {
+      const currentEnv = data.settings.envelopeCardConfig || data.settings.coupleCardConfig || {};
+      data.updateSettings({ envelopeCardConfig: { ...currentEnv, ...partial } });
+    } else {
+      data.updateSettings({ coupleCardConfig: { ...cfg, ...partial } });
+    }
+  };
 
   const inputClass = "w-full min-h-[48px] rounded-xl border border-[#E6DFD3] bg-white px-4 text-[#2C2620] focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] outline-none transition-all text-sm";
   const labelClass = "text-xs font-semibold text-[#8C7A6B] block mb-1.5 uppercase tracking-wider";
@@ -964,6 +977,7 @@ export default function ThemeStudio({ ownerUserId }: ThemeStudioProps) {
                       isOpen={false}
                       onOpen={() => {}}
                       inlinePreview={true}
+                      layoutTemplate={data.settings.layoutTemplate}
                     />
                   </div>
                 )}
