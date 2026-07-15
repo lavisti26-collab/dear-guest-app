@@ -145,8 +145,8 @@ export const FONT_PAIRS: Record<string, FontPairDef> = {
   },
   'khmer-temple': {
     display: 'Bayon',
-    body: 'Siemreap',
-    khmer: 'Siemreap',
+    body: 'Kantumruy Pro',
+    khmer: 'Kantumruy Pro',
     weights: [400, 700],
     category: 'khmer-traditional',
   },
@@ -179,9 +179,9 @@ export const FONT_PAIRS: Record<string, FontPairDef> = {
     category: 'khmer-traditional',
   },
   'khmer-siemreap': {
-    display: 'Siemreap',
+    display: 'Kantumruy Pro',
     body: 'Battambang',
-    khmer: 'Siemreap',
+    khmer: 'Kantumruy Pro',
     weights: [400, 700],
     category: 'khmer-traditional',
   },

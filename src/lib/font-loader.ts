@@ -125,9 +125,14 @@ function internalInject(
   }
 
   // CSS custom properties for font stacks — ALWAYS quote font names to support names with spaces (e.g. "AKbalthom KhmerLer")
-  const displayFont = `'${pair.display}'`;
-  const bodyFont = `'${pair.body}'`;
-  const khmerFont = pair.khmer ? `'${pair.khmer}'` : `'${pair.body}'`;
+  let displayFont = `'${pair.display}'`;
+  let bodyFont = `'${pair.body}'`;
+  let khmerFont = pair.khmer ? `'${pair.khmer}'` : `'${pair.body}'`;
+
+  // Avoid the iOS CoreText rendering bug by mapping Siemreap to Kantumruy Pro
+  if (displayFont.toLowerCase().includes('siemreap')) displayFont = "'Kantumruy Pro'";
+  if (bodyFont.toLowerCase().includes('siemreap')) bodyFont = "'Kantumruy Pro'";
+  if (khmerFont.toLowerCase().includes('siemreap')) khmerFont = "'Kantumruy Pro'";
 
   faces += `
 :root {
@@ -143,7 +148,13 @@ h1.font-khmer, h2.font-khmer, h3.font-khmer, h4.font-khmer, h5.font-khmer, h6.fo
   font-family: var(--font-khmer);
 }
 .font-khmer-body { font-family: var(--font-khmer-body); }
-`;
+
+/* Force OpenType ligatures and text-rendering optimizations for all dynamic fonts */
+.font-display, .font-body, .font-khmer, .font-khmer-body, .font-khmer-display,
+h1.font-khmer, h2.font-khmer, h3.font-khmer, h4.font-khmer, h5.font-khmer, h6.font-khmer {
+  font-variant-ligatures: common-ligatures;
+  -webkit-font-variant-ligatures: common-ligatures;
+}`;
 
   style.textContent = faces;
   document.head.appendChild(style);

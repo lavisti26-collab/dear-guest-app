@@ -2,11 +2,8 @@ redirectsOrigin = "config"
 plugins = []
 headers = []
 
-[functions]
-
-[functions."*"]
-
 [build]
+edge_functions = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\WDLAST(0711)\\dear-guest-app\\netlify\\edge-functions"
 publish = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\WDLAST(0711)\\dear-guest-app\\dist"
 publishOrigin = "config"
 commandOrigin = "config"
@@ -26,6 +23,14 @@ base = "C:\\Users\\GATEWAY\\OneDrive\\Attachments\\OneDrive\\Desktop\\WDLAST(071
 [build.processing.js]
 
 [build.services]
+
+[[edge_functions]]
+path = "/invite/*"
+function = "og-meta"
+
+[functions]
+
+[functions."*"]
 
 [[redirects]]
 from = "/*"

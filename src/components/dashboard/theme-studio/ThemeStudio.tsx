@@ -179,7 +179,7 @@ function getFontStack(f?: string) {
     koulen: "'Koulen', sans-serif",
     moulpali: "'Moulpali', serif",
     preahvihear: "'Preahvihear', serif",
-    siemreap: "'Siemreap', serif",
+    siemreap: "'Kantumruy Pro', 'Noto Sans Khmer', sans-serif",
     akbalthomkhmerler: "'AKbalthom KhmerLer', sans-serif",
     khbllazyoutline: "'Kh BL LazyOutline', sans-serif",
     notosanskhmer: "'Noto Sans Khmer', sans-serif",

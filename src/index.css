@@ -550,6 +550,9 @@
 @layer base {
   * {
     @apply border-border;
+    font-variant-ligatures: common-ligatures;
+    -webkit-font-variant-ligatures: common-ligatures;
+    text-rendering: optimizeLegibility;
   }
 
   body {
@@ -557,6 +560,9 @@
     font-family: 'Figtree', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-variant-ligatures: common-ligatures;
+    -webkit-font-variant-ligatures: common-ligatures;
+    text-rendering: optimizeLegibility;
   }
 }
 

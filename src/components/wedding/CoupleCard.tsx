@@ -14,7 +14,7 @@ const FONT_MAP = {
   koulen:              "'Koulen', sans-serif",
   moulpali:            "'Moulpali', serif",
   preahvihear:         "'Preahvihear', serif",
-  siemreap:            "'Siemreap', serif",
+  siemreap:            "'Kantumruy Pro', 'Noto Sans Khmer', sans-serif",
   akbalthoMkhmerler:   "'AKbalthom KhmerLer', sans-serif",
   akbalthomkhmerler:   "'AKbalthom KhmerLer', sans-serif",
   akbalthom:           "'AKbalthom KhmerLer', sans-serif",

@@ -19,7 +19,7 @@ const FONT_MAP = {
   koulen:              "'Koulen', sans-serif",
   moulpali:            "'Moulpali', serif",
   preahvihear:         "'Preahvihear', serif",
-  siemreap:            "'Siemreap', serif",
+  siemreap:            "'Kantumruy Pro', 'Noto Sans Khmer', sans-serif",
   akbalthoMkhmerler:   "'AKbalthom KhmerLer', sans-serif",
   akbalthomkhmerler:   "'AKbalthom KhmerLer', sans-serif",
   akbalthom:           "'AKbalthom KhmerLer', sans-serif",
@@ -658,7 +658,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
     ? "'Moul', 'Koulen', serif"
     : themeStyle === 'vintage'
     ? "'Hanuman', 'Koh Santepheap', serif"
-    : "'Kantumruy Pro', 'Siemreap', sans-serif";
+    : "'Kantumruy Pro', 'Noto Sans Khmer', sans-serif";
 
   // Resolve custom text effect
   const cardConfig = settings?.coupleCardConfig;

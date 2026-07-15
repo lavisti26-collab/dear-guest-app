@@ -38,6 +38,9 @@
   --kt-cream: #F7EDD8;
   --kt-ink:   #1A0A00;
   --kt-muted: #B8892A;
+  font-variant-ligatures: common-ligatures;
+  -webkit-font-variant-ligatures: common-ligatures;
+  text-rendering: optimizeLegibility;
 
   --kt-space-1: 8px;
   --kt-space-2: 16px;
