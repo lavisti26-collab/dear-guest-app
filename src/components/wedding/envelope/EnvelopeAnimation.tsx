@@ -258,9 +258,9 @@ function WaxSeal({ popping, initials = '♡', themeStyle }: { popping: boolean; 
               strokeDasharray="3,3"
             />
             {/* Inner picture border */}
-            <rect x="5" y="5" width="30" height="38" fill="#F4EDE0" stroke="#111111" strokeWidth="0.6" />
+            <rect x="5" y="5" width="30" height="38" fill="#F4EDE0" stroke="#800020" strokeWidth="0.6" />
             {/* Debossed Initials stamp */}
-            <text x="20" y="27" textAnchor="middle" fontSize="10" fill="#111111" fontFamily="serif" fontWeight="bold">
+            <text x="20" y="27" textAnchor="middle" fontSize="10" fill="#800020" fontFamily="serif" fontWeight="bold">
               {initials}
             </text>
             {/* Circular Postmark overlay */}
@@ -482,18 +482,18 @@ function getEnvelopeStyles(themeStyle: ThemeStyleType, isDark: boolean): Envelop
     return {
       containerBg: 'radial-gradient(ellipse at 30% 40%, #F5F2EB 0%, #EBE7DC 60%, #DDD8C8 100%)',
       envelopeBg: '#EBE7DC',
-      envelopeBorder: '2px solid #111111',
+      envelopeBorder: '2px solid #800020',
       flapFaceBg: '#EBE7DC',
       flapInnerBg: '#DDD8C8',
-      liningBg: 'repeating-linear-gradient(45deg, rgba(17, 17, 17, 0.05) 0px, rgba(17, 17, 17, 0.05) 1px, transparent 1px, transparent 8px)',
-      dividerLineColor: 'rgba(17, 17, 17, 0.12)',
+      liningBg: 'repeating-linear-gradient(45deg, rgba(128, 0, 32, 0.05) 0px, rgba(128, 0, 32, 0.05) 1px, transparent 1px, transparent 8px)',
+      dividerLineColor: 'rgba(128, 0, 32, 0.12)',
       shadowColor: 'rgba(0, 0, 0, 0.15)',
       helperTextColor: 'text-neutral-700/60',
-      btnBg: '#111111',
-      btnHoverBg: '#222222',
-      btnShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-      btnBorder: '1px solid #111111',
-      accentStarsColor: 'rgba(17, 17, 17, 0.2)',
+      btnBg: '#800020',
+      btnHoverBg: '#9B1C31',
+      btnShadow: '0 4px 12px rgba(128, 0, 32, 0.15)',
+      btnBorder: '1px solid #800020',
+      accentStarsColor: 'rgba(128, 0, 32, 0.25)',
       glowOpacity: 0,
       isDark: false,
     };
