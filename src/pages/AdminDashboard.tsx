@@ -1823,6 +1823,7 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                         { id: 'card-stack', emoji: '🃏', name: 'Card Stack', desc: '3D stacked cards' },
                         { id: 'newspaper', emoji: '📜', name: 'Newspaper', desc: 'Vintage columns' },
                         { id: 'apple-product', emoji: '✨', name: 'Apple Product', desc: 'Minimal launch style' },
+                        { id: 'newspaper-editorial', emoji: '🗞️', name: 'Newspaper Ed.', desc: 'Broadsheet print style' },
                       ] as const).map((layout) => {
                         const current = data.settings.layoutTemplate || 'classic-scroll';
                         const isSelected = current === layout.id;

@@ -32,6 +32,7 @@ import KhmerTraditionalLayout from '@/layouts/KhmerTraditionalLayout';
 import CardStackLayout from '@/layouts/CardStackLayout';
 import NewspaperLayout from '@/layouts/NewspaperLayout';
 import AppleProductLayout from '@/layouts/AppleProductLayout';
+import NewspaperEditorialLayout from '@/layouts/NewspaperEditorialLayout';
 import injectFontFaces, { injectCustomFont } from '@/lib/font-loader';
 
 export function normalizeGuestName(rawName?: string) {
@@ -125,8 +126,8 @@ function InvitationContent({ initialGuestName, initialGuestId }: { initialGuestN
                 Suppressed for khmer-traditional, newspaper, and apple-product —
                 those themes use hand-coded SVG icons or typographic elements,
                 no emoji decoration. */}
-            {!['khmer-traditional', 'newspaper', 'apple-product'].includes(settings?.layoutTemplate ?? '') && <CuteEmojiRain />}
-            {!['khmer-traditional', 'newspaper', 'apple-product'].includes(settings?.layoutTemplate ?? '') && <EmojiTrail />}
+            {!['khmer-traditional', 'newspaper', 'apple-product', 'newspaper-editorial'].includes(settings?.layoutTemplate ?? '') && <CuteEmojiRain />}
+            {!['khmer-traditional', 'newspaper', 'apple-product', 'newspaper-editorial'].includes(settings?.layoutTemplate ?? '') && <EmojiTrail />}
             <LanguageSwitcher />
             <MusicToggle />
             <FloatingNavBar />
@@ -144,6 +145,7 @@ function InvitationContent({ initialGuestName, initialGuestId }: { initialGuestN
                     'card-stack': CardStackLayout,
                     newspaper: NewspaperLayout,
                     'apple-product': AppleProductLayout,
+                    'newspaper-editorial': NewspaperEditorialLayout,
                   };
                   const Chosen = map[layoutKey] || ClassicScrollLayout;
                   return <Chosen initialGuestName={guestName} />;
