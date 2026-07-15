@@ -139,7 +139,7 @@ export default function MusicToggle() {
 
   return (
     <div 
-      className="fixed bottom-[84px] sm:bottom-6 right-6 z-40 flex items-center gap-3 justify-end"
+      className="fixed bottom-[84px] sm:bottom-6 right-6 z-40 flex items-center gap-2 justify-end"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -150,7 +150,7 @@ export default function MusicToggle() {
             initial={{ opacity: 0, x: 8, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 4, scale: 0.95 }}
-            className={`px-3 py-1.5 rounded-xl text-[10px] font-sans font-semibold tracking-wider uppercase border shadow-md select-none pointer-events-none ${
+            className={`px-2.5 py-1 rounded-lg text-[9px] font-sans font-semibold tracking-wider uppercase border shadow-md select-none pointer-events-none ${
               isDark 
                 ? 'bg-neutral-900/95 border-white/10 text-white' 
                 : 'bg-white/95 border-[#E6DFD3] text-neutral-800'
@@ -167,7 +167,7 @@ export default function MusicToggle() {
           {particles.map((p) => (
             <motion.span
               key={p.id}
-              className="absolute text-xs font-bold pointer-events-none select-none"
+              className="absolute text-[10px] font-bold pointer-events-none select-none"
               style={{ 
                 left: '50%', 
                 bottom: '100%', 
@@ -175,9 +175,9 @@ export default function MusicToggle() {
                 textShadow: '0 2px 4px rgba(0,0,0,0.06)'
               }}
               initial={{ opacity: 0, x: 0, y: 0, scale: p.scale, rotate: p.rotate }}
-              animate={{ opacity: [0, 0.85, 0], x: p.x, y: -90, rotate: p.rotate * 1.5 }}
+              animate={{ opacity: [0, 0.85, 0], x: p.x, y: -70, rotate: p.rotate * 1.5 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 3.2, ease: 'easeOut' }}
+              transition={{ duration: 2.8, ease: 'easeOut' }}
             >
               {p.emoji}
             </motion.span>
@@ -190,17 +190,17 @@ export default function MusicToggle() {
           e.stopPropagation();
           togglePlay();
         }}
-        initial={{ padding: '14px 14px' }}
-        whileHover={{ padding: '16px 22px' }}
-        whileTap={{ padding: '16px 22px' }}
-        transition={{ duration: 0.8, bounce: 0.55, type: 'spring' }}
-        className={`cursor-pointer rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex items-center justify-center relative overflow-hidden border ${
+        initial={{ padding: '10px 10px' }}
+        whileHover={{ padding: '12px 12px' }}
+        whileTap={{ padding: '11px 11px' }}
+        transition={{ duration: 0.6, bounce: 0.3, type: 'spring' }}
+        className={`cursor-pointer rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.05)] flex items-center justify-center relative overflow-hidden border ${
           isDark 
             ? 'bg-neutral-950 border-white/10' 
             : 'bg-white border-[#E6DFD3]'
         }`}
         style={{
-          borderWidth: '1.5px',
+          borderWidth: '1.2px',
         }}
         type="button"
         aria-label={playing ? 'Pause music' : 'Play music'}
@@ -209,7 +209,7 @@ export default function MusicToggle() {
         {playing && (
           <motion.div
             className="absolute inset-0 rounded-full"
-            style={{ border: `1.5px solid ${accentColor}40` }}
+            style={{ border: `1.2px solid ${accentColor}40` }}
             animate={{ scale: [1, 1.45], opacity: [0.4, 0] }}
             transition={{ repeat: Infinity, duration: 2.2, ease: 'easeOut' }}
           />
@@ -219,12 +219,12 @@ export default function MusicToggle() {
         <motion.div
           initial={{ opacity: 0, filter: 'blur(4px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
-          className="flex h-[18px] items-center gap-1 rounded-full relative z-10"
+          className="flex h-[13px] items-center gap-[2.5px] rounded-full relative z-10"
         >
           {heights.map((height, index) => (
             <motion.div
               key={index}
-              className={`w-[2.2px] rounded-full ${
+              className={`w-[1.8px] rounded-full ${
                 isDark ? 'bg-white' : 'bg-neutral-950'
               }`}
               style={{
@@ -232,7 +232,7 @@ export default function MusicToggle() {
               }}
               initial={{ height: 1 }}
               animate={{
-                height: Math.max(4, height * 14),
+                height: Math.max(3, height * 10),
               }}
               transition={{
                 type: 'spring',
