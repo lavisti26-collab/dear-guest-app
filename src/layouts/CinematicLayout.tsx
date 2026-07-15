@@ -119,13 +119,28 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
       <style>{`
         [data-layout="cinematic"] {
           --cl-bg: #FAF6EE;
-          --cl-card-bg: rgba(255, 255, 255, 0.76);
-          --cl-border: rgba(201, 147, 42, 0.35);
+          --cl-card-bg: rgba(255, 255, 255, 0.65);
+          --cl-border: rgba(201, 147, 42, 0.3);
           --cl-accent: #b8892a;
           --cl-text-primary: #1a0a00;
           --cl-text-secondary: #5a4b3b;
           background-color: var(--cl-bg);
           color: var(--cl-text-primary);
+        }
+
+        /* ── Hide HeroSection's separate background so the layout's full crossfade background shows ── */
+        [data-layout="cinematic"] #hero > div:first-child {
+          display: none !important;
+        }
+
+        /* ── Make the Hero couple card look like frosted glass ── */
+        [data-layout="cinematic"] .hero-glass-card {
+          background-color: rgba(255, 255, 255, 0.65) !important;
+          backdrop-filter: blur(20px) !important;
+          -webkit-backdrop-filter: blur(20px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.4) !important;
+          color: #1a0a00 !important;
+          box-shadow: 0 15px 50px -20px rgba(26, 10, 0, 0.15) !important;
         }
 
         /* ── Re-skin standard layout cards into frosted white glass ── */
@@ -136,11 +151,11 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
         [data-layout="cinematic"] [class*="bg-card"],
         [data-layout="cinematic"] .luxury-card {
           background-color: var(--cl-card-bg) !important;
-          backdrop-filter: blur(25px) saturate(125%) !important;
-          -webkit-backdrop-filter: blur(25px) saturate(125%) !important;
-          border: 1px solid rgba(255, 255, 255, 0.5) !important;
+          backdrop-filter: blur(20px) saturate(125%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(125%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.45) !important;
           color: var(--cl-text-primary) !important;
-          box-shadow: 0 15px 50px -20px rgba(26, 10, 0, 0.15) !important;
+          box-shadow: 0 10px 40px -15px rgba(26, 10, 0, 0.12) !important;
           border-radius: 24px !important;
         }
 
@@ -255,11 +270,11 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
         })}
       </div>
 
-      {/* ══ Frosted Warm Light Mask (Text Legibility) ════════════════════════ */}
+      {/* ══ Transparent Contrast Vignette (No Blur on background image) ══ */}
       <div
-        className="fixed inset-0 pointer-events-none z-0 bg-white/20 backdrop-blur-[3.5px]"
+        className="fixed inset-0 pointer-events-none z-0 bg-black/5"
         style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,248,235,0.2) 30%, rgba(255,248,235,0.5) 100%)',
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.2) 20%, rgba(26,10,0,0.25) 100%)',
         }}
       />
 
