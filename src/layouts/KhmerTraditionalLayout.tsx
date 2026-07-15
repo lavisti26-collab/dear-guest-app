@@ -1,27 +1,24 @@
 /**
  * KhmerTraditionalLayout.tsx
  *
- * A complete redesign of the Khmer Traditional invitation layout.
- *
  * DESIGN PHILOSOPHY:
- * This layout should feel like a physical Khmer wedding invitation:
- * heavyweight matte stock, debossed gold foil borders, 4–6 panel fold-out.
- * Every section is a discrete panel — like lifting a card from an envelope.
+ * Physical Khmer wedding invitation: heavyweight matte stock, debossed gold
+ * foil borders, 4–6 panel fold-out. Every section is a discrete panel —
+ * like lifting a card from an envelope.
  *
- * WHAT'S DIFFERENT FROM THE OLD LAYOUT:
- * - data-layout="khmer-traditional" activates layout-khmer.css
- * - data-visual-style="royal-khmer" gives HeroSection its correct overlay
- * - Each section is wrapped in KbachFrame (ornamental SVG borders)
- * - Opening masthead: bilingual title strip + top ornamental band
- * - Emoji decorations (✦ ✨ ❋) replaced with SVG LotusIcon / KbachDiamond
- * - RSVP elevated to a full-width wax-seal CTA at the bottom
- * - Ceremony-paced motion: 800ms expo ease-out, no spring bounce
- * - Closing seal with lotus ornament
+ * IMPROVEMENTS vs. previous version:
+ * - HeroSection now receives guestName prop ✓
+ * - Masthead shows live coupleNames + weddingDate from settings ✓
+ * - SectionLabel uses dynamic titles from settings (not hardcoded) ✓
+ * - Staggered CeremonyReveal delays (0 → 0.05 → 0.10 … ) ✓
+ * - ClosingSeal shows couple names from settings ✓
+ * - Masthead subtitle shows eventTitleKm / eventTitleEn ✓
  */
 
 import React, { useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWeddingData } from '@/contexts/WeddingDataContext';
 import { applyVisualStyle } from '@/contexts/VisualStyleContext';
 import HeroSection from '@/components/wedding/hero/HeroSection';
 import GreetingSection from '@/components/wedding/GreetingSection';
@@ -41,7 +38,6 @@ const KT_GOLD = '#C9932A';
 const KT_RED  = '#8B1A1A';
 
 // ─── Ceremony-pace reveal wrapper ──────────────────────────────────────────
-// No spring bounce. Expo ease-out — like a curtain parting.
 const CEREMONY_EASE = [0.16, 1, 0.3, 1] as const;
 
 interface RevealProps {
@@ -56,7 +52,7 @@ function CeremonyReveal({ children, delay = 0 }: RevealProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      viewport={{ once: true, amount: 0.12 }}
       transition={{ duration: 0.8, delay, ease: CEREMONY_EASE }}
     >
       {children}
@@ -64,73 +60,131 @@ function CeremonyReveal({ children, delay = 0 }: RevealProps) {
   );
 }
 
-// ─── Opening masthead ornament ─────────────────────────────────────────────
-// The "edition header" of the invitation — institution name, date line.
+// ─── Opening masthead — shows live couple names + event title ──────────────
 function KhmerMasthead() {
   const { lang } = useLanguage();
+  const { settings } = useWeddingData();
   const prefersReduced = useReducedMotion();
+
+  const coupleNames = lang === 'km'
+    ? (settings?.coupleNamesKm || settings?.coupleNames || 'កូនប្រុស & កូនក្រមុំ')
+    : (settings?.coupleNames || 'Groom & Bride');
+
+  const eventTitle = lang === 'km'
+    ? (settings?.eventTitleKm || 'ពិធីមង្គលការ')
+    : (settings?.eventTitleEn || 'Wedding Invitation');
+
+  const weddingDate = lang === 'km'
+    ? (settings?.weddingDateKm || settings?.weddingDate || '')
+    : (settings?.weddingDate || '');
 
   return (
     <motion.div
       className="kt-masthead text-center mb-0"
-      initial={prefersReduced ? {} : { opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={prefersReduced ? {} : { opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1.0, ease: CEREMONY_EASE }}
     >
-      {/* Eyebrow line */}
+      {/* Event type eyebrow */}
       <p
         className="kt-masthead__eyebrow"
         style={{
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "var(--font-display, 'Playfair Display', serif)",
           fontVariant: 'small-caps',
           fontSize: '0.62rem',
           letterSpacing: '0.45em',
           textTransform: 'uppercase',
           color: KT_RED,
-          marginBottom: '12px',
+          marginBottom: '8px',
         }}
       >
-        {lang === 'km' ? 'ពិធីមង្គលការ' : 'Wedding Invitation'}
+        {eventTitle}
       </p>
 
       {/* Top ornamental band */}
-      <div
+      <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto', color: KT_GOLD }}>
+        <KbachDivider />
+      </div>
+
+      {/* Couple names — the main identity of this invitation */}
+      <motion.h2
         style={{
-          width: '100%',
-          maxWidth: '600px',
-          margin: '0 auto',
-          color: KT_GOLD,
+          fontFamily: "var(--font-display, 'Moul', 'Playfair Display', serif)",
+          fontSize: 'clamp(1.4rem, 5vw, 2.2rem)',
+          color: KT_RED,
+          letterSpacing: '0.06em',
+          lineHeight: 1.3,
+          marginBlock: '12px',
         }}
+        initial={prefersReduced ? {} : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2, delay: 0.3, ease: CEREMONY_EASE }}
       >
+        {coupleNames}
+      </motion.h2>
+
+      {/* Wedding date below couple names */}
+      {weddingDate && (
+        <p
+          style={{
+            fontFamily: "var(--font-body, 'Battambang', Georgia, serif)",
+            fontSize: '0.72rem',
+            letterSpacing: '0.3em',
+            color: KT_GOLD,
+            marginBottom: '12px',
+            textTransform: 'uppercase',
+          }}
+        >
+          {weddingDate}
+        </p>
+      )}
+
+      {/* Bottom ornamental band */}
+      <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto', color: KT_GOLD }}>
         <KbachDivider />
       </div>
     </motion.div>
   );
 }
 
-// ─── Section label strip ───────────────────────────────────────────────────
-// Printed before each KbachFrame panel — like a chapter tab in a program.
+// ─── Section label strip — dynamic from settings ───────────────────────────
 interface SectionLabelProps {
   enLabel: string;
   kmLabel: string;
+  settingsKey?: 'greetingTitle' | 'detailsTitle' | 'timelineTitle' | 'galleryTitle' | 'rsvpTitle' | 'wishesTitle' | 'giftTitle' | 'contactTitle';
 }
 
-function SectionLabel({ enLabel, kmLabel }: SectionLabelProps) {
+function SectionLabel({ enLabel, kmLabel, settingsKey }: SectionLabelProps) {
   const { lang } = useLanguage();
+  const { settings } = useWeddingData();
+
+  // Try to use dynamic settings title if a settingsKey is provided
+  let label = lang === 'km' ? kmLabel : enLabel;
+  if (settingsKey && settings) {
+    const dynKm = (settings as any)[`${settingsKey}Km`];
+    const dynEn = (settings as any)[`${settingsKey}En`];
+    if (lang === 'km' && dynKm) label = dynKm;
+    else if (lang !== 'km' && dynEn) label = dynEn;
+  }
+
   return (
     <div
       className="flex items-center gap-3 mb-0 mt-12"
       aria-hidden="true"
     >
-      {/* Left rule */}
+      {/* Left rule — gold gradient */}
       <div
         className="flex-1 h-px"
-        style={{ background: `linear-gradient(to right, transparent, ${KT_GOLD}60)` }}
+        style={{ background: `linear-gradient(to right, transparent, ${KT_GOLD}70)` }}
+      />
+      {/* Lotus icon */}
+      <LotusIcon
+        style={{ width: '0.9rem', height: '0.9rem', color: KT_GOLD, flexShrink: 0, opacity: 0.8 }}
       />
       {/* Label */}
       <span
         style={{
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "var(--font-display, 'Playfair Display', serif)",
           fontVariant: 'small-caps',
           fontSize: '0.62rem',
           letterSpacing: '0.38em',
@@ -139,12 +193,16 @@ function SectionLabel({ enLabel, kmLabel }: SectionLabelProps) {
           flexShrink: 0,
         }}
       >
-        {lang === 'km' ? kmLabel : enLabel}
+        {label}
       </span>
+      {/* Lotus icon */}
+      <LotusIcon
+        style={{ width: '0.9rem', height: '0.9rem', color: KT_GOLD, flexShrink: 0, opacity: 0.8 }}
+      />
       {/* Right rule */}
       <div
         className="flex-1 h-px"
-        style={{ background: `linear-gradient(to left, transparent, ${KT_GOLD}60)` }}
+        style={{ background: `linear-gradient(to left, transparent, ${KT_GOLD}70)` }}
       />
     </div>
   );
@@ -153,7 +211,13 @@ function SectionLabel({ enLabel, kmLabel }: SectionLabelProps) {
 // ─── Closing seal ──────────────────────────────────────────────────────────
 function ClosingSeal() {
   const { lang } = useLanguage();
+  const { settings } = useWeddingData();
   const prefersReduced = useReducedMotion();
+
+  const coupleNames = lang === 'km'
+    ? (settings?.coupleNamesKm || settings?.coupleNames || '')
+    : (settings?.coupleNames || '');
+
   return (
     <CeremonyReveal delay={0.1}>
       <div className="kt-closing-seal text-center" style={{ paddingBlock: '60px' }}>
@@ -166,16 +230,30 @@ function ClosingSeal() {
         <div style={{ width: '100%', maxWidth: '500px', margin: '20px auto', color: KT_GOLD }}>
           <KbachDivider />
         </div>
+        {/* Couple names in closing */}
+        {coupleNames && (
+          <p
+            style={{
+              fontFamily: "var(--font-display, 'Moul', 'Playfair Display', serif)",
+              fontSize: '0.85rem',
+              color: '#B8892A',
+              letterSpacing: '0.12em',
+              marginBottom: '8px',
+            }}
+          >
+            {coupleNames}
+          </p>
+        )}
         {/* Closing text */}
         <p
           className="kt-closing-seal__text"
           style={{
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "var(--font-body, 'Playfair Display', serif)",
             fontStyle: 'italic',
             fontSize: '0.75rem',
             letterSpacing: '0.2em',
             color: '#B8892A',
-            marginTop: '16px',
+            marginTop: '8px',
           }}
         >
           {lang === 'km'
@@ -194,13 +272,10 @@ export default function KhmerTraditionalLayout({
 }: {
   initialGuestName?: string;
 }) {
-  // Frame gold/ink — use CSS tokens where possible, explicit fallbacks here
   const gold = KT_GOLD;
   const ink  = KT_RED;
 
-  // Apply royal-khmer visual style so HeroSection reads the correct overlay.
-  // Restore the previous data-visual-style on unmount to avoid contaminating
-  // other layouts (e.g. when navigating back to ClassicScroll).
+  // Apply royal-khmer visual style so HeroSection gets the correct overlay.
   useEffect(() => {
     const prev = document.documentElement.getAttribute('data-visual-style') ?? '';
     applyVisualStyle('royal-khmer');
@@ -214,16 +289,14 @@ export default function KhmerTraditionalLayout({
   }, []);
 
   return (
-    // data-layout activates layout-khmer.css
-    // data-visual-style activates the correct HeroSection overlay (royal-khmer)
     <div
       data-layout="khmer-traditional"
       data-visual-style="royal-khmer"
       className="khmer-traditional-layout"
       style={{ background: '#FDF6EC', minHeight: '100vh' }}
     >
-      {/* ── Full-width hero — no frame, bleeds edge-to-edge ── */}
-      <HeroSection />
+      {/* ── Full-width hero — bleeds edge-to-edge, passes guestName ── */}
+      <HeroSection guestName={initialGuestName} />
 
       {/* ── Invitation scroll body ── */}
       <div
@@ -235,11 +308,15 @@ export default function KhmerTraditionalLayout({
           paddingBlock: '0 80px',
         }}
       >
-        {/* Opening masthead */}
+        {/* Opening masthead — live couple names + date */}
         <KhmerMasthead />
 
         {/* ── Greeting ── */}
-        <SectionLabel enLabel="Dear Guest" kmLabel="ជូនដំណឹង" />
+        <SectionLabel
+          enLabel="Dear Guest"
+          kmLabel="ជូនដំណឹង"
+          settingsKey="greetingTitle"
+        />
         <CeremonyReveal delay={0}>
           <KbachFrame variant="full" gold={gold} ink={ink} className="kt-panel">
             <GreetingSection guestName={initialGuestName} />
@@ -247,7 +324,11 @@ export default function KhmerTraditionalLayout({
         </CeremonyReveal>
 
         {/* ── Wedding Details / Countdown ── */}
-        <SectionLabel enLabel="The Ceremony" kmLabel="ពិធីការ" />
+        <SectionLabel
+          enLabel="The Ceremony"
+          kmLabel="ពិធីការ"
+          settingsKey="detailsTitle"
+        />
         <CeremonyReveal delay={0.05}>
           <KbachFrame variant="full" gold={gold} ink={ink} className="kt-panel">
             <DetailsSection />
@@ -255,61 +336,87 @@ export default function KhmerTraditionalLayout({
         </CeremonyReveal>
 
         {/* ── Program timeline ── */}
-        <SectionLabel enLabel="Program" kmLabel="កម្មវិធី" />
-        <CeremonyReveal delay={0.05}>
+        <SectionLabel
+          enLabel="Program"
+          kmLabel="កម្មវិធី"
+          settingsKey="timelineTitle"
+        />
+        <CeremonyReveal delay={0.08}>
           <KbachFrame variant="cap" gold={gold} ink={ink} className="kt-panel">
             <TimelineSection />
           </KbachFrame>
         </CeremonyReveal>
 
         {/* ── Gallery ── */}
-        <SectionLabel enLabel="Memories" kmLabel="រូបភាព" />
-        <CeremonyReveal delay={0.05}>
+        <SectionLabel
+          enLabel="Memories"
+          kmLabel="រូបភាព"
+          settingsKey="galleryTitle"
+        />
+        <CeremonyReveal delay={0.1}>
           <KbachFrame variant="cap" gold={gold} ink={ink} className="kt-panel">
             <GallerySection />
           </KbachFrame>
         </CeremonyReveal>
 
         {/* ── Map / Venue ── */}
-        <SectionLabel enLabel="Venue" kmLabel="ទីកន្លែង" />
-        <CeremonyReveal delay={0.05}>
+        <SectionLabel
+          enLabel="Venue"
+          kmLabel="ទីកន្លែង"
+        />
+        <CeremonyReveal delay={0.12}>
           <KbachFrame variant="full" gold={gold} ink={ink} className="kt-panel">
             <MapSection />
           </KbachFrame>
         </CeremonyReveal>
 
         {/* ── Gift / QR ── */}
-        <SectionLabel enLabel="Gift" kmLabel="គ្រឿងបរិក្ខារ" />
-        <CeremonyReveal delay={0.05}>
+        <SectionLabel
+          enLabel="Gift"
+          kmLabel="គ្រឿងបរិក្ខារ"
+          settingsKey="giftTitle"
+        />
+        <CeremonyReveal delay={0.14}>
           <KbachFrame variant="full" gold={gold} ink={ink} className="kt-panel">
             <GiftSection />
           </KbachFrame>
         </CeremonyReveal>
 
         {/* ── Wishes ── */}
-        <SectionLabel enLabel="Wishes" kmLabel="ជូនពរ" />
-        <CeremonyReveal delay={0.05}>
+        <SectionLabel
+          enLabel="Wishes"
+          kmLabel="ជូនពរ"
+          settingsKey="wishesTitle"
+        />
+        <CeremonyReveal delay={0.16}>
           <KbachFrame variant="cap" gold={gold} ink={ink} className="kt-panel">
             <WishesSection guestName={initialGuestName} />
           </KbachFrame>
         </CeremonyReveal>
 
         {/* ── Contacts ── */}
-        <SectionLabel enLabel="Contact" kmLabel="ទំនាក់ទំនង" />
-        <CeremonyReveal delay={0.05}>
+        <SectionLabel
+          enLabel="Contact"
+          kmLabel="ទំនាក់ទំនង"
+          settingsKey="contactTitle"
+        />
+        <CeremonyReveal delay={0.18}>
           <KbachFrame variant="full" gold={gold} ink={ink} className="kt-panel">
             <ContactSection />
           </KbachFrame>
         </CeremonyReveal>
 
-        {/* ── RSVP — elevated to a full-width wax-seal CTA ──
-             Placed LAST in the scroll so guests read the whole
-             invitation before being prompted to respond.
-             This matches the physical invitation convention. ── */}
-        <SectionLabel enLabel="RSVP" kmLabel="ការឆ្លើយតប" />
-        <CeremonyReveal delay={0.05}>
+        {/* ── RSVP — elevated full-width wax-seal CTA ──
+             Placed LAST: guests read the whole invitation before responding.
+             This matches Khmer physical invitation convention. ── */}
+        <SectionLabel
+          enLabel="RSVP"
+          kmLabel="ការឆ្លើយតប"
+          settingsKey="rsvpTitle"
+        />
+        <CeremonyReveal delay={0.2}>
           <div className="kt-rsvp-wrapper" style={{ marginTop: '0' }}>
-            {/* Top band only on RSVP — this section is the climax */}
+            {/* Top band */}
             <div style={{ color: KT_GOLD, marginBottom: '24px' }}>
               <KbachDivider />
             </div>
