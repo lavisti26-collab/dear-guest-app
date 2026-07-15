@@ -8,7 +8,7 @@ import VisualStylePicker from '@/components/dashboard/VisualStylePicker';
 import ThemeStudio from '@/components/dashboard/theme-studio/ThemeStudio';
 import ResetThemeButton from '@/components/dashboard/ResetThemeButton';
 import { toast } from 'sonner';
-import { uploadFile } from '@/lib/supabase-storage';
+import { uploadFile, deleteFileByUrl } from '@/lib/supabase-storage';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import CinematicTransition from '@/components/effects/CinematicTransition';
 import GlowButton from '@/components/effects/GlowButton';
@@ -1023,11 +1023,21 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                         label="Upload hero background photo"
                         current={data.settings.heroImage || undefined}
                         bucket="photos"
-                        onUpload={(url) => data.updateSettings({ heroImage: url })}
+                        onUpload={async (url) => {
+                          if (data.settings.heroImage) {
+                            await deleteFileByUrl('photos', data.settings.heroImage).catch(e => console.warn(e));
+                          }
+                          data.updateSettings({ heroImage: url });
+                        }}
                       />
                       {data.settings.heroImage && (
                         <button
-                          onClick={() => data.updateSettings({ heroImage: '' })}
+                          onClick={async () => {
+                            if (data.settings.heroImage) {
+                              await deleteFileByUrl('photos', data.settings.heroImage).catch(e => console.warn(e));
+                            }
+                            data.updateSettings({ heroImage: '' });
+                          }}
                           className="text-xs text-destructive mt-2 hover:underline"
                         >
                           Remove & use default
@@ -1042,14 +1052,24 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                         label="Upload link preview photo"
                         current={data.settings.shareImage || undefined}
                         bucket="photos"
-                        onUpload={(url) => data.updateSettings({ shareImage: url })}
+                        onUpload={async (url) => {
+                          if (data.settings.shareImage) {
+                            await deleteFileByUrl('photos', data.settings.shareImage).catch(e => console.warn(e));
+                          }
+                          data.updateSettings({ shareImage: url });
+                        }}
                       />
                       <p className="text-xs text-muted-foreground mt-1">
                         This image appears when sharing your invitation link on Telegram, Facebook, or WhatsApp. (If empty, it falls back to the Hero Background photo).
                       </p>
                       {data.settings.shareImage && (
                         <button
-                          onClick={() => data.updateSettings({ shareImage: '' })}
+                          onClick={async () => {
+                            if (data.settings.shareImage) {
+                              await deleteFileByUrl('photos', data.settings.shareImage).catch(e => console.warn(e));
+                            }
+                            data.updateSettings({ shareImage: '' });
+                          }}
                           className="text-xs text-destructive mt-2 hover:underline"
                         >
                           Remove & use fallback
@@ -1642,11 +1662,21 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                       label="Upload bank QR code"
                       current={data.bankQR || undefined}
                       bucket="photos"
-                      onUpload={(url) => data.setBankInfo(data.bankName, data.bankAccount, url)}
+                      onUpload={async (url) => {
+                        if (data.bankQR) {
+                          await deleteFileByUrl('photos', data.bankQR).catch(e => console.warn(e));
+                        }
+                        data.setBankInfo(data.bankName, data.bankAccount, url);
+                      }}
                     />
                     {data.bankQR && (
                       <button
-                        onClick={() => data.setBankInfo(data.bankName, data.bankAccount, '')}
+                        onClick={async () => {
+                          if (data.bankQR) {
+                            await deleteFileByUrl('photos', data.bankQR).catch(e => console.warn(e));
+                          }
+                          data.setBankInfo(data.bankName, data.bankAccount, '');
+                        }}
                         className="text-xs text-destructive mt-2 hover:underline"
                       >
                         Remove QR image
@@ -1891,6 +1921,9 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                           }
                           setMusicUploading(true);
                           try {
+                            if (data.settings.musicFile) {
+                              await deleteFileByUrl('music', data.settings.musicFile).catch(e => console.warn(e));
+                            }
                             const url = await uploadFile('music', file);
                             data.updateSettings({ musicFile: url });
                             toast.success('Music uploaded! 🎵');
@@ -1913,7 +1946,14 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                           <p className="text-sm font-medium text-foreground">Music file uploaded</p>
                           <audio controls src={data.settings.musicFile} className="w-full rounded-xl" />
                           <button
-                            onClick={(e) => { e.stopPropagation(); data.updateSettings({ musicFile: '' }); toast.success('Removed uploaded music'); }}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (data.settings.musicFile) {
+                                await deleteFileByUrl('music', data.settings.musicFile).catch(e => console.warn(e));
+                              }
+                              data.updateSettings({ musicFile: '' });
+                              toast.success('Removed uploaded music');
+                            }}
                             className="text-xs text-destructive hover:underline"
                           >
                             Remove uploaded file

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
 import { supabase, getSupabase } from '@/integrations/supabase/client';
+import { deleteFileByUrl } from '@/lib/supabase-storage';
 import { getCachedAdminData, setCachedAdminData } from '@/lib/admin-data-cache';
 import {
   coupleNamesFromProfile,
@@ -658,9 +659,13 @@ export function WeddingDataProvider({ children, ownerUserId, publicProfile, gues
 
   const removePhoto = useCallback(async (id: string) => {
     // Delete by primary key (id) to avoid accidentally removing a photo with a duplicate URL
+    const photoToDelete = photosRef.current.find(p => p.id === id);
     const client = getSupabase();
     const { error } = await client.from('photos').delete().eq('id', id);
     if (error) throw new Error(error.message);
+    if (photoToDelete?.url) {
+      await deleteFileByUrl('photos', photoToDelete.url).catch(e => console.warn('Failed to delete photo from storage:', e));
+    }
   }, []);
 
   const updatePhotoCaption = useCallback(async (id: string, caption: string | null) => {
