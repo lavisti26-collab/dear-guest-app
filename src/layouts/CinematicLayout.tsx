@@ -1,17 +1,17 @@
 /**
- * CinematicLayout.tsx — ROMANTIC GLASS-CINEMA EDITION
+ * CinematicLayout.tsx — PREMIUM ACTIVE-CROSSFADE CINE LAYOUT
  *
- * DESIGN: Widescreen presentation where the couple's Hero Photo covers the entire background.
- * - Full-screen fixed background photo (settings.heroImage or first gallery photo)
- * - Frosted glass overlay (backdrop-blur + warm white mask) to keep text legible
- * - Highly transparent, floating glassmorphic viewport cards so guests can see through to the photo
- * - Sleek gold progress indicator at the top
- * - Snap-to-viewport scrolling with Intersection Observer sync
- * - Scoped CSS overrides to re-skin all sub-components into elegant transparent glass style
+ * DESIGN: A dynamic cinematic slide presentation.
+ * - Dynamic background cross-fade: background image changes dynamically to show
+ *   different gallery photos as the guest scrolls through each section.
+ * - Frosted warm lens-flare overlay mask to keep text 100% readable.
+ * - Cinematic card frame with micro-metadata ("SCENE 01 // GREETING").
+ * - Hides duplicate inner titles and dividers, reducing section paddings to fit perfectly in viewport.
+ * - Intersection Observer sync for active states.
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 
@@ -33,16 +33,16 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
   const containerRef = useRef<HTMLDivElement>(null);
 
   const sections = [
-    { key: 'hero', titleEn: 'Home', titleKm: 'ទំព័រដើម', comp: <HeroSection guestName={initialGuestName} /> },
-    { key: 'greeting', titleEn: 'Invitation', titleKm: 'ការអញ្ជើញ', comp: <GreetingSection guestName={initialGuestName} /> },
-    { key: 'details', titleEn: 'Details', titleKm: 'ព័ត៌មានលម្អិត', comp: <DetailsSection /> },
-    { key: 'timeline', titleEn: 'Program', titleKm: 'កម្មវិធីលម្អិត', comp: <TimelineSection /> },
-    { key: 'gallery', titleEn: 'Gallery', titleKm: 'រូបភាព', comp: <GallerySection /> },
-    { key: 'map', titleEn: 'Map', titleKm: 'ផែនទីណែនាំ', comp: <MapSection /> },
-    { key: 'rsvp', titleEn: 'RSVP', titleKm: 'ឆ្លើយតប', comp: <RSVPSection guestName={initialGuestName} /> },
-    { key: 'gift', titleEn: 'Gift', titleKm: 'អំណោយ', comp: <GiftSection /> },
+    { key: 'hero', titleEn: 'Intro', titleKm: 'សេចក្តីផ្តើម', comp: <HeroSection guestName={initialGuestName} /> },
+    { key: 'greeting', titleEn: 'Greeting', titleKm: 'សំបុត្រអញ្ជើញ', comp: <GreetingSection guestName={initialGuestName} /> },
+    { key: 'details', titleEn: 'Ceremony', titleKm: 'កម្មវិធីមង្គល', comp: <DetailsSection /> },
+    { key: 'timeline', titleEn: 'Schedule', titleKm: 'ពេលវេលាលម្អិត', comp: <TimelineSection /> },
+    { key: 'gallery', titleEn: 'Album', titleKm: 'កម្រងរូបភាព', comp: <GallerySection /> },
+    { key: 'map', titleEn: 'Location', titleKm: 'ផែនទីណែនាំ', comp: <MapSection /> },
+    { key: 'rsvp', titleEn: 'RSVP', titleKm: 'ការឆ្លើយតប', comp: <RSVPSection guestName={initialGuestName} /> },
+    { key: 'gift', titleEn: 'Registry', titleKm: 'ចងដៃអនឡាញ', comp: <GiftSection /> },
     { key: 'wishes', titleEn: 'Wishes', titleKm: 'សារជូនពរ', comp: <WishesSection guestName={initialGuestName} /> },
-    { key: 'contact', titleEn: 'Contact', titleKm: 'ទំនាក់ទំនង', comp: <ContactSection /> },
+    { key: 'contact', titleEn: 'Hosts', titleKm: 'ម្ចាស់ដើមការ', comp: <ContactSection /> },
   ];
 
   // 1. Sync data-layout attribute for target styles
@@ -99,8 +99,16 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
     }
   };
 
-  // Get background image URL
-  const bgImageUrl = settings?.heroImage || (photos && photos.length > 0 ? photos[0].url : '');
+  // 3. Dynamic background cross-fade photo matching the active section
+  const getBgImageForSlide = (index: number) => {
+    if (index === 0 && settings?.heroImage) return settings.heroImage;
+    if (photos && photos.length > 0) {
+      // Stagger photos across remaining slides
+      const photoIndex = (index - 1) % photos.length;
+      return photos[photoIndex]?.url || settings?.heroImage || '';
+    }
+    return settings?.heroImage || '';
+  };
 
   // Progress percentage
   const progressPercent = ((activeSlide + 1) / sections.length) * 100;
@@ -111,7 +119,7 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
       <style>{`
         [data-layout="cinematic"] {
           --cl-bg: #FAF6EE;
-          --cl-card-bg: rgba(255, 255, 255, 0.72);
+          --cl-card-bg: rgba(255, 255, 255, 0.76);
           --cl-border: rgba(201, 147, 42, 0.35);
           --cl-accent: #b8892a;
           --cl-text-primary: #1a0a00;
@@ -128,14 +136,43 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
         [data-layout="cinematic"] [class*="bg-card"],
         [data-layout="cinematic"] .luxury-card {
           background-color: var(--cl-card-bg) !important;
-          backdrop-filter: blur(20px) saturate(130%) !important;
-          -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
-          border: 1px solid rgba(255, 255, 255, 0.45) !important;
+          backdrop-filter: blur(25px) saturate(125%) !important;
+          -webkit-backdrop-filter: blur(25px) saturate(125%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.5) !important;
           color: var(--cl-text-primary) !important;
-          box-shadow: 0 10px 40px -15px rgba(26, 10, 0, 0.12) !important;
+          box-shadow: 0 15px 50px -20px rgba(26, 10, 0, 0.15) !important;
+          border-radius: 24px !important;
         }
 
-        /* ── Inner headings ── */
+        /* ── Hide duplicate headings and lines inside child sections to prevent clutter ── */
+        [data-layout="cinematic"] #details h2,
+        [data-layout="cinematic"] #details .section-divider,
+        [data-layout="cinematic"] #timeline h2,
+        [data-layout="cinematic"] #timeline .section-divider,
+        [data-layout="cinematic"] #gallery h2,
+        [data-layout="cinematic"] #gallery .section-divider,
+        [data-layout="cinematic"] #rsvp h2,
+        [data-layout="cinematic"] #rsvp .section-divider,
+        [data-layout="cinematic"] #rsvp .max-w-lg > div > div:nth-child(5),
+        [data-layout="cinematic"] #gift h2,
+        [data-layout="cinematic"] #gift .section-divider,
+        [data-layout="cinematic"] #wishes h2,
+        [data-layout="cinematic"] #wishes .section-divider,
+        [data-layout="cinematic"] #contact h2,
+        [data-layout="cinematic"] #contact .section-divider {
+          display: none !important;
+        }
+
+        /* ── Reduce section paddings to fit inside cinematic cards without scroll overflow ── */
+        [data-layout="cinematic"] section {
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          border: none !important;
+        }
+
+        /* ── Inner titles ── */
         [data-layout="cinematic"] h2,
         [data-layout="cinematic"] h3,
         [data-layout="cinematic"] h4 {
@@ -174,7 +211,7 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
         /* ── Wish cards ── */
         [data-layout="cinematic"] [class*="wish-card"],
         [data-layout="cinematic"] .kt-wish-card {
-          background-color: rgba(255, 255, 255, 0.6) !important;
+          background-color: rgba(255, 255, 255, 0.65) !important;
           border: 1px solid rgba(255, 255, 255, 0.3) !important;
           border-left: 3px solid var(--cl-accent) !important;
         }
@@ -199,19 +236,30 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
         }
       `}</style>
 
-      {/* ══ Full-Screen Fixed Background Image ══════════════════════════════ */}
-      {bgImageUrl && (
-        <div
-          className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-          style={{ backgroundImage: `url(${bgImageUrl})` }}
-        />
-      )}
+      {/* ══ Fixed Background Photo Slideshow (Cross-fades) ══════════════════ */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[#FAF6EE] overflow-hidden">
+        {sections.map((s, idx) => {
+          const bgUrl = getBgImageForSlide(idx);
+          const isActive = activeSlide === idx;
+          return (
+            <div
+              key={`bg-${s.key}`}
+              className="absolute inset-0 bg-cover bg-center transition-all duration-[1200ms] ease-in-out pointer-events-none"
+              style={{
+                backgroundImage: bgUrl ? `url(${bgUrl})` : 'none',
+                opacity: isActive ? 1 : 0,
+                transform: isActive ? 'scale(1)' : 'scale(1.04)',
+              }}
+            />
+          );
+        })}
+      </div>
 
-      {/* ══ Frosted Overlay Mask to keep background warm, clean, and text legible ══ */}
+      {/* ══ Frosted Warm Light Mask (Text Legibility) ════════════════════════ */}
       <div
-        className="fixed inset-0 pointer-events-none z-0 bg-white/20 backdrop-blur-[3px]"
+        className="fixed inset-0 pointer-events-none z-0 bg-white/20 backdrop-blur-[3.5px]"
         style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,248,235,0.15) 30%, rgba(255,248,235,0.45) 100%)',
+          backgroundImage: 'radial-gradient(circle, rgba(255,248,235,0.2) 30%, rgba(255,248,235,0.5) 100%)',
         }}
       />
 
@@ -234,30 +282,36 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
       >
         {sections.map((s, idx) => {
           const isHero = s.key === 'hero';
+          const isActive = activeSlide === idx;
+
           return (
             <section
               id={`slide-${s.key}`}
               key={s.key}
               className="snap-start min-h-screen w-full flex items-center justify-center relative py-12 px-4"
             >
-              {/* Overlay container card: Only wrap other sections into custom glass wrappers.
-                  Hero handles its own fullscreen overlay. */}
               {isHero ? (
                 <div className="w-full max-w-4xl">
                   {s.comp}
                 </div>
               ) : (
-                <div className="w-full max-w-2xl bg-white/72 border border-white/50 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+                /* Glassmorphic presentation panel with animate-on-active wrapper */
+                <motion.div
+                  className="w-full max-w-2xl bg-white/76 border border-white/50 backdrop-blur-3xl rounded-[24px] p-6 sm:p-10 shadow-2xl relative overflow-hidden"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isActive ? { opacity: 1, y: 0 } : { opacity: 0.85, y: 10 }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                >
                   {/* Subtle golden corner highlights */}
                   <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t border-l border-[#b8892a]/50" />
                   <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t border-r border-[#b8892a]/50" />
                   <div className="absolute bottom-0 left-0 w-2.5 h-2.5 border-b border-l border-[#b8892a]/50" />
                   <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r border-[#b8892a]/50" />
 
-                  {/* Micro index indicator */}
-                  <div className="flex justify-between items-center mb-6 border-b border-[#b8892a]/15 pb-3 text-[10px] uppercase tracking-[0.2em] font-mono text-[#7a6a57]">
+                  {/* Micro scene metadata title */}
+                  <div className="flex justify-between items-center mb-6 border-b border-[#b8892a]/15 pb-3 text-[10px] uppercase tracking-[0.25em] font-mono text-[#7a6a57]">
                     <span>{lang === 'km' ? s.titleKm : s.titleEn}</span>
-                    <span>{idx + 1} / {sections.length}</span>
+                    <span>SCENE {String(idx + 1).padStart(2, '0')} // {String(sections.length).padStart(2, '0')}</span>
                   </div>
 
                   {s.comp}
@@ -282,7 +336,7 @@ export default function CinematicLayout({ initialGuestName }: { initialGuestName
                       </button>
                     </div>
                   )}
-                </div>
+                </motion.div>
               )}
             </section>
           );
