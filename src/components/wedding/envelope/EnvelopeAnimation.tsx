@@ -807,7 +807,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
                 className={`mx-auto max-w-full uppercase ${
                   settings.eventTitleSize || 'text-xl sm:text-2xl md:text-3xl'
                 } ${
-                  (!settings.eventTitleFont || settings.eventTitleFont === 'Moul' || settings.eventTitleFont === 'Koulen') && lang === 'km' 
+                  lang === 'km' 
                     ? 'font-khmer font-bold tracking-normal' 
                     : 'font-sans font-bold'
                 }`}

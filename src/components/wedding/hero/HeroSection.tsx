@@ -250,7 +250,7 @@ export default function HeroSection({ guestName }: HeroSectionProps = {}) {
           className={`mb-5 uppercase font-bold ${
             settings.eventTitleSize || (lang === 'km' ? 'text-base' : 'text-sm')
           } ${
-            (!settings.eventTitleFont || settings.eventTitleFont === 'Moul' || settings.eventTitleFont === 'Koulen') && lang === 'km'
+            lang === 'km'
               ? 'font-khmer tracking-normal'
               : ''
           }`}
