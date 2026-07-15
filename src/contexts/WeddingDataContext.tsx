@@ -852,8 +852,16 @@ export function WeddingDataProvider({ children, ownerUserId, publicProfile, gues
         envelopeCardConfig: settingsRef.current.envelopeCardConfig,
       };
 
-      // Load from the new layout slot
-      const savedForNew = currentLayouts[newLayout] || getLayoutDefaults(newLayout);
+      // Load from the new layout slot (or fallback to Classic Scroll / current active configurations)
+      const savedForNew = currentLayouts[newLayout] || currentLayouts['classic-scroll'] || {
+        fontPair: settingsRef.current.fontPair,
+        eventTitleFont: settingsRef.current.eventTitleFont,
+        eventTitleSize: settingsRef.current.eventTitleSize,
+        eventTitleAnimation: settingsRef.current.eventTitleAnimation,
+        eventTitleOpacity: settingsRef.current.eventTitleOpacity,
+        coupleCardConfig: settingsRef.current.coupleCardConfig,
+        envelopeCardConfig: settingsRef.current.envelopeCardConfig,
+      };
       
       nextSettings = {
         ...nextSettings,
