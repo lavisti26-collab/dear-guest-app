@@ -66,10 +66,6 @@ function KhmerMasthead() {
   const { settings } = useWeddingData();
   const prefersReduced = useReducedMotion();
 
-  const coupleNames = lang === 'km'
-    ? (settings?.coupleNamesKm || settings?.coupleNames || 'កូនប្រុស & កូនក្រមុំ')
-    : (settings?.coupleNames || 'Groom & Bride');
-
   const eventTitle = lang === 'km'
     ? (settings?.eventTitleKm || 'ពិធីមង្គលការ')
     : (settings?.eventTitleEn || 'Wedding Invitation');
@@ -95,7 +91,7 @@ function KhmerMasthead() {
           letterSpacing: '0.45em',
           textTransform: 'uppercase',
           color: KT_RED,
-          marginBottom: '8px',
+          marginBottom: '12px',
         }}
       >
         {eventTitle}
@@ -106,24 +102,7 @@ function KhmerMasthead() {
         <KbachDivider />
       </div>
 
-      {/* Couple names — the main identity of this invitation */}
-      <motion.h2
-        style={{
-          fontFamily: "var(--font-display, 'Moul', 'Playfair Display', serif)",
-          fontSize: 'clamp(1.4rem, 5vw, 2.2rem)',
-          color: KT_RED,
-          letterSpacing: '0.06em',
-          lineHeight: 1.3,
-          marginBlock: '12px',
-        }}
-        initial={prefersReduced ? {} : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, delay: 0.3, ease: CEREMONY_EASE }}
-      >
-        {coupleNames}
-      </motion.h2>
-
-      {/* Wedding date below couple names */}
+      {/* Wedding date — subtle, centered between the two dividers */}
       {weddingDate && (
         <p
           style={{
@@ -131,7 +110,7 @@ function KhmerMasthead() {
             fontSize: '0.72rem',
             letterSpacing: '0.3em',
             color: KT_GOLD,
-            marginBottom: '12px',
+            marginBlock: '10px',
             textTransform: 'uppercase',
           }}
         >
@@ -146,6 +125,7 @@ function KhmerMasthead() {
     </motion.div>
   );
 }
+
 
 // ─── Section label strip — dynamic from settings ───────────────────────────
 interface SectionLabelProps {
