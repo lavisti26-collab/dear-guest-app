@@ -677,6 +677,12 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
 
   const handleOpen = useCallback(() => {
     if (flapOpen) return;
+
+    // Play music immediately on user click to prevent iOS browser autoplay block
+    if (!inlinePreview) {
+      requestPlayMusic();
+    }
+
     // 1. Pop the seal
     setSealPopping(true);
     setTimeout(() => {
@@ -685,10 +691,9 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
       setTimeout(() => {
         // 3. Card rises out
         setCardRising(true);
-        // 4. Music + confetti + transition
+        // 4. Confetti + transition
         setTimeout(() => {
           if (!inlinePreview) {
-            requestPlayMusic();
             launchFireworks();
             onOpen();
           } else {

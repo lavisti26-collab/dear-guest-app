@@ -23,69 +23,24 @@ export default function MusicToggle() {
   const [particles, setParticles] = useState<NoteParticle[]>([]);
   const particleIdRef = useRef(0);
 
-  // Audio track logic
+  // Audio track logic (no fallback url)
   const track = useMemo(
     () => ({
       name: 'Our Song',
-      url: settings.musicFile || settings.musicUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      url: settings.musicFile || settings.musicUrl || '',
     }),
     [settings.musicFile, settings.musicUrl]
   );
 
   const activeUrl = track.url;
 
+  // Clean up audio on unmount
   useEffect(() => {
-    if (!activeUrl) return;
-
-    let localAudio = audioRef.current;
-    if (!localAudio || currentUrlRef.current !== activeUrl) {
-      localAudio?.pause();
-      localAudio = new Audio(activeUrl);
-      localAudio.loop = true;
-      localAudio.volume = 0.25;
-      audioRef.current = localAudio;
-      currentUrlRef.current = activeUrl;
-    }
-
-    const startPlay = () => {
-      if (audioRef.current) {
-        audioRef.current.play()
-          .then(() => {
-            setPlaying(true);
-          })
-          .catch(() => {
-            // Autoplay blocked by browser. Setup interaction fallback listeners.
-            const handleInteraction = () => {
-              cleanup();
-              if (audioRef.current) {
-                audioRef.current.play()
-                  .then(() => {
-                    setPlaying(true);
-                  })
-                  .catch(() => {});
-              }
-            };
-
-            const cleanup = () => {
-              window.removeEventListener('click', handleInteraction);
-              window.removeEventListener('touchstart', handleInteraction);
-            };
-
-            window.addEventListener('click', handleInteraction);
-            window.addEventListener('touchstart', handleInteraction);
-          });
-      }
-    };
-
-    startPlay();
-
     return () => {
-      localAudio?.pause();
-      if (audioRef.current === localAudio) {
-        audioRef.current = null;
-      }
+      audioRef.current?.pause();
+      audioRef.current = null;
     };
-  }, [activeUrl]);
+  }, []);
 
   const togglePlay = () => {
     if (!activeUrl) return;
@@ -178,6 +133,9 @@ export default function MusicToggle() {
   }, [playing]);
 
   const accentColor = settings?.coupleCardConfig?.accentColor || '#D4AF37';
+
+  // Do not render anything if there is no active music track url configured
+  if (!activeUrl) return null;
 
   return (
     <div 
