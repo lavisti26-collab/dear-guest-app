@@ -139,7 +139,11 @@ const EVENT_TITLE_FONT_MAP: Record<string, string> = {
 
 function getEventTitleFontFamily(fontName?: string) {
   if (!fontName) return '';
-  return EVENT_TITLE_FONT_MAP[fontName] || fontName;
+  const resolved = EVENT_TITLE_FONT_MAP[fontName] || fontName;
+  if (resolved.toLowerCase().includes('siemreap')) {
+    return "'Kantumruy Pro', 'Noto Sans Khmer', sans-serif";
+  }
+  return resolved;
 }
 
 const getEventTitleAnimationProps = (anim?: string, targetOpacity = 1): any => {
