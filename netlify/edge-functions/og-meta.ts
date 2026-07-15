@@ -28,7 +28,7 @@ export default async (request: Request, context: Context) => {
 
   // Load Supabase variables from Environment (fallback to default credentials if not set)
   const supabaseUrl = Deno.env.get("VITE_SUPABASE_URL") || "https://jxtmjmsxziowyihktpoq.supabase.co";
-  const supabaseKey = Deno.env.get("VITE_SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dG1qbXN4emlvd3lpaGt0cG9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDMzNjIsImV4cCI6MjA5NTQ3OTM2Mn0.D_PvewaYa0CAQDziwYkPUMkzZl_BkbUk6h2bwsAQCD4";
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("VITE_SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dG1qbXN4emlvd3lpaGt0cG9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDMzNjIsImV4cCI6MjA5NTQ3OTM2Mn0.D_PvewaYa0CAQDziwYkPUMkzZl_BkbUk6h2bwsAQCD4";
 
   try {
     // 1. Fetch public profile by slug
