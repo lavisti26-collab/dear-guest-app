@@ -32,13 +32,14 @@ export default async (request: Request, context: Context) => {
 
   try {
     // 1. Fetch public profile by slug
-    const profileRes = await fetch(`${supabaseUrl}/rest/v1/profiles_public?slug=eq.${encodeURIComponent(slug)}&t=${Date.now()}`, {
+    const profileRes = await fetch(`${supabaseUrl}/rest/v1/profiles_public?slug=eq.${encodeURIComponent(slug)}`, {
       cache: "no-store",
       headers: {
         "apikey": supabaseKey,
         "Authorization": `Bearer ${supabaseKey}`,
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
       }
     });
     const profiles = await profileRes.json();
@@ -46,13 +47,14 @@ export default async (request: Request, context: Context) => {
 
     if (profile && profile.user_id) {
       // 2. Fetch active settings for the profile owner (contains hero_image and event configuration)
-      const settingsRes = await fetch(`${supabaseUrl}/rest/v1/settings?user_id=eq.${profile.user_id}&t=${Date.now()}`, {
+      const settingsRes = await fetch(`${supabaseUrl}/rest/v1/settings?user_id=eq.${profile.user_id}`, {
         cache: "no-store",
         headers: {
           "apikey": supabaseKey,
           "Authorization": `Bearer ${supabaseKey}`,
-          "Cache-Control": "no-cache",
-          "Pragma": "no-cache"
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0"
         }
       });
       const settingsList = await settingsRes.json();
