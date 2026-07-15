@@ -18,7 +18,7 @@ const printReveal = {
 };
 
 export default function NewspaperEditorialLayout({ initialGuestName }: { initialGuestName?: string }) {
-  const { lang, t } = useLanguage();
+  const { lang } = useLanguage();
   const { settings, updateRSVP, guests, wishes, photos, programSchedule, bankName, bankAccount, bankQR, giftEnabled } = useWeddingData();
   const [searchParams] = useSearchParams();
 
@@ -57,10 +57,13 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
   };
 
   return (
-    <div className="newspaper-editorial-layout min-h-screen bg-[#F7F4EB] text-[#111111] px-4 py-8 sm:py-12 md:px-12 selection:bg-[#8B1E1E] selection:text-white antialiased font-serif">
-      <div className="max-w-5xl mx-auto border-2 border-neutral-900 p-4 sm:p-8 bg-[#F7F4EB] shadow-none">
+    <div className="newspaper-editorial-layout min-h-screen bg-[#F5F2E9] text-[#1a1a1a] px-3 py-6 sm:py-12 sm:px-6 md:px-12 selection:bg-[#8B1E1E] selection:text-white antialiased">
+      <div 
+        className="max-w-5xl mx-auto border-2 border-neutral-900 p-4 sm:p-8 bg-[#F5F2E9] shadow-none"
+        style={{ fontFamily: 'var(--font-body), Georgia, serif' }}
+      >
         
-        {/* ── Masthead nameplate ── */}
+        {/* ── Broadsheet Header / Masthead ── */}
         <motion.header 
           custom={0}
           initial="hidden"
@@ -68,19 +71,29 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
           variants={printReveal}
           className="border-t-2 border-b-2 border-neutral-900 py-6 text-center select-none"
         >
-          <div className="text-[10px] tracking-[0.25em] uppercase font-bold text-neutral-500 mb-1">
-            {lang === 'km' ? 'សំបុត្រអញ្ជើញអាពាហ៍ពិពាហ៍ពិសេស' : 'SPECIAL WEDDING INVITATION EDITION'}
+          {/* Top small info row */}
+          <div className="flex justify-between items-center text-[9px] uppercase tracking-wider font-bold text-neutral-500 mb-2 border-b border-neutral-300 pb-2 px-1">
+            <span>{lang === 'km' ? 'អាកាសធាតុ៖ មនោសញ្ចេតនាផ្អែមល្ហែម ១០០%' : 'FORECAST: SUNNY HEARTS & CELEBRATION'}</span>
+            <span>{lang === 'km' ? 'ច្បាប់ពិសេសគម្រប់ ២០២៦' : 'ESTABLISHED 2026'}</span>
           </div>
-          <h1 
-            className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-neutral-950 uppercase py-2 leading-none" 
-            style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
-          >
-            {lang === 'km' ? settings?.coupleNamesKm || 'កូនប្រុស & កូនស្រី' : settings?.coupleNames || 'GROOM & BRIDE'}
-          </h1>
-          <div className="border-t border-neutral-300 mt-2 pt-2 flex flex-col sm:flex-row items-center justify-between text-[11px] uppercase tracking-wider font-semibold text-neutral-600 px-2 gap-1.5">
+
+          {/* Main Paper Title */}
+          <div className="border-b-4 border-double border-neutral-900 pb-1 mb-1">
+            <h1 
+              className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-neutral-950 uppercase py-2 leading-none" 
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+            >
+              {lang === 'km' ? 'សេចក្តីប្រកាសអាពាហ៍ពិពាហ៍' : 'THE WEDDING CHRONICLE'}
+            </h1>
+          </div>
+
+          {/* Subheader banner */}
+          <div className="py-2 flex flex-col sm:flex-row items-center justify-between text-[10px] sm:text-[11px] uppercase tracking-wider font-semibold text-neutral-700 px-2 gap-1.5">
             <span>{lang === 'km' ? 'លេខពិសេស ០០១' : 'ISSUE NO. 001'}</span>
-            <span>{lang === 'km' ? settings?.weddingDateKm || 'ថ្ងៃទី...' : settings?.weddingDate || 'Wedding Date'}</span>
-            <span>{lang === 'km' ? 'ច្បាប់ផ្សាយក្នុងស្រុក' : 'PRICE: COMPLIMENTARY'}</span>
+            <span className="font-bold text-[#8B1E1E]">
+              {lang === 'km' ? settings?.coupleNamesKm || 'កូនប្រុស & កូនស្រី' : settings?.coupleNames || 'GROOM & BRIDE'}
+            </span>
+            <span>{lang === 'km' ? 'ច្បាប់ជូនដោយឥតគិតថ្លៃ' : 'PRICE: COMPLIMENTARY'}</span>
           </div>
         </motion.header>
 
@@ -102,7 +115,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
         {/* ── Main broadsheet content grid ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start my-6">
           
-          {/* Left Column: Lead Story */}
+          {/* Left Column: Lead Story & Portrait */}
           <motion.div 
             custom={2}
             initial="hidden"
@@ -113,14 +126,14 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
             <article className="prose max-w-none text-neutral-950 font-serif">
               <h2 
                 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 border-b border-neutral-300 pb-2 mb-4" 
-                style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
+                style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
               >
-                {lang === 'km' ? 'សេចក្តីប្រកាសរៀបអាពាហ៍ពិពាហ៍' : 'ANNOUNCEMENT OF HOLY MATRIMONY'}
+                {lang === 'km' ? 'សេចក្តីប្រកាសរៀបអាពាហ៍ពិពាហ៍ផ្លូវការ' : 'OFFICIAL ANNOUNCEMENT OF HOLY MATRIMONY'}
               </h2>
               
               <p 
                 className="leading-relaxed text-justify text-sm sm:text-base first-letter:text-5xl sm:first-letter:text-6xl first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:font-serif first-letter:text-[#8B1E1E]"
-                style={{ fontFamily: lang === 'km' ? 'Hanuman, Noto Serif Khmer, serif' : 'Lora, Georgia, serif' }}
+                style={{ fontFamily: 'var(--font-body), Georgia, serif' }}
               >
                 {lang === 'km'
                   ? settings?.weddingDescriptionKm || 'យើងខ្ញុំមានកិត្តិយសសូមជម្រាបជូនដំណឹងដល់...'
@@ -128,13 +141,13 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
               </p>
             </article>
 
-            {/* Main Portrait Picture */}
+            {/* Main Portrait Picture with sepia/newsprint print effect */}
             {photos && photos.length > 0 && (
               <div className="border border-neutral-900 p-2 bg-white mt-8 shadow-none select-none">
                 <img 
                   src={photos[0].url} 
                   alt="Couple Featured" 
-                  className="w-full grayscale contrast-[1.05] filter"
+                  className="w-full grayscale contrast-[1.1] brightness-[0.98] sepia-[0.12] filter"
                 />
                 <div className="mt-2 text-center border-t border-neutral-200 pt-2">
                   <p className="text-xs font-serif italic text-neutral-700">
@@ -151,12 +164,12 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
             initial="hidden"
             animate="visible"
             variants={printReveal}
-            className="border border-neutral-900 p-6 bg-white relative shadow-none"
+            className="border border-neutral-900 p-6 bg-white relative shadow-none md:border-l md:border-t"
           >
-            <div className="absolute top-1.5 right-3.5 text-[9px] font-bold font-mono text-neutral-400 select-none tracking-widest">DETAILS</div>
+            <div className="absolute top-1.5 right-3.5 text-[9px] font-bold font-mono text-neutral-400 select-none tracking-widest">BULLETIN</div>
             <h3 
               className="text-lg font-bold tracking-tight text-neutral-950 border-b-2 border-neutral-900 pb-2 mb-4 uppercase" 
-              style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
               {lang === 'km' ? 'ព័ត៌មានកម្មវិធី' : 'SCHEDULE & VENUE'}
             </h3>
@@ -164,18 +177,24 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
             <div className="space-y-4 font-serif text-xs sm:text-sm">
               <div className="border-b border-neutral-200 pb-3">
                 <div className="text-[10px] uppercase font-bold text-neutral-500 mb-1">{lang === 'km' ? 'កាលបរិច្ឆេទ' : 'DATE'}</div>
-                <p className="font-semibold text-neutral-950">{lang === 'km' ? settings?.weddingDateKm : settings?.weddingDate}</p>
+                <p className="font-semibold text-neutral-950" style={{ fontFamily: 'var(--font-body), Georgia, serif' }}>
+                  {lang === 'km' ? settings?.weddingDateKm : settings?.weddingDate}
+                </p>
               </div>
 
               <div className="border-b border-neutral-200 pb-3">
                 <div className="text-[10px] uppercase font-bold text-neutral-500 mb-1">{lang === 'km' ? 'ពេលវេលា' : 'TIME'}</div>
-                <p className="font-semibold text-neutral-950">{lang === 'km' ? settings?.weddingTimeKm : settings?.weddingTime}</p>
+                <p className="font-semibold text-neutral-950" style={{ fontFamily: 'var(--font-body), Georgia, serif' }}>
+                  {lang === 'km' ? settings?.weddingTimeKm : settings?.weddingTime}
+                </p>
               </div>
 
               <div className="pb-1">
                 <div className="text-[10px] uppercase font-bold text-neutral-500 mb-1">{lang === 'km' ? 'ទីកន្លែង' : 'VENUE'}</div>
-                <p className="font-semibold text-neutral-950">{lang === 'km' ? settings?.venueNameKm : settings?.venueName}</p>
-                <p className="text-xs text-neutral-600 mt-1.5 leading-relaxed">
+                <p className="font-semibold text-neutral-950" style={{ fontFamily: 'var(--font-body), Georgia, serif' }}>
+                  {lang === 'km' ? settings?.venueNameKm : settings?.venueName}
+                </p>
+                <p className="text-xs text-neutral-600 mt-1.5 leading-relaxed text-justify" style={{ fontFamily: 'var(--font-body), Georgia, serif' }}>
                   {lang === 'km' ? settings?.venueAddressKm : settings?.venueAddress}
                 </p>
               </div>
@@ -194,7 +213,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
           >
             <h2 
               className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
-              style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
               {lang === 'km' ? 'កម្មវិធីលម្អិត' : 'ORDER OF CEREMONIES'}
             </h2>
@@ -208,12 +227,12 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
                   </span>
                   <h4 
                     className="font-serif font-bold text-base text-neutral-950 mb-1" 
-                    style={{ fontFamily: lang === 'km' ? 'Hanuman, Noto Serif Khmer, serif' : 'Playfair Display, Georgia, serif' }}
+                    style={{ fontFamily: 'var(--font-body), Georgia, serif' }}
                   >
                     {lang === 'km' ? item.titleKm || item.title : item.title}
                   </h4>
                   {item.description && (
-                    <p className="text-xs font-serif text-neutral-600 leading-relaxed mt-1 text-justify">
+                    <p className="text-xs font-serif text-neutral-600 leading-relaxed mt-1 text-justify" style={{ fontFamily: 'var(--font-body), Georgia, serif' }}>
                       {lang === 'km' ? item.descriptionKm || item.description : item.description}
                     </p>
                   )}
@@ -234,7 +253,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
           >
             <h2 
               className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
-              style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
               {lang === 'km' ? 'រូបភាពអនុស្សាវរីយ៍' : 'CAPTURED IMAGES'}
             </h2>
@@ -244,7 +263,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
                   <img 
                     src={photo.url} 
                     alt={`Gallery ${idx}`} 
-                    className="w-full h-64 object-cover grayscale contrast-[1.05]"
+                    className="w-full h-64 object-cover grayscale contrast-[1.1] brightness-[0.98] sepia-[0.12] filter"
                   />
                   <div className="mt-2 text-center border-t border-neutral-200 pt-2">
                     <p className="text-xs font-serif italic text-neutral-600">
@@ -267,7 +286,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
         >
           <h2 
             className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
-            style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
           >
             {lang === 'km' ? 'ផែនទីណែនាំផ្លូវ' : 'LOCATION MAP GUIDE'}
           </h2>
@@ -287,7 +306,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
           >
             <h2 
               className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
-              style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
               {lang === 'km' ? 'មជ្ឈមណ្ឌលអំណោយ និងគ្រឿងបរិក្ខារ' : 'REGISTRY & CONTRIBUTIONS'}
             </h2>
@@ -295,7 +314,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
             <div className="border border-neutral-900 p-6 bg-white flex flex-col sm:flex-row items-center gap-6 rounded-none shadow-none">
               {bankQR && (
                 <div className="w-44 h-44 border border-neutral-900 p-1 flex-shrink-0 bg-white select-none">
-                  <img src={bankQR} alt="QR Code" className="w-full h-full object-contain grayscale" />
+                  <img src={bankQR} alt="QR Code" className="w-full h-full object-contain grayscale contrast-[1.1] sepia-[0.12] filter" />
                 </div>
               )}
               <div className="space-y-3 font-serif text-xs sm:text-sm flex-1">
@@ -307,9 +326,9 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
                   <div className="text-[10px] uppercase font-bold text-neutral-500">{lang === 'km' ? 'លេខគណនី' : 'ACCOUNT NUMBER'}</div>
                   <p className="font-mono font-bold text-neutral-950">{bankAccount}</p>
                 </div>
-                <p className="text-[11px] text-neutral-500 leading-relaxed italic">
+                <p className="text-[11px] text-neutral-500 leading-relaxed italic text-justify">
                   {lang === 'km' 
-                    ? 'ការចូលរួមផ្តល់ជាអំណោយ ឬពរជ័យរបស់អ្នកជាមោទនភាពដ៏ធំធេងសម្រាប់យើងក្នុង។'
+                    ? 'ការចូលរួមផ្តល់ជាអំណោយ ឬពរជ័យរបស់អ្នកជាមោទនភាពដ៏ធំធេងសម្រាប់យើងខ្ញុំ។'
                     : 'Your support and well-wishes are greatly appreciated by the family.'}
                 </p>
               </div>
@@ -328,7 +347,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
           >
             <h2 
               className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
-              style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
               {lang === 'km' ? 'លិខិតជូនពរពីមិត្តភក្តិ' : 'LETTERS TO THE COUPLE'}
             </h2>
@@ -355,15 +374,15 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
           variants={printReveal}
-          className="border-2 border-dashed border-neutral-900 p-6 sm:p-8 bg-white my-12 max-w-lg mx-auto relative rounded-none shadow-none"
+          className="border-2 border-dashed border-neutral-900 p-6 sm:p-8 bg-white my-12 max-w-lg mx-auto rounded-none shadow-none"
         >
-          <div className="absolute -top-3 left-4 bg-[#F7F4EB] px-2 text-[10px] uppercase font-mono tracking-wider text-neutral-500 select-none">
+          <div className="absolute -top-3 left-4 bg-[#F5F2E9] px-2 text-[10px] uppercase font-mono tracking-wider text-neutral-500 select-none">
             ✂️ {lang === 'km' ? 'កាត់តាមចំនុចនេះ' : 'CLIP HERE'}
           </div>
           
           <h2 
             className="text-xl sm:text-2xl font-serif font-black uppercase text-center text-neutral-900 mb-2" 
-            style={{ fontFamily: lang === 'km' ? 'Moul' : 'Playfair Display, Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
           >
             {lang === 'km' ? 'សន្លឹកឆ្លើយតបការអញ្ជើញ' : 'RSVP RESPONSE COUPON'}
           </h2>
