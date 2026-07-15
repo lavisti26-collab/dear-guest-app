@@ -448,3 +448,29 @@
   color: var(--kt-muted);
   margin-top: var(--kt-space-3);
 }
+
+/* Hide duplicate inner section titles and section dividers in Khmer Traditional layout panels */
+[data-layout="khmer-traditional"] #details h2,
+[data-layout="khmer-traditional"] #details .section-divider,
+[data-layout="khmer-traditional"] #timeline h2,
+[data-layout="khmer-traditional"] #timeline .section-divider,
+[data-layout="khmer-traditional"] #gallery h2,
+[data-layout="khmer-traditional"] #gallery .section-divider,
+[data-layout="khmer-traditional"] #rsvp h2,
+[data-layout="khmer-traditional"] #rsvp .section-divider,
+[data-layout="khmer-traditional"] #rsvp .max-w-lg > div > div:nth-child(5), /* hide rsvp line separator */
+[data-layout="khmer-traditional"] #gift h2,
+[data-layout="khmer-traditional"] #gift .section-divider,
+[data-layout="khmer-traditional"] #wishes h2,
+[data-layout="khmer-traditional"] #wishes .section-divider,
+[data-layout="khmer-traditional"] #contact h2,
+[data-layout="khmer-traditional"] #contact .section-divider {
+  display: none !important;
+}
+
+/* Adjust paddings for sections inside KbachFrame panels since their inner headings are hidden */
+[data-layout="khmer-traditional"] .kt-panel section {
+  padding-top: var(--kt-space-2) !important;
+  padding-bottom: var(--kt-space-2) !important;
+}
+

@@ -26,7 +26,7 @@ export default function TimelineSection() {
   const isEmpty = items.length === 0;
 
   return (
-    <section className={`py-8 sm:py-12 px-5 sm:px-8 ${fontClass}`}>
+    <section id="timeline" className={`py-8 sm:py-12 px-5 sm:px-8 ${fontClass}`}>
 
       {/* ── Heading ─────────────────────────────────────────────── */}
       <motion.div
