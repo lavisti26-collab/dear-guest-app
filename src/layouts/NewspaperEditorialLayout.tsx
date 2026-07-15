@@ -56,6 +56,12 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
     }
   };
 
+  // Determine main headline picture (Hero Image or first photo)
+  const leadPhotoUrl = settings?.heroImage || (photos && photos.length > 0 ? photos[0].url : null);
+  
+  // Filter out the lead photo from the rest of the gallery to avoid duplication
+  const galleryPhotos = photos ? photos.filter(p => p.url !== leadPhotoUrl) : [];
+
   return (
     <div className="newspaper-editorial-layout min-h-screen bg-[#F5F2E9] text-[#1a1a1a] px-3 py-6 sm:py-12 sm:px-6 md:px-12 selection:bg-[#8B1E1E] selection:text-white antialiased">
       <div 
@@ -128,7 +134,9 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
                 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 border-b border-neutral-300 pb-2 mb-4" 
                 style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
               >
-                {lang === 'km' ? 'សេចក្តីប្រកាសរៀបអាពាហ៍ពិពាហ៍ផ្លូវការ' : 'OFFICIAL ANNOUNCEMENT OF HOLY MATRIMONY'}
+                {lang === 'km' 
+                  ? settings?.greetingTitleKm || 'សេចក្តីប្រកាសរៀបអាពាហ៍ពិពាហ៍ផ្លូវការ' 
+                  : settings?.greetingTitleEn || 'OFFICIAL ANNOUNCEMENT OF HOLY MATRIMONY'}
               </h2>
               
               <p 
@@ -142,16 +150,16 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
             </article>
 
             {/* Main Portrait Picture with sepia/newsprint print effect */}
-            {photos && photos.length > 0 && (
+            {leadPhotoUrl && (
               <div className="border border-neutral-900 p-2 bg-white mt-8 shadow-none select-none">
                 <img 
-                  src={photos[0].url} 
+                  src={leadPhotoUrl} 
                   alt="Couple Featured" 
                   className="w-full grayscale contrast-[1.1] brightness-[0.98] sepia-[0.12] filter"
                 />
                 <div className="mt-2 text-center border-t border-neutral-200 pt-2">
                   <p className="text-xs font-serif italic text-neutral-700">
-                    {photos[0].caption || (lang === 'km' ? 'រូបថតគូស្នេហ៍ពិសេស' : 'Featured Portrait of the Bride and Groom.')}
+                    {lang === 'km' ? 'រូបថតអនុស្សាវរីយ៍គូស្វាមីភរិយាថ្មី' : 'Featured Portrait of the Bride and Groom.'}
                   </p>
                 </div>
               </div>
@@ -171,7 +179,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
               className="text-lg font-bold tracking-tight text-neutral-950 border-b-2 border-neutral-900 pb-2 mb-4 uppercase" 
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              {lang === 'km' ? 'ព័ត៌មានកម្មវិធី' : 'SCHEDULE & VENUE'}
+              {lang === 'km' ? settings?.detailsTitleKm || 'ព័ត៌មានកម្មវិធី' : settings?.detailsTitleEn || 'SCHEDULE & VENUE'}
             </h3>
             
             <div className="space-y-4 font-serif text-xs sm:text-sm">
@@ -215,7 +223,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
               className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              {lang === 'km' ? 'កម្មវិធីលម្អិត' : 'ORDER OF CEREMONIES'}
+              {lang === 'km' ? settings?.timelineTitleKm || 'កម្មវិធីលម្អិត' : settings?.timelineTitleEn || 'ORDER OF CEREMONIES'}
             </h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -243,7 +251,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
         )}
 
         {/* ── Photo Gallery Section ── */}
-        {photos && photos.length > 1 && (
+        {galleryPhotos && galleryPhotos.length > 0 && (
           <motion.div 
             initial="hidden"
             whileInView="visible"
@@ -255,10 +263,10 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
               className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              {lang === 'km' ? 'រូបភាពអនុស្សាវរីយ៍' : 'CAPTURED IMAGES'}
+              {lang === 'km' ? settings?.galleryTitleKm || 'រូបភាពអនុស្សាវរីយ៍' : settings?.galleryTitleEn || 'CAPTURED IMAGES'}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {photos.slice(1).map((photo, idx) => (
+              {galleryPhotos.map((photo, idx) => (
                 <div key={photo.id || idx} className="border border-neutral-900 p-2 bg-white rounded-none shadow-none select-none">
                   <img 
                     src={photo.url} 
@@ -308,7 +316,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
               className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              {lang === 'km' ? 'មជ្ឈមណ្ឌលអំណោយ និងគ្រឿងបរិក្ខារ' : 'REGISTRY & CONTRIBUTIONS'}
+              {lang === 'km' ? settings?.giftTitleKm || 'មជ្ឈមណ្ឌលអំណោយ និងគ្រឿងបរិក្ខារ' : settings?.giftTitleEn || 'REGISTRY & CONTRIBUTIONS'}
             </h2>
             
             <div className="border border-neutral-900 p-6 bg-white flex flex-col sm:flex-row items-center gap-6 rounded-none shadow-none">
@@ -349,7 +357,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
               className="text-2xl sm:text-3xl font-serif font-black uppercase text-center tracking-tight mb-8" 
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              {lang === 'km' ? 'លិខិតជូនពរពីមិត្តភក្តិ' : 'LETTERS TO THE COUPLE'}
+              {lang === 'km' ? settings?.wishesTitleKm || 'លិខិតជូនពរពីមិត្តភក្តិ' : settings?.wishesTitleEn || 'LETTERS TO THE COUPLE'}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -384,7 +392,7 @@ export default function NewspaperEditorialLayout({ initialGuestName }: { initial
             className="text-xl sm:text-2xl font-serif font-black uppercase text-center text-neutral-900 mb-2" 
             style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
           >
-            {lang === 'km' ? 'សន្លឹកឆ្លើយតបការអញ្ជើញ' : 'RSVP RESPONSE COUPON'}
+            {lang === 'km' ? settings?.rsvpTitleKm || 'សន្លឹកឆ្លើយតបការអញ្ជើញ' : settings?.rsvpTitleEn || 'RSVP RESPONSE COUPON'}
           </h2>
           <p className="text-[11px] font-serif text-center text-neutral-600 mb-6 leading-relaxed">
             {lang === 'km'
