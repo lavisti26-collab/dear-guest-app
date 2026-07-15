@@ -1035,6 +1035,28 @@ export default function AdminDashboard({ publicSlug = '', isSuperAdmin = false }
                       )}
                     </div>
 
+                    {/* Link Preview Image Upload */}
+                    <div className="mt-4">
+                      <label className={labelClass}>Link Preview Image (Social Share)</label>
+                      <ImageUpload
+                        label="Upload link preview photo"
+                        current={data.settings.shareImage || undefined}
+                        bucket="photos"
+                        onUpload={(url) => data.updateSettings({ shareImage: url })}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This image appears when sharing your invitation link on Telegram, Facebook, or WhatsApp. (If empty, it falls back to the Hero Background photo).
+                      </p>
+                      {data.settings.shareImage && (
+                        <button
+                          onClick={() => data.updateSettings({ shareImage: '' })}
+                          className="text-xs text-destructive mt-2 hover:underline"
+                        >
+                          Remove & use fallback
+                        </button>
+                      )}
+                    </div>
+
                     <form onSubmit={async e => {
                       e.preventDefault();
                       const fd = new FormData(e.target as HTMLFormElement);

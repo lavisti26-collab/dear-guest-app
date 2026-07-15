@@ -258,7 +258,7 @@ export default function HeroSection({ guestName }: HeroSectionProps = {}) {
             color: subtitleColor, 
             textShadow: subtitleShadow,
             fontFamily: settings.eventTitleFont ? getEventTitleFontFamily(settings.eventTitleFont) : undefined,
-            letterSpacing: settings.eventTitleFont && settings.eventTitleFont !== 'Moul' && settings.eventTitleFont !== 'Koulen' ? '0.12em' : (lang === 'km' ? undefined : '0.35em'),
+            letterSpacing: lang === 'km' ? 'normal' : (settings.eventTitleFont && settings.eventTitleFont !== 'Moul' && settings.eventTitleFont !== 'Koulen' ? '0.12em' : '0.35em'),
             opacity: settings.eventTitleOpacity !== undefined ? settings.eventTitleOpacity : 1.0,
           }}
           {...getEventTitleAnimationProps(settings.eventTitleAnimation || 'fade-up', settings.eventTitleOpacity !== undefined ? settings.eventTitleOpacity : 1.0)}

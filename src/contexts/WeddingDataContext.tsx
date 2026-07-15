@@ -108,6 +108,7 @@ export interface WeddingSettings {
   musicFile: string;
   heroImage: string;
   heroImageOpacity?: number;
+  shareImage?: string;
   weddingDescription: string;
   weddingDescriptionKm: string;
   /** Hero subtitle — e.g. Wedding / Engagement (EN & KM) */
@@ -198,6 +199,7 @@ const defaultSettings: WeddingSettings = {
   musicUrl: '',
   musicFile: '',
   heroImage: '',
+  shareImage: '',
   weddingDescription: 'We joyfully invite you to celebrate our special day.',
   weddingDescriptionKm: 'យើងខ្ញុំសូមគោរពអញ្ជើញអ្នកមកចូលរួមពិធីមង្គលការរបស់យើង។',
   eventTitleEn: '✦  The Wedding of  ✦',

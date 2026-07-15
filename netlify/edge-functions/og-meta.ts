@@ -55,6 +55,7 @@ export default async (request: Request, context: Context) => {
       // Resolve couple names, event description and background photo dynamically
       const coupleNames = settings?.couple_names || `${profile.groom_name || ""} & ${profile.bride_name || ""}`;
       const heroImage = settings?.hero_image || "https://jxtmjmsxziowyihktpoq.supabase.co/storage/v1/object/public/photos/8f013aa5-2e26-4383-a5c1-39c443873108.jpeg";
+      const shareImage = settings?.share_image || heroImage;
       
       let metaTitle = `${coupleNames} Wedding Invitation | សំបុត្រមង្គលការ`;
       if (guestName) {
@@ -78,8 +79,8 @@ export default async (request: Request, context: Context) => {
 
       // Image
       html = html.replace(/<link[^>]*rel="preload"[^>]*as="image"[^>]*>/gi, `<link rel="preload" href="${heroImage}" as="image">`);
-      html = html.replace(/<meta[^>]*property="og:image"[^>]*>/gi, `<meta property="og:image" content="${heroImage}">`);
-      html = html.replace(/<meta[^>]*name="twitter:image"[^>]*>/gi, `<meta name="twitter:image" content="${heroImage}">`);
+      html = html.replace(/<meta[^>]*property="og:image"[^>]*>/gi, `<meta property="og:image" content="${shareImage}">`);
+      html = html.replace(/<meta[^>]*name="twitter:image"[^>]*>/gi, `<meta name="twitter:image" content="${shareImage}">`);
     }
   } catch (err) {
     console.error("Error setting dynamic link preview metadata:", err);

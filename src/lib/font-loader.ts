@@ -20,27 +20,19 @@ const V2_FONT_STYLE_MAP: Record<string, string> = {
 
 
 
-/** Exact filenames in Supabase storage */
+/** Exact filenames in Supabase storage (only proprietary non-Google fonts) */
 const KHMER_FONT_STORAGE_MAP: Record<string, string> = {
-  'Battambang': 'Battambang-Regular.ttf',
-  'Angkor': 'Angkor.ttf',
-  'Bayon': 'Bayon.ttf',
-  'Chenla': 'Chenla.ttf',
-  'Kantumruy Pro': 'Kantumruy-Regular.ttf',
-  'Koulen': 'Koulen.ttf',
-  'Moulpali': 'Moulpali.ttf',
-  'Preahvihear': 'Preahvihear.ttf',
-  'Siemreap': 'Siemreap.ttf',
   'AKbalthom KhmerLer': 'AKbalthom KhmerLer Regular.ttf',
   'Kh BL LazyOutline': 'Kh BL LazyOutline Regular.ttf',
 };
 
-/** Google Fonts families available via the API */
+/** Google Fonts families available via the API (including all standard Khmer fonts) */
 const GOOGLE_FONT_FAMILIES: Set<string> = new Set([
   'Playfair Display', 'Lora', 'Libre Baskerville', 'Cormorant Garamond',
   'Merriweather', 'Inter', 'DM Sans', 'Poppins', 'Montserrat', 'Raleway',
   'Josefin Sans', 'Source Sans 3', 'Great Vibes', 'Noto Serif Khmer',
-  'Noto Sans Khmer', 'Hanuman',
+  'Noto Sans Khmer', 'Hanuman', 'Battambang', 'Angkor', 'Bayon', 'Chenla', 
+  'Koulen', 'Moulpali', 'Preahvihear', 'Moul', 'Kantumruy Pro'
 ]);
 
 /** Fallback font stacks for different writing systems */
@@ -86,10 +78,7 @@ function buildStorageFontFace(fontName: string, weight: number = 400) {
 }
 
 function getFallbackStack(family: string): string {
-  if (KHMER_FONT_STORAGE_MAP[family]) {
-    return "'Battambang', 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif";
-  }
-  if (family.includes('Serif')) {
+  if (family.includes('Serif') || family === 'Moul' || family === 'Moulpali' || family === 'Preahvihear') {
     return "'Noto Serif Khmer', 'Hanuman', Georgia, serif";
   }
   return "'Noto Sans Khmer', 'Kantumruy Pro', 'Battambang', sans-serif";
@@ -154,6 +143,22 @@ h1.font-khmer, h2.font-khmer, h3.font-khmer, h4.font-khmer, h5.font-khmer, h6.fo
 h1.font-khmer, h2.font-khmer, h3.font-khmer, h4.font-khmer, h5.font-khmer, h6.font-khmer {
   font-variant-ligatures: common-ligatures;
   -webkit-font-variant-ligatures: common-ligatures;
+}
+
+/* Fix iOS rendering bug for Khmer text by disabling letter-spacing inside ligatures */
+.font-khmer, .font-khmer-body, .font-khmer-display,
+h1.font-khmer, h2.font-khmer, h3.font-khmer, h4.font-khmer, h5.font-khmer, h6.font-khmer,
+[style*="font-family: var(--font-khmer)"],
+[style*="font-family: 'Preahvihear'"], [style*="font-family: Preahvihear"],
+[style*="font-family: 'Noto Serif Khmer'"], [style*="font-family: Noto Serif Khmer"],
+[style*="font-family: 'Noto Sans Khmer'"], [style*="font-family: Noto Sans Khmer"],
+[style*="font-family: 'Kantumruy Pro'"], [style*="font-family: Kantumruy Pro"],
+[style*="font-family: 'Siemreap'"], [style*="font-family: Siemreap"],
+[style*="font-family: 'Moul'"], [style*="font-family: Moul"],
+[style*="font-family: 'Koulen'"], [style*="font-family: Koulen"],
+[style*="font-family: 'Moulpali'"], [style*="font-family: Moulpali"],
+[style*="font-family: 'Battambang'"], [style*="font-family: Battambang"] {
+  letter-spacing: normal !important;
 }`;
 
   style.textContent = faces;

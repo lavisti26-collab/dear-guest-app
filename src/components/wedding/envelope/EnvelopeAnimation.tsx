@@ -818,7 +818,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen, inlinePre
                 }`}
                 style={{
                   fontFamily: settings.eventTitleFont ? getEventTitleFontFamily(settings.eventTitleFont) : undefined,
-                  letterSpacing: settings.eventTitleFont && settings.eventTitleFont !== 'Moul' && settings.eventTitleFont !== 'Koulen' ? '0.12em' : undefined,
+                  letterSpacing: lang === 'km' ? 'normal' : (settings.eventTitleFont && settings.eventTitleFont !== 'Moul' && settings.eventTitleFont !== 'Koulen' ? '0.12em' : undefined),
                   background: 'linear-gradient(135deg, #B8893E 0%, #F0C97A 40%, #C9913A 70%, #B8893E 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
